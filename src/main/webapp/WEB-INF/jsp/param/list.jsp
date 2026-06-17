@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -179,7 +180,7 @@
         <form class="search" method="get" action="${pageContext.request.contextPath}/params">
             <label for="seqname">键值信息</label>
             <input id="seqname" name="seqname" type="text" maxlength="32"
-                   value="<c:out value='${querySeqname}'/>" placeholder="支持模糊查询">
+                   value="${fn:escapeXml(querySeqname)}" placeholder="支持模糊查询">
             <button class="button secondary" type="submit">查询</button>
             <a class="button secondary" href="${pageContext.request.contextPath}/params">全部</a>
         </form>

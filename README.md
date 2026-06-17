@@ -46,6 +46,7 @@ src/main/webapp/
   WEB-INF/jsp/param/list.jsp
 src/test/java/com/housingfund/collection/
   service/impl/ParamServiceImplTest.java
+  web/JspSyntaxTest.java
 ```
 
 ## 数据库初始化
@@ -71,8 +72,8 @@ target/housingfund-collection.war
 
 当前环境验证记录：
 
-- 2026-06-17：已尝试执行 `mvn clean package`。
-- 结果：当前 shell 提示 `mvn` 不是可识别的命令，说明本机 Maven 命令未配置到 PATH 或未安装，因此本次未完成 Maven 编译验证。
+- 2026-06-17：使用 PowerShell 7 执行 `mvn clean package`。
+- 结果：构建成功，6 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
@@ -95,6 +96,7 @@ target/housingfund-collection.war
 - 基础 controller、entity、util、exception
 - 系统参数维护模块：新增、删除、修改、查询 `tb001`
 - 系统参数 Service 单元测试类：`ParamServiceImplTest`
+- JSP 基础语法回归测试：`JspSyntaxTest`
 
 ## 系统参数维护模块
 

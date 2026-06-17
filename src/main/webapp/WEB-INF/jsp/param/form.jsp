@@ -1,5 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -130,11 +131,11 @@
                 <c:choose>
                     <c:when test="${mode eq 'create'}">
                         <input id="seqname" name="seqname" type="text" required maxlength="32"
-                               value="<c:out value='${systemParam.seqname}'/>">
+                               value="${fn:escapeXml(systemParam.seqname)}">
                     </c:when>
                     <c:otherwise>
                         <input id="seqname" name="seqname" type="text" readonly maxlength="32"
-                               value="<c:out value='${systemParam.seqname}'/>">
+                               value="${fn:escapeXml(systemParam.seqname)}">
                     </c:otherwise>
                 </c:choose>
                 <div class="tip">新增后不可修改。</div>
@@ -143,13 +144,13 @@
             <div class="field">
                 <label for="seq">当前序号</label>
                 <input id="seq" name="seq" type="number" required min="1" step="1"
-                       value="<c:out value='${systemParam.seq}'/>">
+                       value="${fn:escapeXml(systemParam.seq)}">
             </div>
 
             <div class="field">
                 <label for="maxseq">最大序号</label>
                 <input id="maxseq" name="maxseq" type="number" required min="1" step="1"
-                       value="<c:out value='${systemParam.maxseq}'/>">
+                       value="${fn:escapeXml(systemParam.maxseq)}">
             </div>
 
             <div class="field">
