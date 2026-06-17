@@ -1,6 +1,6 @@
 # 住房公积金管理系统——筹集子系统
 
-本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类和系统参数维护模块。
+本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块和单位开户模块。
 
 ## 技术栈
 
@@ -38,14 +38,18 @@ src/main/resources/
   mybatis-config.xml
   spring-mvc.xml
   mapper/ParamMapper.xml
+  mapper/UnitMapper.xml
 src/main/webapp/
   static/js/validate.js
   WEB-INF/web.xml
   WEB-INF/jsp/index.jsp
   WEB-INF/jsp/param/form.jsp
   WEB-INF/jsp/param/list.jsp
+  WEB-INF/jsp/unit/open.jsp
+  WEB-INF/jsp/unit/receipt.jsp
 src/test/java/com/housingfund/collection/
   service/impl/ParamServiceImplTest.java
+  service/impl/UnitServiceImplTest.java
   web/JspSyntaxTest.java
 ```
 
@@ -88,7 +92,7 @@ target/housingfund-collection.war
 当前环境验证记录：
 
 - 2026-06-17：使用系统 Maven `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`。
-- 结果：构建成功，6 个测试通过，生成 `target/housingfund-collection.war`。
+- 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
@@ -102,6 +106,7 @@ target/housingfund-collection.war
 ```text
 http://localhost:8080/housingfund-collection/
 http://localhost:8080/housingfund-collection/params
+http://localhost:8080/housingfund-collection/units/open
 ```
 
 ## 当前阶段已包含
@@ -113,11 +118,14 @@ http://localhost:8080/housingfund-collection/params
 - `web.xml`
 - 首页 `index.jsp`
 - 系统参数维护 JSP：`param/list.jsp`、`param/form.jsp`
+- 单位开户 JSP：`unit/open.jsp`、`unit/receipt.jsp`
 - 前端基础校验脚本：`static/js/validate.js`
 - `tb001`、`tb002`、`tb003` 数据库脚本
 - 基础 controller、entity、util、exception
 - 系统参数维护模块：新增、删除、修改、查询 `tb001`
+- 单位开户模块：录入单位资料、生成单位账号、写入 `tb002`、更新 `UNITACCNUM.seq`
 - 系统参数 Service 单元测试类：`ParamServiceImplTest`
+- 单位开户 Service 单元测试类：`UnitServiceImplTest`
 - JSP 基础语法回归测试：`JspSyntaxTest`
 
 ## 系统参数维护模块
@@ -156,9 +164,44 @@ http://localhost:8080/housingfund-collection/params
 7. 删除 `TESTSEQ`，确认普通参数可删除。
 8. 尝试删除 `UNITACCNUM` 或 `PERACCNUM`，确认提示禁止删除。
 
+## 单位开户模块
+
+访问入口：
+
+```text
+http://localhost:8080/housingfund-collection/units/open
+```
+
+支持功能：
+
+- 填写单位开户表单并提交。
+- 根据 `tb001` 中 `SEQNAME='UNITACCNUM'` 的当前序号生成 12 位单位账号。
+- 同一事务内完成锁定序号、生成账号、插入 `tb002`、更新 `UNITACCNUM.seq=seq+1`。
+- 开户成功后显示单位账号、单位名称、组织机构代码、开户日期、单位比例、个人比例。
+- 业务失败返回开户表单并显示错误信息，保留已填写内容。
+
+核心校验：
+
+- 单位名称、地址、组织机构代码、单位类别、企业类型、发薪日期、联系电话、单位经办人、经办人身份证号码、单位比例、个人比例必填。
+- 组织机构代码长度必须为 9 位；正常状态单位已存在时提示“该单位已建户”。
+- 单位类别取值为 `1` 到 `5`；企业类型取值为 `110`、`120`、`130`、`140`、`150`、`160`、`170`、`190`、`200`、`300`、`900`。
+- 发薪日期必须是 `01` 到 `31`。
+- 经办人身份证号码按 18 位居民身份证规则校验。
+- 单位比例、个人比例必须在 `0.050` 到 `0.120` 之间。
+- `UNITACCNUM.seq` 大于 `maxseq` 时开户失败。
+
+手动测试步骤：
+
+1. 访问 `/units/open`，确认首页“单位开户”入口可跳转。
+2. 使用合法数据提交，例如组织机构代码 `A12345678`、发薪日期 `15`、单位比例 `0.080`、个人比例 `0.080`、身份证号 `11010519491231002X`。
+3. 确认成功回执显示 12 位单位账号；当 `UNITACCNUM.seq=1` 时账号应为 `000000000001`。
+4. 回到数据库检查 `tb002` 新增单位资料，`tb001.UNITACCNUM.seq` 加 1。
+5. 再次使用相同组织机构代码开户，确认提示“该单位已建户”并保留表单内容。
+6. 输入单位比例 `0.049` 或个人比例 `0.121`，确认页面或后端提示比例范围错误。
+7. 将 `UNITACCNUM.seq` 调整为大于 `maxseq` 后提交，确认提示“单位账号序号已超过最大值”。
+
 ## 当前未完成
 
-- 单位开户
 - 个人开户
 - 单位资料修改
 - 个人资料修改

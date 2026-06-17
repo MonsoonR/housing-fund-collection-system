@@ -38,6 +38,14 @@
         WHERE `SEQNAME` = #{seqname}
     </select>
 
+    <select id="selectBySeqnameForUpdate" resultMap="SystemParamResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb001
+        WHERE `SEQNAME` = #{seqname}
+        FOR UPDATE
+    </select>
+
     <insert id="insert" parameterType="SystemParam">
         INSERT INTO tb001 (
             `SEQNAME`, `SEQ`, `MAXSEQ`, `SEQ_DESC`, `FREEUSE1`
@@ -53,6 +61,12 @@
             `MAXSEQ` = #{maxseq},
             `SEQ_DESC` = #{seqDesc},
             `FREEUSE1` = #{freeuse1}
+        WHERE `SEQNAME` = #{seqname}
+    </update>
+
+    <update id="updateSeq">
+        UPDATE tb001
+        SET `SEQ` = #{seq}
         WHERE `SEQNAME` = #{seqname}
     </update>
 

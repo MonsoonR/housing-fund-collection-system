@@ -13,9 +13,13 @@ public interface ParamMapper {
 
     SystemParam selectBySeqname(@Param("seqname") String seqname);
 
+    SystemParam selectBySeqnameForUpdate(@Param("seqname") String seqname);
+
     int insert(SystemParam param);
 
     int update(SystemParam param);
+
+    int updateSeq(@Param("seqname") String seqname, @Param("seq") Long seq);
 
     int deleteBySeqname(@Param("seqname") String seqname);
 }

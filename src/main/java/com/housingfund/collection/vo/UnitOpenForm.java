@@ -1,12 +1,10 @@
-package com.housingfund.collection.entity;
+package com.housingfund.collection.vo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDate;
 
-public class UnitBasicInfo implements Serializable {
+public class UnitOpenForm implements Serializable {
 
-    private String unitAccNum;
     private String unitName;
     private String unitAddr;
     private String orgCode;
@@ -19,24 +17,6 @@ public class UnitBasicInfo implements Serializable {
     private BigDecimal unitRatio;
     private BigDecimal perRatio;
     private String remark;
-    private String accState;
-    private BigDecimal balance;
-    private BigDecimal baseNumber;
-    private BigDecimal unitPaySum;
-    private BigDecimal perPaySum;
-    private Integer persNum;
-    private LocalDate lastPayDate;
-    private String instCode;
-    private String op;
-    private LocalDate createDate;
-
-    public String getUnitAccNum() {
-        return unitAccNum;
-    }
-
-    public void setUnitAccNum(String unitAccNum) {
-        this.unitAccNum = unitAccNum;
-    }
 
     public String getUnitName() {
         return unitName;
@@ -132,85 +112,5 @@ public class UnitBasicInfo implements Serializable {
 
     public void setRemark(String remark) {
         this.remark = remark;
-    }
-
-    public String getAccState() {
-        return accState;
-    }
-
-    public void setAccState(String accState) {
-        this.accState = accState;
-    }
-
-    public BigDecimal getBalance() {
-        return balance;
-    }
-
-    public void setBalance(BigDecimal balance) {
-        this.balance = balance;
-    }
-
-    public BigDecimal getBaseNumber() {
-        return baseNumber;
-    }
-
-    public void setBaseNumber(BigDecimal baseNumber) {
-        this.baseNumber = baseNumber;
-    }
-
-    public BigDecimal getUnitPaySum() {
-        return unitPaySum;
-    }
-
-    public void setUnitPaySum(BigDecimal unitPaySum) {
-        this.unitPaySum = unitPaySum;
-    }
-
-    public BigDecimal getPerPaySum() {
-        return perPaySum;
-    }
-
-    public void setPerPaySum(BigDecimal perPaySum) {
-        this.perPaySum = perPaySum;
-    }
-
-    public Integer getPersNum() {
-        return persNum;
-    }
-
-    public void setPersNum(Integer persNum) {
-        this.persNum = persNum;
-    }
-
-    public LocalDate getLastPayDate() {
-        return lastPayDate;
-    }
-
-    public void setLastPayDate(LocalDate lastPayDate) {
-        this.lastPayDate = lastPayDate;
-    }
-
-    public String getInstCode() {
-        return instCode;
-    }
-
-    public void setInstCode(String instCode) {
-        this.instCode = instCode;
-    }
-
-    public String getOp() {
-        return op;
-    }
-
-    public void setOp(String op) {
-        this.op = op;
-    }
-
-    public LocalDate getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(LocalDate createDate) {
-        this.createDate = createDate;
     }
 }

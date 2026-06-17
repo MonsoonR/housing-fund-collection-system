@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.housingfund.collection.mapper.UnitMapper">
+
+    <resultMap id="UnitBasicInfoResultMap" type="UnitBasicInfo">
+        <id column="UNITACCNUM" property="unitAccNum"/>
+        <result column="UNITNAME" property="unitName"/>
+        <result column="UNITADDR" property="unitAddr"/>
+        <result column="ORGCODE" property="orgCode"/>
+        <result column="UNITKIND" property="unitKind"/>
+        <result column="UNITTYPE" property="unitType"/>
+        <result column="SALARYDATE" property="salaryDate"/>
+        <result column="PHONE" property="phone"/>
+        <result column="AGENTNAME" property="agentName"/>
+        <result column="AGENTIDCARD" property="agentIdCard"/>
+        <result column="UNITRATIO" property="unitRatio"/>
+        <result column="PERRATIO" property="perRatio"/>
+        <result column="REMARK" property="remark"/>
+        <result column="ACCSTATE" property="accState"/>
+        <result column="BALANCE" property="balance"/>
+        <result column="BASENUMBER" property="baseNumber"/>
+        <result column="UNITPAYSUM" property="unitPaySum"/>
+        <result column="PERPAYSUM" property="perPaySum"/>
+        <result column="PERSNUM" property="persNum"/>
+        <result column="LASTPAYDATE" property="lastPayDate"/>
+        <result column="INSTCODE" property="instCode"/>
+        <result column="OP" property="op"/>
+        <result column="CREATDATE" property="createDate"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        `UNITACCNUM`, `UNITNAME`, `UNITADDR`, `ORGCODE`, `UNITKIND`, `UNITTYPE`,
+        `SALARYDATE`, `PHONE`, `AGENTNAME`, `AGENTIDCARD`, `UNITRATIO`, `PERRATIO`,
+        `REMARK`, `ACCSTATE`, `BALANCE`, `BASENUMBER`, `UNITPAYSUM`, `PERPAYSUM`,
+        `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`
+    </sql>
+
+    <select id="selectByUnitAccNum" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb002
+        WHERE `UNITACCNUM` = #{unitAccNum}
+    </select>
+
+    <select id="selectNormalByOrgCode" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb002
+        WHERE `ORGCODE` = #{orgCode}
+          AND `ACCSTATE` = '0'
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="UnitBasicInfo">
+        INSERT INTO tb002 (
+            `UNITACCNUM`, `UNITNAME`, `UNITADDR`, `ORGCODE`, `UNITKIND`, `UNITTYPE`,
+            `SALARYDATE`, `PHONE`, `AGENTNAME`, `AGENTIDCARD`, `UNITRATIO`, `PERRATIO`,
+            `REMARK`, `ACCSTATE`, `BALANCE`, `BASENUMBER`, `UNITPAYSUM`, `PERPAYSUM`,
+            `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`
+        ) VALUES (
+            #{unitAccNum}, #{unitName}, #{unitAddr}, #{orgCode}, #{unitKind}, #{unitType},
+            #{salaryDate}, #{phone}, #{agentName}, #{agentIdCard}, #{unitRatio}, #{perRatio},
+            #{remark}, #{accState}, #{balance}, #{baseNumber}, #{unitPaySum}, #{perPaySum},
+            #{persNum}, #{lastPayDate}, #{instCode}, #{op}, #{createDate}
+        )
+    </insert>
+</mapper>

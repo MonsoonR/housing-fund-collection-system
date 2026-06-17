@@ -90,8 +90,8 @@
             <span>维护 tb001 系统参数</span>
         </article>
         <article class="module">
-            <strong>单位开户</strong>
-            <span>待实现</span>
+            <strong><a href="${pageContext.request.contextPath}/units/open">单位开户</a></strong>
+            <span>新增缴存单位并生成单位账号</span>
         </article>
         <article class="module">
             <strong>个人开户</strong>

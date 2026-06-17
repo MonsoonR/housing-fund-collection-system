@@ -132,6 +132,11 @@ public class ParamServiceImplTest {
         }
 
         @Override
+        public SystemParam selectBySeqnameForUpdate(String seqname) {
+            return data.get(seqname);
+        }
+
+        @Override
         public int insert(SystemParam param) {
             data.put(param.getSeqname(), copy(param));
             return 1;
@@ -140,6 +145,16 @@ public class ParamServiceImplTest {
         @Override
         public int update(SystemParam param) {
             data.put(param.getSeqname(), copy(param));
+            return 1;
+        }
+
+        @Override
+        public int updateSeq(String seqname, Long seq) {
+            SystemParam param = data.get(seqname);
+            if (param == null) {
+                return 0;
+            }
+            param.setSeq(seq);
             return 1;
         }
 
