@@ -93,6 +93,14 @@ Tomcat 部署方式：
 - 将 `target` 下生成的 `war` 部署到 Tomcat。
 - 根据实际 MySQL 环境修改数据库连接配置后再启动。
 
+## Git 与文档同步
+
+- 当前项目必须使用 Git 管理，远端仓库为 `https://github.com/MonsoonR/housing-fund-collection-system.git`。
+- 每次完成文件改动后，必须执行一次语义清晰的 commit，并 push 到远端仓库。
+- commit message 使用简洁英文，优先采用 `type: summary` 格式，例如 `feat: add unit account opening`。
+- 如果本次改动影响运行方式、数据库结构、功能范围、页面入口、配置项或验证步骤，必须同步更新对应文档，例如 `README.md`、SQL 说明或测试说明。
+- 不要把未验证成功的结果写成已通过；文档中必须如实说明验证命令、验证结果和未完成项。
+
 ## 修改输出要求
 
 每次修改后必须说明：
@@ -101,6 +109,8 @@ Tomcat 部署方式：
 - 实现了哪些功能
 - 如何验证
 - 当前未完成项
+- 是否已更新对应文档
+- commit 与 push 状态
 
 ## 禁止事项
 
