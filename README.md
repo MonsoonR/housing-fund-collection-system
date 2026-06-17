@@ -51,17 +51,32 @@ src/test/java/com/housingfund/collection/
 
 ## 数据库初始化
 
-1. 登录 MySQL。
-2. 执行 `db/schema.sql` 创建数据库和三张核心表。
-3. 执行 `db/data.sql` 初始化账号序号参数。
-4. 根据本机 MySQL 修改 `src/main/resources/jdbc.properties`。
+导入顺序：
+
+1. 执行 `db/schema.sql` 创建数据库和三张核心表。
+2. 执行 `db/data.sql` 初始化账号序号参数。
+
+PowerShell 示例命令：
+
+```powershell
+mysql -u root -p < db/schema.sql
+mysql -u root -p housingfund_collection < db/data.sql
+```
+
+数据库连接配置位于 `src/main/resources/jdbc.properties`：
+
+- 数据库名在 `jdbc.url` 中配置，默认是 `housingfund_collection`
+- 用户名在 `jdbc.username` 中配置
+- 密码在 `jdbc.password` 中配置
+
+当前 `jdbc.password` 是本地示例占位值，部署前请按自己的 MySQL 环境修改。不要把真实数据库密码提交到说明文档中。
 
 默认数据库名：`housingfund_collection`。
 
 ## 构建
 
 ```powershell
-mvn clean package
+D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
 ```
 
 构建成功后，WAR 文件位于：
@@ -72,7 +87,7 @@ target/housingfund-collection.war
 
 当前环境验证记录：
 
-- 2026-06-17：使用 PowerShell 7 执行 `mvn clean package`。
+- 2026-06-17：使用系统 Maven `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`。
 - 结果：构建成功，6 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
@@ -80,7 +95,14 @@ target/housingfund-collection.war
 1. 使用 Tomcat 9。
 2. 将 `target/housingfund-collection.war` 放入 Tomcat 的 `webapps` 目录。
 3. 确认 MySQL 已执行数据库脚本，并修改过 `jdbc.properties`。
-4. 启动 Tomcat，访问应用上下文路径。
+4. 启动 Tomcat。
+
+默认 WAR 名为 `housingfund-collection.war`，Tomcat 部署后的访问路径通常是：
+
+```text
+http://localhost:8080/housingfund-collection/
+http://localhost:8080/housingfund-collection/params
+```
 
 ## 当前阶段已包含
 
@@ -103,7 +125,7 @@ target/housingfund-collection.war
 访问入口：
 
 ```text
-/params
+http://localhost:8080/housingfund-collection/params
 ```
 
 支持功能：
@@ -122,6 +144,17 @@ target/housingfund-collection.war
 - `seq` 不能大于 `maxseq`
 - `seqname` 不能重复
 - Service 层进行后端二次校验，Controller 不写 SQL，Mapper 只负责数据库访问
+
+手动测试步骤：
+
+1. 访问 `/params`，确认能看到 `UNITACCNUM` 和 `PERACCNUM` 两条初始化参数。
+2. 使用查询框输入 `ACC`，确认可以按 `seqname` 模糊查询。
+3. 点击“新增参数”，新增普通参数，例如 `TESTSEQ`，`seq=1`，`maxseq=100`，描述非空。
+4. 再次新增同名 `TESTSEQ`，确认页面提示“键值信息已存在”。
+5. 新增或修改时输入 `seq=101`、`maxseq=100`，确认页面或后端提示“当前序号不能大于最大序号”。
+6. 修改 `TESTSEQ`，确认 `seqname` 只读，提交后主键不被表单篡改。
+7. 删除 `TESTSEQ`，确认普通参数可删除。
+8. 尝试删除 `UNITACCNUM` 或 `PERACCNUM`，确认提示禁止删除。
 
 ## 当前未完成
 
