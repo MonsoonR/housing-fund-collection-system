@@ -10,7 +10,8 @@
 - Spring Framework 5.3.x
 - Spring MVC
 - MyBatis / MyBatis-Spring
-- MySQL Connector/J
+- MySQL 9.5
+- MySQL Connector/J 9.5.0
 - JSP / JSTL 1.2
 - Java EE `javax.*` 依赖
 - Tomcat 9
@@ -55,6 +56,8 @@ src/test/java/com/housingfund/collection/
 
 ## 数据库初始化
 
+本项目后续开发和验证以 MySQL 9.5 为数据库基准，Maven 依赖使用 MySQL Connector/J 9.5.0。
+
 导入顺序：
 
 1. 执行 `db/schema.sql` 创建数据库和三张核心表。
@@ -73,7 +76,7 @@ mysql -u root -p housingfund_collection < db/data.sql
 - 用户名在 `jdbc.username` 中配置
 - 密码在 `jdbc.password` 中配置
 
-当前 `jdbc.password` 是本地示例占位值，部署前请按自己的 MySQL 环境修改。不要把真实数据库密码提交到说明文档中。
+仓库默认 `jdbc.password` 仅用于本地连接示例，部署前请按自己的 MySQL 环境修改。不要把真实数据库密码提交到说明文档中。
 
 默认数据库名：`housingfund_collection`。
 
@@ -93,12 +96,14 @@ target/housingfund-collection.war
 
 - 2026-06-17：使用系统 Maven `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`。
 - 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
+- 2026-06-18：MySQL 基准调整为 9.5，使用系统 Maven `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`。
+- 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。当前 shell 未找到 `mysql` 客户端，未在本机命令行执行 SQL 脚本。
 
 ## 部署
 
 1. 使用 Tomcat 9。
 2. 将 `target/housingfund-collection.war` 放入 Tomcat 的 `webapps` 目录。
-3. 确认 MySQL 已执行数据库脚本，并修改过 `jdbc.properties`。
+3. 确认 MySQL 9.5 已执行数据库脚本，并修改过 `jdbc.properties`。
 4. 启动 Tomcat。
 
 默认 WAR 名为 `housingfund-collection.war`，Tomcat 部署后的访问路径通常是：

@@ -115,7 +115,7 @@
         </article>
     </section>
 
-    <p class="footer">运行环境建议：JDK 25 构建，Java 17 兼容字节码，Tomcat 9，MySQL。</p>
+    <p class="footer">运行环境建议：JDK 25 构建，Java 17 兼容字节码，Tomcat 9，MySQL 9.5。</p>
 </main>
 </body>
 </html>
