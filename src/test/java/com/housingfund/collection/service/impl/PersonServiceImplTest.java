@@ -58,10 +58,61 @@ public class PersonServiceImplTest {
 
         PersonBasicInfo saved = personMapper.selectByPerAccNum("000000000001");
         assertNotNull(saved);
-        assertEquals("居民身份证", saved.getIdType());
+        assertEquals("01身份证", saved.getIdType());
         assertEquals("0", saved.getStatus());
         assertEquals(new BigDecimal("400.00"), saved.getUnitMonthPay());
         assertEquals(new BigDecimal("400.00"), saved.getPerMonthPay());
+    }
+
+    @Test
+    public void getOpenUnitInfoReflectsUnitNameAndRatiosForPersonalOpening() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        UnitBasicInfo unit = buildUnit("000000000010");
+        unit.setUnitName("开户单位");
+        unit.setUnitRatio(new BigDecimal("0.090"));
+        unit.setPerRatio(new BigDecimal("0.070"));
+        unitMapper.insert(unit);
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), unitMapper, mapperWithSeq(1L, 999999999999L));
+
+        PersonOpenForm form = service.getOpenUnitInfo("000000000010");
+
+        assertEquals("000000000010", form.getUnitAccNum());
+        assertEquals("开户单位", form.getUnitName());
+        assertEquals(new BigDecimal("0.090"), form.getUnitRatio());
+        assertEquals(new BigDecimal("0.070"), form.getPerRatio());
+        assertEquals("01身份证", form.getIdType());
+    }
+
+    @Test
+    public void getOpenUnitInfoRejectsClosedUnit() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        UnitBasicInfo unit = buildUnit("000000000010");
+        unit.setAccState("9");
+        unitMapper.insert(unit);
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), unitMapper, mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.getOpenUnitInfo("000000000010");
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("单位账号不存在或状态非正常", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openPersonRejectsNonGuidanceIdType() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonOpenForm form = validForm();
+        form.setIdType("居民身份证");
+
+        try {
+            service.openPerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("证件类型目前只支持01身份证", ex.getMessage());
+        }
     }
 
     @Test
@@ -254,7 +305,7 @@ public class PersonServiceImplTest {
         assertEquals("000000000010", form.getUnitAccNum());
         assertEquals("测试单位", form.getUnitName());
         assertEquals("李四", form.getPerName());
-        assertEquals("居民身份证", form.getIdType());
+        assertEquals("01身份证", form.getIdType());
         assertEquals("11010519491231002X", form.getIdCard());
         assertEquals("13800138000", form.getPhone());
         assertEquals("测试地址", form.getAddress());
@@ -419,8 +470,8 @@ public class PersonServiceImplTest {
         assertEquals("910105195001010012", result.getChangedConflictIdCard());
         assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000001").getIdCard());
         assertEquals("李四修改", personMapper.selectByPerAccNum("000000000001").getPerName());
-        assertEquals("13900139000", personMapper.selectByPerAccNum("000000000001").getPhone());
-        assertEquals("修改地址", personMapper.selectByPerAccNum("000000000001").getAddress());
+        assertEquals("13800138000", personMapper.selectByPerAccNum("000000000001").getPhone());
+        assertEquals("测试地址", personMapper.selectByPerAccNum("000000000001").getAddress());
         assertEquals("910105195001010012", personMapper.selectByPerAccNum("000000000002").getIdCard());
         assertNotNull(personMapper.selectByPerAccNum("000000000001"));
         assertNotNull(personMapper.selectByPerAccNum("000000000002"));
@@ -476,7 +527,26 @@ public class PersonServiceImplTest {
             service.updatePerson(form);
             fail("Expected BusinessException");
         } catch (BusinessException ex) {
-            assertEquals("证件类型目前只支持居民身份证", ex.getMessage());
+            assertEquals("证件类型目前只支持01身份证", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void updatePersonRejectsOnlyPhoneAndAddressChanges() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setPhone("13900139000");
+        form.setAddress("修改地址");
+
+        try {
+            service.updatePerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("请至少修改一项个人资料", ex.getMessage());
         }
     }
 
@@ -516,8 +586,8 @@ public class PersonServiceImplTest {
         assertEquals("0", updated.getStatus());
         assertEquals(LocalDateTime.of(2026, 1, 2, 9, 30), updated.getCreateTime());
         assertEquals("李四修改", updated.getPerName());
-        assertEquals("13900139000", updated.getPhone());
-        assertEquals("修改地址", updated.getAddress());
+        assertEquals("13800138000", updated.getPhone());
+        assertEquals("测试地址", updated.getAddress());
     }
 
     @Test
@@ -561,7 +631,7 @@ public class PersonServiceImplTest {
         person.setPerAccNum(perAccNum);
         person.setUnitAccNum("000000000009");
         person.setPerName("旧姓名");
-        person.setIdType("居民身份证");
+        person.setIdType("01身份证");
         person.setIdCard("11010519491231002X");
         person.setBaseNum(new BigDecimal("1000.00"));
         person.setUnitRatio(new BigDecimal("0.050"));
@@ -579,7 +649,7 @@ public class PersonServiceImplTest {
         PersonOpenForm form = new PersonOpenForm();
         form.setUnitAccNum("000000000010");
         form.setPerName("李四");
-        form.setIdType("居民身份证");
+        form.setIdType("01身份证");
         form.setIdCard("11010519491231002X");
         form.setBaseNum(new BigDecimal("5000"));
         form.setPhone("13800138000");
@@ -593,7 +663,7 @@ public class PersonServiceImplTest {
         form.setUnitAccNum("000000000010");
         form.setUnitName("测试单位");
         form.setPerName("李四");
-        form.setIdType("居民身份证");
+        form.setIdType("01身份证");
         form.setIdCard("11010519491231002X");
         form.setPhone("13800138000");
         form.setAddress("测试地址");
@@ -606,7 +676,7 @@ public class PersonServiceImplTest {
         person.setPerAccNum(perAccNum);
         person.setUnitAccNum("000000000010");
         person.setPerName(perName);
-        person.setIdType("居民身份证");
+        person.setIdType("01身份证");
         person.setIdCard(idCard);
         person.setPhone("13800138000");
         person.setAddress("测试地址");
@@ -863,8 +933,6 @@ public class PersonServiceImplTest {
             existing.setPerName(person.getPerName());
             existing.setIdType(person.getIdType());
             existing.setIdCard(person.getIdCard());
-            existing.setPhone(person.getPhone());
-            existing.setAddress(person.getAddress());
             return 1;
         }
 

@@ -201,9 +201,7 @@
         UPDATE tb003
         SET `PERNAME` = #{perName},
             `IDTYPE` = #{idType},
-            `IDCARD` = #{idCard},
-            `PHONE` = #{phone},
-            `ADDRESS` = #{address}
+            `IDCARD` = #{idCard}
         WHERE `PERACCNUM` = #{perAccNum}
           AND `STATUS` &lt;&gt; '9'
     </update>

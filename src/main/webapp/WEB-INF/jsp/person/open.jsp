@@ -28,10 +28,22 @@
             border-radius: 6px;
         }
 
-        h1 {
+        .panel + .panel {
+            margin-top: 18px;
+        }
+
+        h1,
+        h2 {
             margin: 0 0 20px;
-            font-size: 24px;
             font-weight: 600;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        h2 {
+            font-size: 18px;
         }
 
         .alert {
@@ -62,8 +74,7 @@
         }
 
         input,
-        select,
-        textarea {
+        select {
             width: 100%;
             padding: 10px 11px;
             border: 1px solid #d1d5db;
@@ -74,9 +85,9 @@
             background: #ffffff;
         }
 
-        textarea {
-            min-height: 84px;
-            resize: vertical;
+        input[readonly] {
+            color: #4b5563;
+            background: #f9fafb;
         }
 
         .tip {
@@ -125,62 +136,91 @@
             <div class="alert"><c:out value="${error}"/></div>
         </c:if>
 
-        <form method="post" action="${pageContext.request.contextPath}/persons/open"
-              onsubmit="return validatePersonOpenForm(this);">
+        <form method="get" action="${pageContext.request.contextPath}/persons/open/unit"
+              onsubmit="return validatePersonOpenUnitForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="unitAccNum">单位账号</label>
-                    <input id="unitAccNum" name="unitAccNum" type="text" required maxlength="12"
+                    <label for="searchUnitAccNum">单位账号</label>
+                    <input id="searchUnitAccNum" name="unitAccNum" type="text" required maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(personOpenForm.unitAccNum)}">
-                    <div class="tip">请输入 12 位单位账号。</div>
-                </div>
-
-                <div class="field">
-                    <label for="perName">姓名</label>
-                    <input id="perName" name="perName" type="text" required maxlength="50"
-                           value="${fn:escapeXml(personOpenForm.perName)}">
-                </div>
-
-                <div class="field">
-                    <label for="idType">证件类型</label>
-                    <select id="idType" name="idType" required>
-                        <option value="居民身份证"
-                                ${personOpenForm.idType eq '居民身份证' ? 'selected' : ''}>居民身份证</option>
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label for="idCard">证件号码</label>
-                    <input id="idCard" name="idCard" type="text" required maxlength="18"
-                           pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personOpenForm.idCard)}">
-                    <div class="tip">当前仅支持 18 位居民身份证。</div>
-                </div>
-
-                <div class="field">
-                    <label for="baseNum">缴存基数</label>
-                    <input id="baseNum" name="baseNum" type="text" required maxlength="12"
-                           pattern="[0-9]+(\.[0-9]{1,2})?" value="${fn:escapeXml(personOpenForm.baseNum)}">
-                    <div class="tip">必须大于 0，最多保留 2 位小数。</div>
-                </div>
-
-                <div class="field">
-                    <label for="phone">联系电话</label>
-                    <input id="phone" name="phone" type="text" maxlength="30"
-                           value="${fn:escapeXml(personOpenForm.phone)}">
-                </div>
-
-                <div class="field full">
-                    <label for="address">联系地址</label>
-                    <textarea id="address" name="address" maxlength="200"><c:out value="${personOpenForm.address}"/></textarea>
+                    <div class="tip">请输入已开户且正常状态的 12 位单位账号。</div>
                 </div>
             </div>
 
             <div class="actions">
-                <button class="button" type="submit">提交开户</button>
+                <button class="button" type="submit">查询单位</button>
                 <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
             </div>
         </form>
     </section>
+
+    <c:if test="${unitLoaded}">
+        <section class="panel">
+            <h2>录入个人开户信息</h2>
+
+            <form method="post" action="${pageContext.request.contextPath}/persons/open"
+                  onsubmit="return validatePersonOpenForm(this);">
+                <div class="grid">
+                    <div class="field">
+                        <label for="unitAccNum">单位账号</label>
+                        <input id="unitAccNum" name="unitAccNum" type="text" readonly
+                               value="${fn:escapeXml(personOpenForm.unitAccNum)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="unitName">单位名称</label>
+                        <input id="unitName" name="unitName" type="text" readonly
+                               value="${fn:escapeXml(personOpenForm.unitName)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="unitRatio">单位比例</label>
+                        <input id="unitRatio" name="unitRatio" type="text" readonly
+                               value="${fn:escapeXml(personOpenForm.unitRatio)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="perRatio">个人比例</label>
+                        <input id="perRatio" name="perRatio" type="text" readonly
+                               value="${fn:escapeXml(personOpenForm.perRatio)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="perName">姓名</label>
+                        <input id="perName" name="perName" type="text" required maxlength="50"
+                               value="${fn:escapeXml(personOpenForm.perName)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="idType">证件类型</label>
+                        <select id="idType" name="idType" required>
+                            <option value="01身份证"
+                                    ${personOpenForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="idCard">证件号码</label>
+                        <input id="idCard" name="idCard" type="text" required maxlength="18"
+                               pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personOpenForm.idCard)}">
+                        <div class="tip">当前仅支持 18 位居民身份证号码。</div>
+                    </div>
+
+                    <div class="field">
+                        <label for="baseNum">缴存基数</label>
+                        <input id="baseNum" name="baseNum" type="text" required maxlength="12"
+                               pattern="[0-9]+(\.[0-9]{1,2})?" value="${fn:escapeXml(personOpenForm.baseNum)}">
+                        <div class="tip">必须大于 0，最多保留 2 位小数。</div>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="button" type="submit">提交开户</button>
+                    <a class="button secondary" href="${pageContext.request.contextPath}/persons/open">重新查询单位</a>
+                </div>
+            </form>
+        </section>
+    </c:if>
 </main>
 </body>
 </html>

@@ -6,6 +6,9 @@ import java.math.BigDecimal;
 public class PersonOpenForm implements Serializable {
 
     private String unitAccNum;
+    private String unitName;
+    private BigDecimal unitRatio;
+    private BigDecimal perRatio;
     private String perName;
     private String idType;
     private String idCard;
@@ -19,6 +22,30 @@ public class PersonOpenForm implements Serializable {
 
     public void setUnitAccNum(String unitAccNum) {
         this.unitAccNum = unitAccNum;
+    }
+
+    public String getUnitName() {
+        return unitName;
+    }
+
+    public void setUnitName(String unitName) {
+        this.unitName = unitName;
+    }
+
+    public BigDecimal getUnitRatio() {
+        return unitRatio;
+    }
+
+    public void setUnitRatio(BigDecimal unitRatio) {
+        this.unitRatio = unitRatio;
+    }
+
+    public BigDecimal getPerRatio() {
+        return perRatio;
+    }
+
+    public void setPerRatio(BigDecimal perRatio) {
+        this.perRatio = perRatio;
     }
 
     public String getPerName() {

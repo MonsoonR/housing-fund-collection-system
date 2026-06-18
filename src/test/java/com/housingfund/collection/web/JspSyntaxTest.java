@@ -56,6 +56,28 @@ public class JspSyntaxTest {
         assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "edit-receipt.jsp")));
     }
 
+    @Test
+    public void indexPageDoesNotUseInitialScaffoldDescription() throws IOException {
+        String content = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "index.jsp"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(!content.contains("当前阶段仅提供首页入口和基础配置"));
+    }
+
+    @Test
+    public void personOpenAndEditPagesDoNotExposeNonGuidanceContactFields() throws IOException {
+        List<Path> pages = List.of(
+                Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "open.jsp"),
+                Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "edit.jsp"),
+                Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "edit-conflict.jsp"));
+
+        for (Path page : pages) {
+            String content = Files.readString(page, StandardCharsets.UTF_8);
+            assertTrue(page + " should not submit phone", !content.contains("name=\"phone\""));
+            assertTrue(page + " should not submit address", !content.contains("name=\"address\""));
+        }
+    }
+
     private static void collectInvalidUsages(Path path, List<String> invalidUsages) {
         try {
             List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);

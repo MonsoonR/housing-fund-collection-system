@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/persons")
 public class PersonController {
 
-    private static final String ID_TYPE_RESIDENT = "居民身份证";
+    private static final String ID_TYPE_RESIDENT = "01身份证";
 
     private final PersonService personService;
 
@@ -40,6 +40,27 @@ public class PersonController {
         return "person/open";
     }
 
+    @GetMapping("/open/unit")
+    public String openUnitInfo(@ModelAttribute("personOpenForm") PersonOpenForm form,
+                               BindingResult bindingResult,
+                               Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "表单数据格式不正确");
+            return "person/open";
+        }
+        try {
+            PersonOpenForm unitForm = personService.getOpenUnitInfo(form.getUnitAccNum());
+            model.addAttribute("personOpenForm", unitForm);
+            model.addAttribute("unitLoaded", true);
+            return "person/open";
+        } catch (BusinessException ex) {
+            form.setIdType(ID_TYPE_RESIDENT);
+            model.addAttribute("personOpenForm", form);
+            model.addAttribute("error", ex.getMessage());
+            return "person/open";
+        }
+    }
+
     @PostMapping("/open")
     public String open(@ModelAttribute("personOpenForm") PersonOpenForm form,
                        BindingResult bindingResult,
@@ -53,6 +74,7 @@ public class PersonController {
             model.addAttribute("receipt", result);
             return "person/receipt";
         } catch (BusinessException ex) {
+            model.addAttribute("unitLoaded", form.getUnitName() != null);
             model.addAttribute("error", ex.getMessage());
             return "person/open";
         }

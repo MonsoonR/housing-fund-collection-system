@@ -31,7 +31,7 @@ import java.util.Objects;
 public class PersonServiceImpl implements PersonService {
 
     private static final String PERSON_SEQUENCE_NAME = "PERACCNUM";
-    private static final String ID_TYPE_RESIDENT = "居民身份证";
+    private static final String ID_TYPE_RESIDENT = "01身份证";
     private static final String STATUS_NORMAL = "0";
     private static final String STATUS_CLOSED = "9";
     private static final DateTimeFormatter PAY_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
@@ -45,6 +45,22 @@ public class PersonServiceImpl implements PersonService {
         this.personMapper = personMapper;
         this.unitMapper = unitMapper;
         this.paramMapper = paramMapper;
+    }
+
+    @Override
+    public PersonOpenForm getOpenUnitInfo(String unitAccNum) {
+        String normalizedUnitAccNum = validateUnitAccNum(unitAccNum);
+        UnitBasicInfo unit = unitMapper.selectNormalByUnitAccNum(normalizedUnitAccNum);
+        if (unit == null) {
+            throw new BusinessException("单位账号不存在或状态非正常");
+        }
+        PersonOpenForm form = new PersonOpenForm();
+        form.setUnitAccNum(unit.getUnitAccNum());
+        form.setUnitName(unit.getUnitName());
+        form.setUnitRatio(unit.getUnitRatio());
+        form.setPerRatio(unit.getPerRatio());
+        form.setIdType(ID_TYPE_RESIDENT);
+        return form;
     }
 
     @Override
@@ -269,8 +285,6 @@ public class PersonServiceImpl implements PersonService {
         person.setPerName(form.getPerName());
         person.setIdType(form.getIdType());
         person.setIdCard(form.getIdCard());
-        person.setPhone(form.getPhone());
-        person.setAddress(form.getAddress());
         return person;
     }
 
@@ -335,7 +349,7 @@ public class PersonServiceImpl implements PersonService {
         }
         form.setIdType(requireText(form.getIdType(), "证件类型不能为空"));
         if (!ID_TYPE_RESIDENT.equals(form.getIdType())) {
-            throw new BusinessException("证件类型目前只支持居民身份证");
+            throw new BusinessException("证件类型目前只支持01身份证");
         }
         form.setIdCard(requireText(form.getIdCard(), "证件号码不能为空").toUpperCase());
         if (!IdCardUtil.isValid(form.getIdCard())) {
@@ -368,19 +382,11 @@ public class PersonServiceImpl implements PersonService {
         }
         form.setIdType(requireText(form.getIdType(), "证件类型不能为空"));
         if (!ID_TYPE_RESIDENT.equals(form.getIdType())) {
-            throw new BusinessException("证件类型目前只支持居民身份证");
+            throw new BusinessException("证件类型目前只支持01身份证");
         }
         form.setIdCard(requireText(form.getIdCard(), "证件号码不能为空").toUpperCase());
         if (!IdCardUtil.isValid(form.getIdCard())) {
             throw new BusinessException("身份证号不正确");
-        }
-        form.setPhone(trimToNull(form.getPhone()));
-        if (form.getPhone() != null && form.getPhone().length() > 30) {
-            throw new BusinessException("联系电话不能超过30个字符");
-        }
-        form.setAddress(trimToNull(form.getAddress()));
-        if (form.getAddress() != null && form.getAddress().length() > 200) {
-            throw new BusinessException("联系地址不能超过200个字符");
         }
     }
 
@@ -412,6 +418,14 @@ public class PersonServiceImpl implements PersonService {
         return normalizedPerAccNum;
     }
 
+    private String validateUnitAccNum(String unitAccNum) {
+        String normalizedUnitAccNum = requireText(unitAccNum, "单位账号不能为空");
+        if (!AccountNumberUtil.isValidAccountNumber(normalizedUnitAccNum)) {
+            throw new BusinessException("单位账号长度必须为12位");
+        }
+        return normalizedUnitAccNum;
+    }
+
     private void ensureEditable(PersonEditForm form) {
         if (form == null) {
             throw new BusinessException("个人账号不存在");
@@ -433,9 +447,7 @@ public class PersonServiceImpl implements PersonService {
     private boolean hasEditableChanges(PersonBasicInfo existing, PersonEditForm form) {
         return !same(existing.getPerName(), form.getPerName())
                 || !same(existing.getIdType(), form.getIdType())
-                || !same(existing.getIdCard(), form.getIdCard())
-                || !same(existing.getPhone(), form.getPhone())
-                || !same(existing.getAddress(), form.getAddress());
+                || !same(existing.getIdCard(), form.getIdCard());
     }
 
     private void fillQueryComputedFields(PersonQueryResult result) {

@@ -74,8 +74,7 @@
         }
 
         input,
-        select,
-        textarea {
+        select {
             width: 100%;
             padding: 10px 11px;
             border: 1px solid #d1d5db;
@@ -89,11 +88,6 @@
         input[readonly] {
             color: #4b5563;
             background: #f9fafb;
-        }
-
-        textarea {
-            min-height: 84px;
-            resize: vertical;
         }
 
         .tip {
@@ -169,8 +163,6 @@
                 <input type="hidden" name="originalPerName" value="${fn:escapeXml(personEditForm.perName)}">
                 <input type="hidden" name="originalIdType" value="${fn:escapeXml(personEditForm.idType)}">
                 <input type="hidden" name="originalIdCard" value="${fn:escapeXml(personEditForm.idCard)}">
-                <input type="hidden" name="originalPhone" value="${fn:escapeXml(personEditForm.phone)}">
-                <input type="hidden" name="originalAddress" value="${fn:escapeXml(personEditForm.address)}">
 
                 <div class="grid">
                     <div class="field">
@@ -200,7 +192,7 @@
                     <div class="field">
                         <label for="idType">证件类型</label>
                         <select id="idType" name="idType" required>
-                            <option value="居民身份证" ${personEditForm.idType eq '居民身份证' ? 'selected' : ''}>居民身份证</option>
+                            <option value="01身份证" ${personEditForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
                         </select>
                     </div>
 
@@ -208,17 +200,6 @@
                         <label for="idCard">证件号码</label>
                         <input id="idCard" name="idCard" type="text" required maxlength="18"
                                pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personEditForm.idCard)}">
-                    </div>
-
-                    <div class="field">
-                        <label for="phone">联系电话</label>
-                        <input id="phone" name="phone" type="text" maxlength="30"
-                               value="${fn:escapeXml(personEditForm.phone)}">
-                    </div>
-
-                    <div class="field full">
-                        <label for="address">联系地址</label>
-                        <textarea id="address" name="address" maxlength="200"><c:out value="${personEditForm.address}"/></textarea>
                     </div>
                 </div>
 

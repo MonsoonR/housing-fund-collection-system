@@ -10,6 +10,8 @@ import com.housingfund.collection.vo.PersonQueryResult;
 
 public interface PersonService {
 
+    PersonOpenForm getOpenUnitInfo(String unitAccNum);
+
     PersonOpenResult openPerson(PersonOpenForm form);
 
     PersonQueryResult queryPerson(PersonQueryForm form);

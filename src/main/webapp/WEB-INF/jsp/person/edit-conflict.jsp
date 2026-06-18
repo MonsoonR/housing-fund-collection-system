@@ -183,8 +183,6 @@
                 <input type="hidden" name="perName" value="${fn:escapeXml(personEditForm.perName)}">
                 <input type="hidden" name="idType" value="${fn:escapeXml(personEditForm.idType)}">
                 <input type="hidden" name="idCard" value="${fn:escapeXml(personEditForm.idCard)}">
-                <input type="hidden" name="phone" value="${fn:escapeXml(personEditForm.phone)}">
-                <input type="hidden" name="address" value="${fn:escapeXml(personEditForm.address)}">
                 <button class="button" type="submit">确认强制变更</button>
             </form>
 
@@ -195,8 +193,6 @@
                 <input type="hidden" name="perName" value="${fn:escapeXml(personEditForm.perName)}">
                 <input type="hidden" name="idType" value="${fn:escapeXml(personEditForm.idType)}">
                 <input type="hidden" name="idCard" value="${fn:escapeXml(personEditForm.idCard)}">
-                <input type="hidden" name="phone" value="${fn:escapeXml(personEditForm.phone)}">
-                <input type="hidden" name="address" value="${fn:escapeXml(personEditForm.address)}">
                 <button class="button secondary" type="submit">返回修改</button>
             </form>
         </div>

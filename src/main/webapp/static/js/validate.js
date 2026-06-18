@@ -117,6 +117,17 @@
         return true;
     };
 
+    window.validatePersonOpenUnitForm = function (form) {
+        var unitAccNum = trim(form.elements["unitAccNum"].value);
+
+        if (!/^\d{12}$/.test(unitAccNum)) {
+            alert("单位账号长度必须为12位");
+            form.elements["unitAccNum"].focus();
+            return false;
+        }
+        return true;
+    };
+
     window.validatePersonOpenForm = function (form) {
         var unitAccNum = trim(form.elements["unitAccNum"].value);
         var perName = trim(form.elements["perName"].value);
@@ -144,8 +155,8 @@
             form.elements["perName"].focus();
             return false;
         }
-        if (idType !== "居民身份证") {
-            alert("证件类型目前只支持居民身份证");
+        if (idType !== "01身份证") {
+            alert("证件类型目前只支持01身份证");
             form.elements["idType"].focus();
             return false;
         }
@@ -303,8 +314,6 @@
         var perName = trim(form.elements["perName"].value);
         var idType = trim(form.elements["idType"].value);
         var idCard = trim(form.elements["idCard"].value);
-        var phone = trim(form.elements["phone"].value);
-        var address = trim(form.elements["address"].value);
 
         if (!/^\d{12}$/.test(perAccNum)) {
             alert("个人账号长度必须为12位");
@@ -326,24 +335,14 @@
             form.elements["perName"].focus();
             return false;
         }
-        if (idType !== "居民身份证") {
-            alert("证件类型目前只支持居民身份证");
+        if (idType !== "01身份证") {
+            alert("证件类型目前只支持01身份证");
             form.elements["idType"].focus();
             return false;
         }
         if (!isValidIdCard(idCard)) {
             alert("身份证号不正确");
             form.elements["idCard"].focus();
-            return false;
-        }
-        if (phone.length > 30) {
-            alert("联系电话不能超过30个字符");
-            form.elements["phone"].focus();
-            return false;
-        }
-        if (address.length > 200) {
-            alert("联系地址不能超过200个字符");
-            form.elements["address"].focus();
             return false;
         }
         if (hasOriginalPersonEditFields(form) && !hasPersonEditChanges(form)) {
@@ -386,9 +385,7 @@
     function hasOriginalPersonEditFields(form) {
         return form.elements["originalPerName"] &&
                 form.elements["originalIdType"] &&
-                form.elements["originalIdCard"] &&
-                form.elements["originalPhone"] &&
-                form.elements["originalAddress"];
+                form.elements["originalIdCard"];
     }
 
     function hasUnitEditChanges(form) {
@@ -407,9 +404,7 @@
     function hasPersonEditChanges(form) {
         return trim(form.elements["perName"].value) !== trim(form.elements["originalPerName"].value) ||
                 trim(form.elements["idType"].value) !== trim(form.elements["originalIdType"].value) ||
-                trim(form.elements["idCard"].value).toUpperCase() !== trim(form.elements["originalIdCard"].value).toUpperCase() ||
-                trim(form.elements["phone"].value) !== trim(form.elements["originalPhone"].value) ||
-                trim(form.elements["address"].value) !== trim(form.elements["originalAddress"].value);
+                trim(form.elements["idCard"].value).toUpperCase() !== trim(form.elements["originalIdCard"].value).toUpperCase();
     }
 
     function isValidIdCard(value) {
