@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人开户回执</title>
+    <title>个人住房公积金开户回单</title>
     <style>
         body {
             margin: 0;
@@ -87,11 +87,11 @@
 <body>
 <main class="page">
     <section class="panel">
-        <h1>个人开户成功</h1>
+        <h1>个人住房公积金开户回单</h1>
 
         <div class="receipt">
             <div class="row">
-                <div class="label">个人账号</div>
+                <div class="label">个人公积金账号</div>
                 <div class="value"><c:out value="${receipt.perAccNum}"/></div>
             </div>
             <div class="row">
@@ -99,11 +99,11 @@
                 <div class="value"><c:out value="${receipt.perName}"/></div>
             </div>
             <div class="row">
-                <div class="label">身份证号</div>
+                <div class="label">证件号码</div>
                 <div class="value"><c:out value="${receipt.idCard}"/></div>
             </div>
             <div class="row">
-                <div class="label">单位账号</div>
+                <div class="label">单位公积金账号</div>
                 <div class="value"><c:out value="${receipt.unitAccNum}"/></div>
             </div>
             <div class="row">
@@ -131,7 +131,7 @@
                 <div class="value"><c:out value="${receipt.perMonthPay}"/></div>
             </div>
             <div class="row">
-                <div class="label">开户时间</div>
+                <div class="label">开户日期</div>
                 <div class="value"><c:out value="${receipt.createTime}"/></div>
             </div>
         </div>

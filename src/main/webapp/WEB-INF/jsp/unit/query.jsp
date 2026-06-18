@@ -161,17 +161,17 @@
               onsubmit="return validateUnitQueryForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="unitAccNum">单位账号</label>
+                    <label for="unitAccNum">单位公积金账号</label>
                     <input id="unitAccNum" name="unitAccNum" type="text" maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(unitQueryForm.unitAccNum)}">
-                    <div class="tip">输入单位账号时优先精确查询。</div>
+                    <div class="tip">输入单位公积金账号时优先精确查询。</div>
                 </div>
 
                 <div class="field">
                     <label for="unitName">单位名称</label>
                     <input id="unitName" name="unitName" type="text" maxlength="50"
                            value="${fn:escapeXml(unitQueryForm.unitName)}">
-                    <div class="tip">未输入单位账号时按名称模糊查询。</div>
+                    <div class="tip">未输入单位公积金账号时按名称模糊查询；结果中单位名称可点击或双击显示单位情况。</div>
                 </div>
             </div>
 
@@ -191,7 +191,7 @@
                     <thead>
                     <tr>
                         <th>单位名称</th>
-                        <th>单位账号</th>
+                        <th>单位公积金账号</th>
                         <th>单位地址</th>
                         <th>经办人姓名</th>
                         <th>联系电话</th>
@@ -210,7 +210,13 @@
                     <tbody>
                     <c:forEach var="unit" items="${queryResults}">
                         <tr>
-                            <td><c:out value="${unit.unitName}"/></td>
+                            <td>
+                                <a href="${pageContext.request.contextPath}/units/query?unitAccNum=${unit.unitAccNum}"
+                                   title="点击或双击显示单位情况"
+                                   ondblclick="window.location.href=this.href; return false;">
+                                    <c:out value="${unit.unitName}"/>
+                                </a>
+                            </td>
                             <td><c:out value="${unit.unitAccNum}"/></td>
                             <td><c:out value="${unit.unitAddr}"/></td>
                             <td><c:out value="${unit.agentName}"/></td>

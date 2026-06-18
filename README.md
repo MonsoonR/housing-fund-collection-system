@@ -1,140 +1,139 @@
 # 住房公积金管理系统——筹集子系统
 
-传统 Maven SSM Web 项目，用于完成住房公积金管理系统筹集子系统的 7 个核心模块。本文只保留运行、部署、模块和测试说明，不包含课程设计报告正文。
+传统 Maven SSM Web 项目，按《网络程序设计课程设计指导书》2.2.1—2.2.7 实现筹集子系统核心模块。本文只写运行、部署、模块、数据库和验证说明，不包含课程设计报告正文。
 
 ## 技术栈
 
 - JDK 25
 - Maven 3.9.16
 - `maven.compiler.release=17`
-- Spring Framework 5.3.x / Spring MVC
+- Spring Framework 5.3.x
+- Spring MVC / Spring IoC
 - MyBatis / MyBatis-Spring
 - MySQL
-- JSP / JSTL
+- JSP / JSTL / HTML / CSS / JavaScript
 - Tomcat 9
 - Java EE `javax.*`
 
-本项目不使用 Spring Boot，不使用 Jakarta，不按 Tomcat 10/11 路线配置。
+不使用 Spring Boot，不使用 Jakarta。
 
-## 目录结构
+## 指导书模块对应
 
-```text
-db/
-  schema.sql
-  data.sql
-  demo-data.sql
-docs/
-  ACCEPTANCE_CHECKLIST.md
-  DEMO_FLOW.md
-src/main/java/com/housingfund/collection/
-  controller/
-  entity/
-  exception/
-  mapper/
-  service/
-  service/impl/
-  util/
-  vo/
-src/main/resources/
-  applicationContext.xml
-  jdbc.properties
-  mybatis-config.xml
-  spring-mvc.xml
-  mapper/
-src/main/webapp/
-  static/js/validate.js
-  WEB-INF/web.xml
-  WEB-INF/jsp/
-src/test/java/com/housingfund/collection/
-```
+| 指导书章节 | 模块 | 访问路径 |
+| --- | --- | --- |
+| 2.2.1 | 系统参数维护 | `/params` |
+| 2.2.2 | 单位开户 | `/units/open` |
+| 2.2.3 | 个人开户 | `/persons/open` |
+| 2.2.4 | 单位资料修改 | `/units/edit` |
+| 2.2.5 | 个人资料修改 | `/persons/edit` |
+| 2.2.6 | 单位信息查询 | `/units/query` |
+| 2.2.7 | 个人信息查询 | `/persons/query` |
+
+首页路径：`/` 或 `/index`。
+
+未实现且不在本课程设计范围内：汇缴、补缴、提取、封存、启封、比例变更、基数变更、单位注销、个人注销、贷款、复杂登录权限系统。
 
 ## 数据库初始化
 
-导入顺序：
+本轮已将核心表和字段向指导书 2.3.1 对齐。课程设计测试库可以重新导入，不提供复杂生产迁移脚本。
 
-1. 执行 `db/schema.sql` 创建数据库和 `tb001`、`tb002`、`tb003` 三张核心表。
-2. 执行 `db/data.sql` 初始化 `UNITACCNUM` 和 `PERACCNUM` 两条账号序号参数。
-3. 答辩或手动验收前可选执行 `db/demo-data.sql`，快速准备演示单位、演示个人、身份证冲突和销户重启用数据。
+需要重新导入数据库时按顺序执行：
 
-PowerShell 示例：
-
-```powershell
+```bat
 mysql -u root -p < db/schema.sql
 mysql -u root -p housingfund_collection < db/data.sql
 mysql -u root -p housingfund_collection < db/demo-data.sql
 ```
 
-数据库连接配置位于 `src/main/resources/jdbc.properties`。部署前按实际 MySQL 地址、用户名和密码修改，不要提交真实生产密码。
+`db/schema.sql` 会创建并重建：
 
-## 构建
+- `TB001`：系统参数表
+- `TB002`：单位基本资料表
+- `TB003`：个人基本资料表
 
-```powershell
+`db/data.sql` 初始化账号序号：
+
+- `UNITACCNUM, 1, 999999999, 公积金单位账号序号`
+- `PERACCNUM, 1, 999999999, 公积金个人账号序号`
+
+`db/demo-data.sql` 提供答辩演示数据，包含正常单位、资料修改单位、销户单位、正常个人、身份证冲突占用账户和销户个人重新启用数据。
+
+## 数据库字段说明
+
+字段映射详见 `docs/SCHEMA_MAPPING.md`。
+
+关键对齐结果：
+
+- `TB001` 使用指导书字段 `SEQNAME`、`SEQ`、`MAXSEQ`、`DESC`、`FREEUSE1`。`DESC` 在 MySQL 中用反引号包裹。
+- `TB002` 使用 `UNITACCNAME`、`UNITCHAR`、`UNITKIND`、`UNITPHONE`、`UNITLINKMAN`、`UNITAGENTPAPNO`、`UNITPROP`、`PERPROP` 等指导书字段。
+- `TB003` 使用 `ACCNUM`、`OPENDATE`、`BALANCE`、`PERACCSTATE`、`BASENUMBER`、`UNITPROP`、`INDIPROP`、`UNITMONPAYSUM`、`PERMONPAYSUM` 等指导书字段。
+- `TB003` 额外保留 `PERNAME`、`IDTYPE`、`IDCARD`，原因是指导书个人开户和个人资料修改交易要素要求姓名、证件类型、证件号码，但 2.3.1 表结构未完整列出。
+
+## 数据库连接配置
+
+Spring 当前仍读取：
+
+```text
+src/main/resources/jdbc.properties
+```
+
+仓库中的 `jdbc.password` 是占位值：
+
+```properties
+jdbc.password=change_me
+```
+
+部署前按本机 MySQL 修改 `jdbc.properties`。示例配置见：
+
+```text
+src/main/resources/jdbc.example.properties
+```
+
+不要提交真实数据库密码。需要本地私有配置时可使用 `*.local.properties` 或 `src/main/resources/jdbc-local.properties`，这些路径已加入 `.gitignore`。
+
+## Maven 构建
+
+```bat
 D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
 ```
 
-构建成功后生成：
+期望结果：
+
+```text
+BUILD SUCCESS
+Tests run: 全部通过
+Failures: 0
+Errors: 0
+```
+
+WAR 输出路径：
 
 ```text
 target/housingfund-collection.war
 ```
 
-最近回归验证记录：
-
-- 2026-06-18：执行 `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`，结果 `BUILD SUCCESS`，62 个测试通过，生成 `target/housingfund-collection.war`。
-
 ## Tomcat 9 部署
 
-1. 确认 MySQL 已启动，并按需导入 `schema.sql`、`data.sql`、`demo-data.sql`。
-2. 修改 `src/main/resources/jdbc.properties` 中的数据库连接配置。
-3. 执行 Maven 构建。
-4. 将 `target/housingfund-collection.war` 放入 Tomcat 9 的 `webapps` 目录。
-5. 启动 Tomcat。
-6. 访问 `http://localhost:8080/housingfund-collection/`。
+1. 启动 MySQL。
+2. 按需重新导入 `db/schema.sql`、`db/data.sql`、`db/demo-data.sql`。
+3. 根据本机 MySQL 修改 `src/main/resources/jdbc.properties`。
+4. 执行 Maven 构建。
+5. 将 `target/housingfund-collection.war` 放入 Tomcat 9 的 `webapps` 目录。
+6. 启动 Tomcat。
+7. 访问 `http://localhost:8080/housingfund-collection/`。
 
-## 最终验收入口
+## 七个访问路径
 
-- `/params`：系统参数维护
-- `/units/open`：单位开户
-- `/persons/open`：个人开户
-- `/units/edit`：单位资料修改
-- `/persons/edit`：个人资料修改
-- `/units/query`：单位信息查询
-- `/persons/query`：个人信息查询
-
-首页 `index.jsp` 已提供以上 7 个核心模块入口。
-
-## 模块范围
-
-已实现：
-
-- 系统参数维护：查询、新增、修改、删除普通参数，禁止删除 `UNITACCNUM` 和 `PERACCNUM`。
-- 单位开户：生成 12 位单位账号，写入 `tb002`，更新 `UNITACCNUM` 序号。
-- 个人开户：查询单位信息，生成 12 位个人账号，支持销户个人重新启用，更新单位汇总字段。
-- 单位资料修改：按单位账号反显并修改指导书要求的单位资料字段。
-- 个人资料修改：按个人账号反显并修改姓名、证件类型、证件号码，支持身份证占用确认和强制变更。
-- 单位信息查询：按单位账号精确查询或单位名称模糊查询。
-- 个人信息查询：按个人账号或身份证号查询，并关联展示单位信息。
-
-范围外且未实现：
-
-- 汇缴、补缴、提取、注销、封存、启封、比例变更、基数变更、贷款、权限系统、复杂登录系统。
+- `http://localhost:8080/housingfund-collection/params`
+- `http://localhost:8080/housingfund-collection/units/open`
+- `http://localhost:8080/housingfund-collection/persons/open`
+- `http://localhost:8080/housingfund-collection/units/edit`
+- `http://localhost:8080/housingfund-collection/persons/edit`
+- `http://localhost:8080/housingfund-collection/units/query`
+- `http://localhost:8080/housingfund-collection/persons/query`
 
 ## 验收资料
 
-- `docs/ACCEPTANCE_CHECKLIST.md`：Tomcat 9 部署和 7 个核心模块手动验收清单。
-- `docs/DEMO_FLOW.md`：答辩演示顺序。
-- `db/demo-data.sql`：答辩前可选导入的演示数据脚本。
-
-## 回归测试
-
-执行：
-
-```powershell
-D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
-```
-
-期望：
-
-- Maven 输出 `BUILD SUCCESS`。
-- Surefire 测试全部通过。
-- WAR 文件生成到 `target/housingfund-collection.war`。
+- `docs/ACCEPTANCE_CHECKLIST.md`：按指导书 2.2.1—2.2.7 排列的手动验收清单。
+- `docs/DEMO_FLOW.md`：答辩演示流程。
+- `docs/SCHEMA_MAPPING.md`：指导书表名和字段名与项目实际字段名的映射。

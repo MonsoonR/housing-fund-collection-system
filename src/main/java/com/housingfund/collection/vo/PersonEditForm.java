@@ -10,8 +10,6 @@ public class PersonEditForm implements Serializable {
     private String perName;
     private String idType;
     private String idCard;
-    private String phone;
-    private String address;
     private String status;
     private String statusText;
 
@@ -61,22 +59,6 @@ public class PersonEditForm implements Serializable {
 
     public void setIdCard(String idCard) {
         this.idCard = idCard;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
     }
 
     public String getStatus() {

@@ -140,10 +140,10 @@
               onsubmit="return validatePersonEditSearchForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="searchPerAccNum">个人账号</label>
+                    <label for="searchPerAccNum">个人公积金账号</label>
                     <input id="searchPerAccNum" name="perAccNum" type="text" required maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(personEditForm.perAccNum)}">
-                    <div class="tip">请输入 12 位个人账号。</div>
+                    <div class="tip">请输入 12 位个人公积金账号。</div>
                 </div>
             </div>
 
@@ -166,13 +166,13 @@
 
                 <div class="grid">
                     <div class="field">
-                        <label for="editPerAccNum">个人账号</label>
+                        <label for="editPerAccNum">个人公积金账号</label>
                         <input id="editPerAccNum" name="perAccNum" type="text" readonly
                                value="${fn:escapeXml(personEditForm.perAccNum)}">
                     </div>
 
                     <div class="field">
-                        <label for="unitAccNum">单位账号</label>
+                        <label for="unitAccNum">单位公积金账号</label>
                         <input id="unitAccNum" name="unitAccNum" type="text" readonly
                                value="${fn:escapeXml(personEditForm.unitAccNum)}">
                     </div>
@@ -185,7 +185,7 @@
 
                     <div class="field">
                         <label for="perName">姓名</label>
-                        <input id="perName" name="perName" type="text" required maxlength="50"
+                        <input id="perName" name="perName" type="text" required maxlength="12"
                                value="${fn:escapeXml(personEditForm.perName)}">
                     </div>
 

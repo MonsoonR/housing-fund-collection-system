@@ -78,6 +78,15 @@ public class JspSyntaxTest {
         }
     }
 
+    @Test
+    public void unitQueryPageLetsUnitNameOpenUnitDetail() throws IOException {
+        String content = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "unit", "query.jsp"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(content.contains("/units/query?unitAccNum="));
+        assertTrue(content.contains("点击或双击"));
+    }
+
     private static void collectInvalidUsages(Path path, List<String> invalidUsages) {
         try {
             List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);

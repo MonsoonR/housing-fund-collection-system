@@ -58,7 +58,12 @@ public class UnitController {
     }
 
     @GetMapping("/query")
-    public String queryForm(Model model) {
+    public String queryForm(@ModelAttribute("unitQueryForm") UnitQueryForm form,
+                            BindingResult bindingResult,
+                            Model model) {
+        if (form.getUnitAccNum() != null || form.getUnitName() != null) {
+            return query(form, bindingResult, model);
+        }
         if (!model.containsAttribute("unitQueryForm")) {
             model.addAttribute("unitQueryForm", new UnitQueryForm());
         }

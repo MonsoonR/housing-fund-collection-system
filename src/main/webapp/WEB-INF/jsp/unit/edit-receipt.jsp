@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>单位资料修改回执</title>
+    <title>住房公积金账户资料变更回单</title>
     <style>
         body {
             margin: 0;
@@ -87,11 +87,11 @@
 <body>
 <main class="page">
     <section class="panel">
-        <h1>单位资料修改成功</h1>
+        <h1>住房公积金账户资料变更回单</h1>
 
         <div class="receipt">
             <div class="row">
-                <div class="label">单位账号</div>
+                <div class="label">单位公积金账号</div>
                 <div class="value"><c:out value="${receipt.unitAccNum}"/></div>
             </div>
             <div class="row">
@@ -115,7 +115,7 @@
                 <div class="value"><c:out value="${receipt.resultMessage}"/></div>
             </div>
             <div class="row">
-                <div class="label">修改时间</div>
+                <div class="label">变更时间</div>
                 <div class="value"><c:out value="${receipt.updateTime}"/></div>
             </div>
         </div>

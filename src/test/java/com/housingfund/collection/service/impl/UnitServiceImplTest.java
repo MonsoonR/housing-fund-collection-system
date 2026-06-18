@@ -96,6 +96,62 @@ public class UnitServiceImplTest {
     }
 
     @Test
+    public void openUnitRejectsUnitNameLongerThanFiftyChineseCharacters() {
+        UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        UnitOpenForm form = validForm();
+        form.setUnitName("一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一二三四五六七八九十一");
+
+        try {
+            service.openUnit(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("单位名称不能超过50个字符", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openUnitRejectsOrgCodeThatIsNotNineCharacters() {
+        UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        UnitOpenForm form = validForm();
+        form.setOrgCode("ABC");
+
+        try {
+            service.openUnit(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("组织机构代码长度必须为9位", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openUnitRejectsSalaryDateOutsideOneToThirtyOne() {
+        UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        UnitOpenForm form = validForm();
+        form.setSalaryDate("32");
+
+        try {
+            service.openUnit(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("发薪日期必须在01到31之间", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openUnitRejectsInvalidAgentIdCard() {
+        UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        UnitOpenForm form = validForm();
+        form.setAgentIdCard("123456");
+
+        try {
+            service.openUnit(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("经办人身份证号码不正确", ex.getMessage());
+        }
+    }
+
+    @Test
     public void openUnitRejectsSequenceGreaterThanMaxSeq() {
         UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(10L, 9L));
 

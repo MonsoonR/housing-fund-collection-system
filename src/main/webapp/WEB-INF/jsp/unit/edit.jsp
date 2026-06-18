@@ -146,10 +146,10 @@
               onsubmit="return validateUnitEditSearchForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="searchUnitAccNum">单位账号</label>
+                    <label for="searchUnitAccNum">单位公积金账号</label>
                     <input id="searchUnitAccNum" name="unitAccNum" type="text" required maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(unitEditForm.unitAccNum)}">
-                    <div class="tip">请输入 12 位单位账号。</div>
+                    <div class="tip">请输入 12 位单位公积金账号。</div>
                 </div>
             </div>
 
@@ -179,7 +179,7 @@
 
                 <div class="grid">
                     <div class="field">
-                        <label for="editUnitAccNum">单位账号</label>
+                        <label for="editUnitAccNum">单位公积金账号</label>
                         <input id="editUnitAccNum" name="unitAccNum" type="text" readonly
                                value="${fn:escapeXml(unitEditForm.unitAccNum)}">
                     </div>

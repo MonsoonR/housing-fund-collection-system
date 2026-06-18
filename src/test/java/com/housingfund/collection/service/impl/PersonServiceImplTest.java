@@ -19,7 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.lang.reflect.Method;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,6 +62,13 @@ public class PersonServiceImplTest {
         assertEquals("0", saved.getStatus());
         assertEquals(new BigDecimal("400.00"), saved.getUnitMonthPay());
         assertEquals(new BigDecimal("400.00"), saved.getPerMonthPay());
+        assertEquals(LocalDate.of(1899, 12, 1), saved.getLastPayDate());
+        assertEquals(new BigDecimal("0.00"), saved.getYpayAmt());
+        assertEquals(new BigDecimal("0.00"), saved.getYdrawAmt());
+        assertEquals(new BigDecimal("0.00"), saved.getYinterestBal());
+        assertEquals("0110", saved.getInstCode());
+        assertEquals("111111", saved.getOp());
+        assertNull(saved.getRemark());
     }
 
     @Test
@@ -158,6 +165,54 @@ public class PersonServiceImplTest {
             fail("Expected BusinessException");
         } catch (BusinessException ex) {
             assertEquals("缴存基数必须大于0", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openPersonRejectsNameLongerThanTwelveChineseCharacters() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonOpenForm form = validForm();
+        form.setPerName("一二三四五六七八九十一二三");
+
+        try {
+            service.openPerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("个人姓名不能超过12个汉字", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openPersonRejectsUnitRatioFromUnitBelowFivePercent() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        UnitBasicInfo unit = buildUnit("000000000010");
+        unit.setUnitRatio(new BigDecimal("0.049"));
+        unitMapper.insert(unit);
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), unitMapper, mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.openPerson(validForm());
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("单位比例必须在0.050到0.120之间", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void openPersonRejectsPersonalRatioFromUnitAboveTwelvePercent() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        UnitBasicInfo unit = buildUnit("000000000010");
+        unit.setPerRatio(new BigDecimal("0.121"));
+        unitMapper.insert(unit);
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), unitMapper, mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.openPerson(validForm());
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("个人比例必须在0.050到0.120之间", ex.getMessage());
         }
     }
 
@@ -307,8 +362,6 @@ public class PersonServiceImplTest {
         assertEquals("李四", form.getPerName());
         assertEquals("01身份证", form.getIdType());
         assertEquals("11010519491231002X", form.getIdCard());
-        assertEquals("13800138000", form.getPhone());
-        assertEquals("测试地址", form.getAddress());
     }
 
     @Test
@@ -459,8 +512,6 @@ public class PersonServiceImplTest {
         PersonEditForm form = validEditForm("000000000001");
         form.setPerName("李四修改");
         form.setIdCard("110105195001010012");
-        form.setPhone("13900139000");
-        form.setAddress("修改地址");
 
         PersonEditResult result = service.forceUpdatePerson(form);
 
@@ -470,8 +521,6 @@ public class PersonServiceImplTest {
         assertEquals("910105195001010012", result.getChangedConflictIdCard());
         assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000001").getIdCard());
         assertEquals("李四修改", personMapper.selectByPerAccNum("000000000001").getPerName());
-        assertEquals("13800138000", personMapper.selectByPerAccNum("000000000001").getPhone());
-        assertEquals("测试地址", personMapper.selectByPerAccNum("000000000001").getAddress());
         assertEquals("910105195001010012", personMapper.selectByPerAccNum("000000000002").getIdCard());
         assertNotNull(personMapper.selectByPerAccNum("000000000001"));
         assertNotNull(personMapper.selectByPerAccNum("000000000002"));
@@ -532,25 +581,6 @@ public class PersonServiceImplTest {
     }
 
     @Test
-    public void updatePersonRejectsOnlyPhoneAndAddressChanges() {
-        FakeUnitMapper unitMapper = new FakeUnitMapper();
-        unitMapper.insert(buildUnit("000000000010"));
-        FakePersonMapper personMapper = new FakePersonMapper();
-        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
-        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
-        PersonEditForm form = validEditForm("000000000001");
-        form.setPhone("13900139000");
-        form.setAddress("修改地址");
-
-        try {
-            service.updatePerson(form);
-            fail("Expected BusinessException");
-        } catch (BusinessException ex) {
-            assertEquals("请至少修改一项个人资料", ex.getMessage());
-        }
-    }
-
-    @Test
     public void updatePersonChangesOnlyEditableFields() {
         FakeUnitMapper unitMapper = new FakeUnitMapper();
         unitMapper.insert(buildUnit("000000000010"));
@@ -563,14 +593,18 @@ public class PersonServiceImplTest {
         original.setUnitMonthPay(new BigDecimal("540.00"));
         original.setPerMonthPay(new BigDecimal("420.00"));
         original.setPerBalance(new BigDecimal("1234.56"));
-        original.setCreateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
-        original.setUpdateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        original.setCreateTime(LocalDate.of(2026, 1, 2));
+        original.setLastPayDate(LocalDate.of(2026, 5, 1));
+        original.setYpayAmt(new BigDecimal("10.00"));
+        original.setYdrawAmt(new BigDecimal("20.00"));
+        original.setYinterestBal(new BigDecimal("30.00"));
+        original.setInstCode("9999");
+        original.setOp("888888");
+        original.setRemark("原备注");
         personMapper.insert(original);
         PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
         PersonEditForm form = validEditForm("000000000001");
         form.setPerName("李四修改");
-        form.setPhone("13900139000");
-        form.setAddress("修改地址");
 
         service.updatePerson(form);
         PersonBasicInfo updated = personMapper.selectByPerAccNum("000000000001");
@@ -584,10 +618,15 @@ public class PersonServiceImplTest {
         assertEquals(new BigDecimal("420.00"), updated.getPerMonthPay());
         assertEquals(new BigDecimal("1234.56"), updated.getPerBalance());
         assertEquals("0", updated.getStatus());
-        assertEquals(LocalDateTime.of(2026, 1, 2, 9, 30), updated.getCreateTime());
+        assertEquals(LocalDate.of(2026, 1, 2), updated.getCreateTime());
+        assertEquals(LocalDate.of(2026, 5, 1), updated.getLastPayDate());
+        assertEquals(new BigDecimal("10.00"), updated.getYpayAmt());
+        assertEquals(new BigDecimal("20.00"), updated.getYdrawAmt());
+        assertEquals(new BigDecimal("30.00"), updated.getYinterestBal());
+        assertEquals("9999", updated.getInstCode());
+        assertEquals("888888", updated.getOp());
+        assertEquals("原备注", updated.getRemark());
         assertEquals("李四修改", updated.getPerName());
-        assertEquals("13800138000", updated.getPhone());
-        assertEquals("测试地址", updated.getAddress());
     }
 
     @Test
@@ -640,8 +679,13 @@ public class PersonServiceImplTest {
         person.setPerMonthPay(new BigDecimal("50.00"));
         person.setPerBalance(BigDecimal.ZERO);
         person.setStatus("9");
-        person.setCreateTime(LocalDateTime.now().minusDays(1));
-        person.setUpdateTime(LocalDateTime.now().minusDays(1));
+        person.setCreateTime(LocalDate.now().minusDays(1));
+        person.setLastPayDate(LocalDate.of(1899, 12, 1));
+        person.setYpayAmt(BigDecimal.ZERO);
+        person.setYdrawAmt(BigDecimal.ZERO);
+        person.setYinterestBal(BigDecimal.ZERO);
+        person.setInstCode("0110");
+        person.setOp("111111");
         return person;
     }
 
@@ -652,8 +696,6 @@ public class PersonServiceImplTest {
         form.setIdType("01身份证");
         form.setIdCard("11010519491231002X");
         form.setBaseNum(new BigDecimal("5000"));
-        form.setPhone("13800138000");
-        form.setAddress("测试地址");
         return form;
     }
 
@@ -665,8 +707,6 @@ public class PersonServiceImplTest {
         form.setPerName("李四");
         form.setIdType("01身份证");
         form.setIdCard("11010519491231002X");
-        form.setPhone("13800138000");
-        form.setAddress("测试地址");
         return form;
     }
 
@@ -678,8 +718,6 @@ public class PersonServiceImplTest {
         person.setPerName(perName);
         person.setIdType("01身份证");
         person.setIdCard(idCard);
-        person.setPhone("13800138000");
-        person.setAddress("测试地址");
         person.setBaseNum(new BigDecimal("5000.00"));
         person.setUnitRatio(new BigDecimal("0.080"));
         person.setPerRatio(new BigDecimal("0.080"));
@@ -687,8 +725,13 @@ public class PersonServiceImplTest {
         person.setPerMonthPay(new BigDecimal("400.00"));
         person.setPerBalance(BigDecimal.ZERO);
         person.setStatus(status);
-        person.setCreateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
-        person.setUpdateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        person.setCreateTime(LocalDate.of(2026, 1, 2));
+        person.setLastPayDate(LocalDate.of(1899, 12, 1));
+        person.setYpayAmt(BigDecimal.ZERO);
+        person.setYdrawAmt(BigDecimal.ZERO);
+        person.setYinterestBal(BigDecimal.ZERO);
+        person.setInstCode("0110");
+        person.setOp("111111");
         return person;
     }
 
@@ -700,8 +743,8 @@ public class PersonServiceImplTest {
         result.setPerAccNum("000000000001");
         result.setIdCard("11010519491231002X");
         result.setPerBalance(new BigDecimal("2000.00"));
-        result.setCreateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
-        result.setLastPayDate(java.time.LocalDate.of(2026, 5, 1));
+        result.setCreateTime(LocalDate.of(2026, 1, 2));
+        result.setLastPayDate(LocalDate.of(2026, 5, 1));
         result.setUnitRatio(new BigDecimal("0.080"));
         result.setPerRatio(new BigDecimal("0.070"));
         result.setUnitMonthPay(new BigDecimal("400.00"));
@@ -884,8 +927,6 @@ public class PersonServiceImplTest {
             form.setPerName(person.getPerName());
             form.setIdType(person.getIdType());
             form.setIdCard(person.getIdCard());
-            form.setPhone(person.getPhone());
-            form.setAddress(person.getAddress());
             form.setStatus(person.getStatus());
             return form;
         }

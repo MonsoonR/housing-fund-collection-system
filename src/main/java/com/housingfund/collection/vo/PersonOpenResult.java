@@ -2,7 +2,7 @@ package com.housingfund.collection.vo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 public class PersonOpenResult implements Serializable {
 
@@ -16,7 +16,7 @@ public class PersonOpenResult implements Serializable {
     private BigDecimal perRatio;
     private BigDecimal unitMonthPay;
     private BigDecimal perMonthPay;
-    private LocalDateTime createTime;
+    private LocalDate createTime;
 
     public String getPerAccNum() {
         return perAccNum;
@@ -98,11 +98,11 @@ public class PersonOpenResult implements Serializable {
         this.perMonthPay = perMonthPay;
     }
 
-    public LocalDateTime getCreateTime() {
+    public LocalDate getCreateTime() {
         return createTime;
     }
 
-    public void setCreateTime(LocalDateTime createTime) {
+    public void setCreateTime(LocalDate createTime) {
         this.createTime = createTime;
     }
 }

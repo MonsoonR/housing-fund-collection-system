@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人资料修改回执</title>
+    <title>个人资料变更回单</title>
     <style>
         body {
             margin: 0;
@@ -87,11 +87,11 @@
 <body>
 <main class="page">
     <section class="panel">
-        <h1>个人资料修改成功</h1>
+        <h1>个人资料变更回单</h1>
 
         <div class="receipt">
             <div class="row">
-                <div class="label">个人账号</div>
+                <div class="label">个人公积金账号</div>
                 <div class="value"><c:out value="${receipt.perAccNum}"/></div>
             </div>
             <div class="row">
@@ -99,11 +99,11 @@
                 <div class="value"><c:out value="${receipt.perName}"/></div>
             </div>
             <div class="row">
-                <div class="label">身份证号</div>
+                <div class="label">证件号码</div>
                 <div class="value"><c:out value="${receipt.idCard}"/></div>
             </div>
             <div class="row">
-                <div class="label">单位账号</div>
+                <div class="label">单位公积金账号</div>
                 <div class="value"><c:out value="${receipt.unitAccNum}"/></div>
             </div>
             <div class="row">
@@ -116,15 +116,15 @@
             </div>
             <c:if test="${receipt.forceChanged}">
                 <div class="row">
-                    <div class="label">被占用个人账号</div>
+                    <div class="label">被占用个人公积金账号</div>
                     <div class="value"><c:out value="${receipt.conflictPerAccNum}"/></div>
                 </div>
                 <div class="row">
-                    <div class="label">原身份证号</div>
+                    <div class="label">原证件号码</div>
                     <div class="value"><c:out value="${receipt.originalConflictIdCard}"/></div>
                 </div>
                 <div class="row">
-                    <div class="label">变更后的错误身份证号</div>
+                    <div class="label">变更后的错误证件号码</div>
                     <div class="value"><c:out value="${receipt.changedConflictIdCard}"/></div>
                 </div>
             </c:if>
@@ -133,7 +133,7 @@
                 <div class="value"><c:out value="${receipt.resultMessage}"/></div>
             </div>
             <div class="row">
-                <div class="label">修改时间</div>
+                <div class="label">变更时间</div>
                 <div class="value"><c:out value="${receipt.updateTime}"/></div>
             </div>
         </div>

@@ -8,25 +8,25 @@
         <id column="SEQNAME" property="seqname"/>
         <result column="SEQ" property="seq"/>
         <result column="MAXSEQ" property="maxseq"/>
-        <result column="SEQ_DESC" property="seqDesc"/>
+        <result column="DESC" property="seqDesc"/>
         <result column="FREEUSE1" property="freeuse1"/>
     </resultMap>
 
     <sql id="BaseColumns">
-        `SEQNAME`, `SEQ`, `MAXSEQ`, `SEQ_DESC`, `FREEUSE1`
+        `SEQNAME`, `SEQ`, `MAXSEQ`, `DESC`, `FREEUSE1`
     </sql>
 
     <select id="selectAll" resultMap="SystemParamResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb001
+        FROM TB001
         ORDER BY `SEQNAME`
     </select>
 
     <select id="selectBySeqnameLike" resultMap="SystemParamResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb001
+        FROM TB001
         WHERE `SEQNAME` LIKE CONCAT('%', #{seqname}, '%')
         ORDER BY `SEQNAME`
     </select>
@@ -34,44 +34,44 @@
     <select id="selectBySeqname" resultMap="SystemParamResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb001
+        FROM TB001
         WHERE `SEQNAME` = #{seqname}
     </select>
 
     <select id="selectBySeqnameForUpdate" resultMap="SystemParamResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb001
+        FROM TB001
         WHERE `SEQNAME` = #{seqname}
         FOR UPDATE
     </select>
 
     <insert id="insert" parameterType="SystemParam">
-        INSERT INTO tb001 (
-            `SEQNAME`, `SEQ`, `MAXSEQ`, `SEQ_DESC`, `FREEUSE1`
+        INSERT INTO TB001 (
+            `SEQNAME`, `SEQ`, `MAXSEQ`, `DESC`, `FREEUSE1`
         ) VALUES (
             #{seqname}, #{seq}, #{maxseq}, #{seqDesc}, #{freeuse1}
         )
     </insert>
 
     <update id="update" parameterType="SystemParam">
-        UPDATE tb001
+        UPDATE TB001
         SET
             `SEQ` = #{seq},
             `MAXSEQ` = #{maxseq},
-            `SEQ_DESC` = #{seqDesc},
+            `DESC` = #{seqDesc},
             `FREEUSE1` = #{freeuse1}
         WHERE `SEQNAME` = #{seqname}
     </update>
 
     <update id="updateSeq">
-        UPDATE tb001
+        UPDATE TB001
         SET `SEQ` = #{seq}
         WHERE `SEQNAME` = #{seqname}
     </update>
 
     <delete id="deleteBySeqname">
-        DELETE FROM tb001
+        DELETE FROM TB001
         WHERE `SEQNAME` = #{seqname}
     </delete>
 </mapper>

@@ -87,31 +87,31 @@
     <section class="modules" aria-label="功能模块">
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/params">系统参数维护</a></strong>
-            <span>维护 tb001 系统参数</span>
+            <span>维护 TB001 系统参数</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/units/open">单位开户</a></strong>
-            <span>新增缴存单位并生成单位账号</span>
+            <span>新增缴存单位并生成单位公积金账号</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/persons/open">个人开户</a></strong>
-            <span>新增个人账户并生成个人账号</span>
+            <span>新增个人账户并生成个人公积金账号</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/units/edit">单位资料修改</a></strong>
-            <span>按单位账号查询并修改单位资料</span>
+            <span>按单位公积金账号查询并修改单位资料</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/persons/edit">个人资料修改</a></strong>
-            <span>按个人账号查询并修改个人资料</span>
+            <span>按个人公积金账号查询并修改个人资料</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/units/query">单位信息查询</a></strong>
-            <span>按单位账号或名称查询单位信息</span>
+            <span>按单位公积金账号或单位名称查询单位信息</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/persons/query">个人信息查询</a></strong>
-            <span>按个人账号或身份证号查询个人信息</span>
+            <span>按个人公积金账号或证件号码查询个人信息</span>
         </article>
     </section>
 

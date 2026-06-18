@@ -121,7 +121,7 @@
         var unitAccNum = trim(form.elements["unitAccNum"].value);
 
         if (!/^\d{12}$/.test(unitAccNum)) {
-            alert("单位账号长度必须为12位");
+            alert("单位公积金账号长度必须为12位");
             form.elements["unitAccNum"].focus();
             return false;
         }
@@ -136,7 +136,7 @@
         var baseNum = trim(form.elements["baseNum"].value);
 
         if (!/^\d{12}$/.test(unitAccNum)) {
-            alert("单位账号长度必须为12位");
+            alert("单位公积金账号长度必须为12位");
             form.elements["unitAccNum"].focus();
             return false;
         }
@@ -145,13 +145,8 @@
             form.elements["perName"].focus();
             return false;
         }
-        if (/^[\u4e00-\u9fa5]+$/.test(perName) && perName.length > 12) {
+        if (perName.length > 12) {
             alert("个人姓名不能超过12个汉字");
-            form.elements["perName"].focus();
-            return false;
-        }
-        if (perName.length > 50) {
-            alert("个人姓名不能超过50个字符");
             form.elements["perName"].focus();
             return false;
         }
@@ -161,7 +156,7 @@
             return false;
         }
         if (!isValidIdCard(idCard)) {
-            alert("身份证号不正确");
+            alert("证件号码不正确");
             form.elements["idCard"].focus();
             return false;
         }
@@ -178,12 +173,12 @@
         var unitName = trim(form.elements["unitName"].value);
 
         if (!unitAccNum && !unitName) {
-            alert("请输入单位账号或单位名称");
+            alert("请输入单位公积金账号或单位名称");
             form.elements["unitAccNum"].focus();
             return false;
         }
         if (unitAccNum && !/^\d{12}$/.test(unitAccNum)) {
-            alert("单位账号长度必须为12位");
+            alert("单位公积金账号长度必须为12位");
             form.elements["unitAccNum"].focus();
             return false;
         }
@@ -194,7 +189,7 @@
         var unitAccNum = trim(form.elements["unitAccNum"].value);
 
         if (!/^\d{12}$/.test(unitAccNum)) {
-            alert("单位账号长度必须为12位");
+            alert("单位公积金账号长度必须为12位");
             form.elements["unitAccNum"].focus();
             return false;
         }
@@ -214,7 +209,7 @@
         var agentIdCard = trim(form.elements["agentIdCard"].value);
 
         if (!/^\d{12}$/.test(unitAccNum)) {
-            alert("单位账号长度必须为12位");
+            alert("单位公积金账号长度必须为12位");
             form.elements["unitAccNum"].focus();
             return false;
         }
@@ -281,17 +276,17 @@
         var idCard = trim(form.elements["idCard"].value);
 
         if (!perAccNum && !idCard) {
-            alert("请输入个人账号或身份证号");
+            alert("请输入个人公积金账号或证件号码");
             form.elements["perAccNum"].focus();
             return false;
         }
         if (perAccNum && !/^\d{12}$/.test(perAccNum)) {
-            alert("个人账号长度必须为12位");
+            alert("个人公积金账号长度必须为12位");
             form.elements["perAccNum"].focus();
             return false;
         }
         if (!perAccNum && idCard && !isValidIdCard(idCard)) {
-            alert("身份证号不正确");
+            alert("证件号码不正确");
             form.elements["idCard"].focus();
             return false;
         }
@@ -302,7 +297,7 @@
         var perAccNum = trim(form.elements["perAccNum"].value);
 
         if (!/^\d{12}$/.test(perAccNum)) {
-            alert("个人账号长度必须为12位");
+            alert("个人公积金账号长度必须为12位");
             form.elements["perAccNum"].focus();
             return false;
         }
@@ -316,7 +311,7 @@
         var idCard = trim(form.elements["idCard"].value);
 
         if (!/^\d{12}$/.test(perAccNum)) {
-            alert("个人账号长度必须为12位");
+            alert("个人公积金账号长度必须为12位");
             form.elements["perAccNum"].focus();
             return false;
         }
@@ -325,13 +320,8 @@
             form.elements["perName"].focus();
             return false;
         }
-        if (/^[\u4e00-\u9fa5]+$/.test(perName) && perName.length > 12) {
+        if (perName.length > 12) {
             alert("个人姓名不能超过12个汉字");
-            form.elements["perName"].focus();
-            return false;
-        }
-        if (perName.length > 50) {
-            alert("个人姓名不能超过50个字符");
             form.elements["perName"].focus();
             return false;
         }
@@ -341,7 +331,7 @@
             return false;
         }
         if (!isValidIdCard(idCard)) {
-            alert("身份证号不正确");
+            alert("证件号码不正确");
             form.elements["idCard"].focus();
             return false;
         }

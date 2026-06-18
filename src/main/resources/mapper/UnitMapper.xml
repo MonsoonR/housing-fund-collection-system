@@ -6,21 +6,20 @@
 
     <resultMap id="UnitBasicInfoResultMap" type="UnitBasicInfo">
         <id column="UNITACCNUM" property="unitAccNum"/>
-        <result column="UNITNAME" property="unitName"/>
+        <result column="UNITACCNAME" property="unitName"/>
         <result column="UNITADDR" property="unitAddr"/>
         <result column="ORGCODE" property="orgCode"/>
-        <result column="UNITKIND" property="unitKind"/>
-        <result column="UNITTYPE" property="unitType"/>
+        <result column="UNITCHAR" property="unitKind"/>
+        <result column="UNITKIND" property="unitType"/>
         <result column="SALARYDATE" property="salaryDate"/>
-        <result column="PHONE" property="phone"/>
-        <result column="AGENTNAME" property="agentName"/>
-        <result column="AGENTIDCARD" property="agentIdCard"/>
-        <result column="UNITRATIO" property="unitRatio"/>
-        <result column="PERRATIO" property="perRatio"/>
-        <result column="REMARK" property="remark"/>
+        <result column="UNITPHONE" property="phone"/>
+        <result column="UNITLINKMAN" property="agentName"/>
+        <result column="UNITAGENTPAPNO" property="agentIdCard"/>
         <result column="ACCSTATE" property="accState"/>
         <result column="BALANCE" property="balance"/>
         <result column="BASENUMBER" property="baseNumber"/>
+        <result column="UNITPROP" property="unitRatio"/>
+        <result column="PERPROP" property="perRatio"/>
         <result column="UNITPAYSUM" property="unitPaySum"/>
         <result column="PERPAYSUM" property="perPaySum"/>
         <result column="PERSNUM" property="persNum"/>
@@ -28,26 +27,27 @@
         <result column="INSTCODE" property="instCode"/>
         <result column="OP" property="op"/>
         <result column="CREATDATE" property="createDate"/>
+        <result column="REMARK" property="remark"/>
     </resultMap>
 
     <sql id="BaseColumns">
-        `UNITACCNUM`, `UNITNAME`, `UNITADDR`, `ORGCODE`, `UNITKIND`, `UNITTYPE`,
-        `SALARYDATE`, `PHONE`, `AGENTNAME`, `AGENTIDCARD`, `UNITRATIO`, `PERRATIO`,
-        `REMARK`, `ACCSTATE`, `BALANCE`, `BASENUMBER`, `UNITPAYSUM`, `PERPAYSUM`,
-        `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`
+        `UNITACCNUM`, `UNITACCNAME`, `UNITADDR`, `ORGCODE`, `UNITCHAR`, `UNITKIND`,
+        `SALARYDATE`, `UNITPHONE`, `UNITLINKMAN`, `UNITAGENTPAPNO`, `ACCSTATE`,
+        `BALANCE`, `BASENUMBER`, `UNITPROP`, `PERPROP`, `UNITPAYSUM`, `PERPAYSUM`,
+        `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`, `REMARK`
     </sql>
 
     <select id="selectByUnitAccNum" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb002
+        FROM TB002
         WHERE `UNITACCNUM` = #{unitAccNum}
     </select>
 
     <select id="selectNormalByUnitAccNum" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb002
+        FROM TB002
         WHERE `UNITACCNUM` = #{unitAccNum}
           AND `ACCSTATE` = '0'
         LIMIT 1
@@ -56,7 +56,7 @@
     <select id="selectNormalByOrgCode" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb002
+        FROM TB002
         WHERE `ORGCODE` = #{orgCode}
           AND `ACCSTATE` = '0'
         LIMIT 1
@@ -65,9 +65,9 @@
     <select id="selectDuplicateOrgCodeAndUnitName" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb002
+        FROM TB002
         WHERE `ORGCODE` = #{orgCode}
-          AND `UNITNAME` = #{unitName}
+          AND `UNITACCNAME` = #{unitName}
           AND `UNITACCNUM` &lt;&gt; #{excludeUnitAccNum}
         LIMIT 1
     </select>
@@ -75,43 +75,43 @@
     <select id="selectByUnitNameLike" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
-        FROM tb002
-        WHERE `UNITNAME` LIKE CONCAT('%', #{unitName}, '%')
+        FROM TB002
+        WHERE `UNITACCNAME` LIKE CONCAT('%', #{unitName}, '%')
         ORDER BY `UNITACCNUM`
     </select>
 
     <insert id="insert" parameterType="UnitBasicInfo">
-        INSERT INTO tb002 (
-            `UNITACCNUM`, `UNITNAME`, `UNITADDR`, `ORGCODE`, `UNITKIND`, `UNITTYPE`,
-            `SALARYDATE`, `PHONE`, `AGENTNAME`, `AGENTIDCARD`, `UNITRATIO`, `PERRATIO`,
-            `REMARK`, `ACCSTATE`, `BALANCE`, `BASENUMBER`, `UNITPAYSUM`, `PERPAYSUM`,
-            `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`
+        INSERT INTO TB002 (
+            `UNITACCNUM`, `UNITACCNAME`, `UNITADDR`, `ORGCODE`, `UNITCHAR`, `UNITKIND`,
+            `SALARYDATE`, `UNITPHONE`, `UNITLINKMAN`, `UNITAGENTPAPNO`, `ACCSTATE`,
+            `BALANCE`, `BASENUMBER`, `UNITPROP`, `PERPROP`, `UNITPAYSUM`, `PERPAYSUM`,
+            `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`, `REMARK`
         ) VALUES (
             #{unitAccNum}, #{unitName}, #{unitAddr}, #{orgCode}, #{unitKind}, #{unitType},
-            #{salaryDate}, #{phone}, #{agentName}, #{agentIdCard}, #{unitRatio}, #{perRatio},
-            #{remark}, #{accState}, #{balance}, #{baseNumber}, #{unitPaySum}, #{perPaySum},
-            #{persNum}, #{lastPayDate}, #{instCode}, #{op}, #{createDate}
+            #{salaryDate}, #{phone}, #{agentName}, #{agentIdCard}, #{accState},
+            #{balance}, #{baseNumber}, #{unitRatio}, #{perRatio}, #{unitPaySum}, #{perPaySum},
+            #{persNum}, #{lastPayDate}, #{instCode}, #{op}, #{createDate}, #{remark}
         )
     </insert>
 
     <update id="updateEditableFields" parameterType="UnitBasicInfo">
-        UPDATE tb002
-        SET `UNITNAME` = #{unitName},
+        UPDATE TB002
+        SET `UNITACCNAME` = #{unitName},
             `UNITADDR` = #{unitAddr},
             `ORGCODE` = #{orgCode},
-            `UNITKIND` = #{unitKind},
-            `UNITTYPE` = #{unitType},
+            `UNITCHAR` = #{unitKind},
+            `UNITKIND` = #{unitType},
             `SALARYDATE` = #{salaryDate},
-            `PHONE` = #{phone},
-            `AGENTNAME` = #{agentName},
-            `AGENTIDCARD` = #{agentIdCard},
+            `UNITPHONE` = #{phone},
+            `UNITLINKMAN` = #{agentName},
+            `UNITAGENTPAPNO` = #{agentIdCard},
             `REMARK` = #{remark}
         WHERE `UNITACCNUM` = #{unitAccNum}
           AND `ACCSTATE` &lt;&gt; '9'
     </update>
 
     <update id="updatePaymentSummary">
-        UPDATE tb002
+        UPDATE TB002
         SET `BASENUMBER` = `BASENUMBER` + #{baseNum},
             `UNITPAYSUM` = `UNITPAYSUM` + #{unitMonthPay},
             `PERPAYSUM` = `PERPAYSUM` + #{perMonthPay},

@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
@@ -35,6 +36,8 @@ public class PersonServiceImpl implements PersonService {
     private static final String STATUS_NORMAL = "0";
     private static final String STATUS_CLOSED = "9";
     private static final DateTimeFormatter PAY_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
+    private static final BigDecimal MIN_RATIO = new BigDecimal("0.050");
+    private static final BigDecimal MAX_RATIO = new BigDecimal("0.120");
 
     private final PersonMapper personMapper;
     private final UnitMapper unitMapper;
@@ -81,7 +84,9 @@ public class PersonServiceImpl implements PersonService {
         BigDecimal baseNum = form.getBaseNum().setScale(2, RoundingMode.HALF_UP);
         BigDecimal unitMonthPay = calculateMonthPay(baseNum, unit.getUnitRatio());
         BigDecimal perMonthPay = calculateMonthPay(baseNum, unit.getPerRatio());
-        LocalDateTime createTime = LocalDateTime.now();
+        validateRatio(unit.getUnitRatio(), "单位比例必须在0.050到0.120之间");
+        validateRatio(unit.getPerRatio(), "个人比例必须在0.050到0.120之间");
+        LocalDate createTime = LocalDate.now();
 
         PersonBasicInfo person;
         if (existing == null) {
@@ -204,7 +209,7 @@ public class PersonServiceImpl implements PersonService {
 
     private PersonBasicInfo insertNewPerson(PersonOpenForm form, UnitBasicInfo unit, BigDecimal baseNum,
                                            BigDecimal unitMonthPay, BigDecimal perMonthPay,
-                                           LocalDateTime createTime) {
+                                           LocalDate createTime) {
         SystemParam sequence = paramMapper.selectBySeqnameForUpdate(PERSON_SEQUENCE_NAME);
         if (sequence == null) {
             throw new BusinessException("个人账号序号参数不存在");
@@ -231,7 +236,7 @@ public class PersonServiceImpl implements PersonService {
 
     private PersonBasicInfo reactivateClosedPerson(String perAccNum, PersonOpenForm form, UnitBasicInfo unit,
                                                    BigDecimal baseNum, BigDecimal unitMonthPay,
-                                                   BigDecimal perMonthPay, LocalDateTime createTime) {
+                                                   BigDecimal perMonthPay, LocalDate createTime) {
         PersonBasicInfo person = buildPerson(perAccNum, form, unit, baseNum, unitMonthPay, perMonthPay, createTime);
         int updated = personMapper.reactivate(person);
         if (updated == 0) {
@@ -242,24 +247,28 @@ public class PersonServiceImpl implements PersonService {
 
     private PersonBasicInfo buildPerson(String perAccNum, PersonOpenForm form, UnitBasicInfo unit,
                                         BigDecimal baseNum, BigDecimal unitMonthPay,
-                                        BigDecimal perMonthPay, LocalDateTime createTime) {
+                                        BigDecimal perMonthPay, LocalDate createTime) {
         PersonBasicInfo person = new PersonBasicInfo();
         person.setPerAccNum(perAccNum);
         person.setUnitAccNum(unit.getUnitAccNum());
         person.setPerName(form.getPerName());
         person.setIdType(form.getIdType());
         person.setIdCard(form.getIdCard());
-        person.setPhone(form.getPhone());
-        person.setAddress(form.getAddress());
+        person.setCreateTime(createTime);
+        person.setPerBalance(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        person.setStatus(STATUS_NORMAL);
         person.setBaseNum(baseNum);
         person.setUnitRatio(unit.getUnitRatio());
         person.setPerRatio(unit.getPerRatio());
+        person.setLastPayDate(com.housingfund.collection.util.DateUtil.defaultLastPayDate());
         person.setUnitMonthPay(unitMonthPay);
         person.setPerMonthPay(perMonthPay);
-        person.setPerBalance(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
-        person.setStatus(STATUS_NORMAL);
-        person.setCreateTime(createTime);
-        person.setUpdateTime(createTime);
+        person.setYpayAmt(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        person.setYdrawAmt(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        person.setYinterestBal(BigDecimal.ZERO.setScale(2, RoundingMode.HALF_UP));
+        person.setInstCode("0110");
+        person.setOp("111111");
+        person.setRemark(null);
         return person;
     }
 
@@ -341,11 +350,8 @@ public class PersonServiceImpl implements PersonService {
             throw new BusinessException("单位账号长度必须为12位");
         }
         form.setPerName(requireText(form.getPerName(), "个人姓名不能为空"));
-        if (form.getPerName().matches("[\\u4e00-\\u9fa5]+") && form.getPerName().length() > 12) {
+        if (form.getPerName().length() > 12) {
             throw new BusinessException("个人姓名不能超过12个汉字");
-        }
-        if (form.getPerName().length() > 50) {
-            throw new BusinessException("个人姓名不能超过50个字符");
         }
         form.setIdType(requireText(form.getIdType(), "证件类型不能为空"));
         if (!ID_TYPE_RESIDENT.equals(form.getIdType())) {
@@ -358,14 +364,6 @@ public class PersonServiceImpl implements PersonService {
         if (form.getBaseNum() == null || form.getBaseNum().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("缴存基数必须大于0");
         }
-        form.setPhone(trimToNull(form.getPhone()));
-        if (form.getPhone() != null && form.getPhone().length() > 30) {
-            throw new BusinessException("联系电话不能超过30个字符");
-        }
-        form.setAddress(trimToNull(form.getAddress()));
-        if (form.getAddress() != null && form.getAddress().length() > 200) {
-            throw new BusinessException("联系地址不能超过200个字符");
-        }
     }
 
     private void validateEditFields(PersonEditForm form) {
@@ -374,11 +372,8 @@ public class PersonServiceImpl implements PersonService {
         }
         form.setPerAccNum(validatePersonAccNum(form.getPerAccNum()));
         form.setPerName(requireText(form.getPerName(), "个人姓名不能为空"));
-        if (form.getPerName().matches("[\\u4e00-\\u9fa5]+") && form.getPerName().length() > 12) {
+        if (form.getPerName().length() > 12) {
             throw new BusinessException("个人姓名不能超过12个汉字");
-        }
-        if (form.getPerName().length() > 50) {
-            throw new BusinessException("个人姓名不能超过50个字符");
         }
         form.setIdType(requireText(form.getIdType(), "证件类型不能为空"));
         if (!ID_TYPE_RESIDENT.equals(form.getIdType())) {
@@ -467,6 +462,12 @@ public class PersonServiceImpl implements PersonService {
             throw new BusinessException("单位缴存比例参数不完整");
         }
         return baseNum.multiply(ratio).setScale(2, RoundingMode.HALF_UP);
+    }
+
+    private void validateRatio(BigDecimal value, String message) {
+        if (value == null || value.compareTo(MIN_RATIO) < 0 || value.compareTo(MAX_RATIO) > 0) {
+            throw new BusinessException(message);
+        }
     }
 
     private String requireText(String value, String message) {

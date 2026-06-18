@@ -9,6 +9,8 @@ target/
 
 *.log
 *.tmp
+*.local.properties
+src/main/resources/jdbc-local.properties
 
 hs_err_pid*
 replay_pid*

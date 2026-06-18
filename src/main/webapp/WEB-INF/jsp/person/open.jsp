@@ -140,10 +140,10 @@
               onsubmit="return validatePersonOpenUnitForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="searchUnitAccNum">单位账号</label>
+                    <label for="searchUnitAccNum">单位公积金账号</label>
                     <input id="searchUnitAccNum" name="unitAccNum" type="text" required maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(personOpenForm.unitAccNum)}">
-                    <div class="tip">请输入已开户且正常状态的 12 位单位账号。</div>
+                    <div class="tip">请输入已开户且正常状态的 12 位单位公积金账号。</div>
                 </div>
             </div>
 
@@ -162,7 +162,7 @@
                   onsubmit="return validatePersonOpenForm(this);">
                 <div class="grid">
                     <div class="field">
-                        <label for="unitAccNum">单位账号</label>
+                        <label for="unitAccNum">单位公积金账号</label>
                         <input id="unitAccNum" name="unitAccNum" type="text" readonly
                                value="${fn:escapeXml(personOpenForm.unitAccNum)}">
                     </div>
@@ -187,7 +187,7 @@
 
                     <div class="field">
                         <label for="perName">姓名</label>
-                        <input id="perName" name="perName" type="text" required maxlength="50"
+                        <input id="perName" name="perName" type="text" required maxlength="12"
                                value="${fn:escapeXml(personOpenForm.perName)}">
                     </div>
 

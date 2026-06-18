@@ -158,17 +158,17 @@
               onsubmit="return validatePersonQueryForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="perAccNum">个人账号</label>
+                    <label for="perAccNum">个人公积金账号</label>
                     <input id="perAccNum" name="perAccNum" type="text" maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(personQueryForm.perAccNum)}">
-                    <div class="tip">输入个人账号时优先精确查询。</div>
+                    <div class="tip">输入个人公积金账号时优先精确查询。</div>
                 </div>
 
                 <div class="field">
-                    <label for="idCard">身份证号</label>
+                    <label for="idCard">证件号码</label>
                     <input id="idCard" name="idCard" type="text" maxlength="18"
                            pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personQueryForm.idCard)}">
-                    <div class="tip">未输入个人账号时按身份证号查询。</div>
+                    <div class="tip">未输入个人公积金账号时按证件号码查询。</div>
                 </div>
             </div>
 
@@ -189,7 +189,7 @@
                     <div class="value"><c:out value="${queryResult.unitName}"/></div>
                 </div>
                 <div class="row">
-                    <div class="label">缴存单位账号</div>
+                    <div class="label">缴存单位公积金账号</div>
                     <div class="value"><c:out value="${queryResult.unitAccNum}"/></div>
                 </div>
                 <div class="row">
@@ -197,11 +197,11 @@
                     <div class="value"><c:out value="${queryResult.perName}"/></div>
                 </div>
                 <div class="row">
-                    <div class="label">个人账号</div>
+                    <div class="label">个人公积金账号</div>
                     <div class="value"><c:out value="${queryResult.perAccNum}"/></div>
                 </div>
                 <div class="row">
-                    <div class="label">身份证号</div>
+                    <div class="label">证件号码</div>
                     <div class="value"><c:out value="${queryResult.idCard}"/></div>
                 </div>
                 <div class="row">
@@ -209,7 +209,7 @@
                     <div class="value"><c:out value="${queryResult.perBalance}"/></div>
                 </div>
                 <div class="row">
-                    <div class="label">开户时间</div>
+                    <div class="label">开户日期</div>
                     <div class="value"><c:out value="${queryResult.createTime}"/></div>
                 </div>
                 <div class="row">

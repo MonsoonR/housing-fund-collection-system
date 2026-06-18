@@ -121,14 +121,14 @@
 <body>
 <main class="page">
     <section class="panel">
-        <h1>身份证号占用确认</h1>
+        <h1>证件号码占用确认</h1>
 
-        <div class="alert">该身份证号已被其他个人账户占用，是否强制变更？</div>
+        <div class="alert">该证件号码已被其他个人账户占用，是否强制变更？</div>
 
         <h2>当前修改信息</h2>
         <div class="receipt">
             <div class="row">
-                <div class="label">当前个人账号</div>
+                <div class="label">当前个人公积金账号</div>
                 <div class="value"><c:out value="${conflict.currentPerAccNum}"/></div>
             </div>
             <div class="row">
@@ -140,7 +140,7 @@
                 <div class="value"><c:out value="${conflict.newPerName}"/></div>
             </div>
             <div class="row">
-                <div class="label">修改后的身份证号</div>
+                <div class="label">修改后的证件号码</div>
                 <div class="value"><c:out value="${conflict.newIdCard}"/></div>
             </div>
         </div>
@@ -148,11 +148,11 @@
         <h2>占用账户信息</h2>
         <div class="receipt">
             <div class="row">
-                <div class="label">占用个人账号</div>
+                <div class="label">占用个人公积金账号</div>
                 <div class="value"><c:out value="${conflict.occupiedPerAccNum}"/></div>
             </div>
             <div class="row">
-                <div class="label">占用身份证号</div>
+                <div class="label">占用证件号码</div>
                 <div class="value"><c:out value="${conflict.occupiedIdCard}"/></div>
             </div>
             <div class="row">
@@ -164,7 +164,7 @@
                 <div class="value"><c:out value="${conflict.occupiedStatusText}"/></div>
             </div>
             <div class="row">
-                <div class="label">占用单位账号</div>
+                <div class="label">占用单位公积金账号</div>
                 <div class="value"><c:out value="${conflict.occupiedUnitAccNum}"/></div>
             </div>
             <div class="row">
@@ -173,7 +173,7 @@
             </div>
         </div>
 
-        <p class="note">确认后，占用账户身份证号首位将改为 9，其余位数保持不变。</p>
+        <p class="note">确认后，占用账户证件号码首位将改为 9，其余位数保持不变。</p>
 
         <div class="actions">
             <form method="post" action="${pageContext.request.contextPath}/persons/edit/force">

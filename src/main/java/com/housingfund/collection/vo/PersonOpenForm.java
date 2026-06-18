@@ -13,8 +13,6 @@ public class PersonOpenForm implements Serializable {
     private String idType;
     private String idCard;
     private BigDecimal baseNum;
-    private String phone;
-    private String address;
 
     public String getUnitAccNum() {
         return unitAccNum;
@@ -80,19 +78,4 @@ public class PersonOpenForm implements Serializable {
         this.baseNum = baseNum;
     }
 
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
 }
