@@ -56,6 +56,16 @@
             font-size: 14px;
         }
 
+        .notice {
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            color: #065f46;
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            font-size: 14px;
+        }
+
         .grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -119,6 +129,25 @@
             background: #ffffff;
         }
 
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            padding: 10px 12px;
+            border: 1px solid #e5e7eb;
+            text-align: left;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+        }
+
         @media (max-width: 720px) {
             .grid {
                 grid-template-columns: 1fr;
@@ -136,6 +165,35 @@
             <div class="alert"><c:out value="${error}"/></div>
         </c:if>
 
+        <c:if test="${not empty importResult}">
+            <div class="notice">
+                批量导入结果：成功 <c:out value="${importResult.successCount}"/> 条，
+                失败 <c:out value="${importResult.failureCount}"/> 条。
+            </div>
+            <c:if test="${importResult.failureCount gt 0}">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Excel 行号</th>
+                        <th>姓名</th>
+                        <th>证件号码</th>
+                        <th>失败原因</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <c:forEach var="failure" items="${importResult.failures}">
+                        <tr>
+                            <td><c:out value="${failure.rowNumber}"/></td>
+                            <td><c:out value="${failure.perName}"/></td>
+                            <td><c:out value="${failure.idCard}"/></td>
+                            <td><c:out value="${failure.message}"/></td>
+                        </tr>
+                    </c:forEach>
+                    </tbody>
+                </table>
+            </c:if>
+        </c:if>
+
         <form method="get" action="${pageContext.request.contextPath}/persons/open/unit"
               onsubmit="return validatePersonOpenUnitForm(this);">
             <div class="grid">
@@ -150,6 +208,23 @@
             <div class="actions">
                 <button class="button" type="submit">查询单位</button>
                 <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+            </div>
+        </form>
+    </section>
+
+    <section class="panel">
+        <h2>Excel 批量导入个人开户</h2>
+        <form method="post" action="${pageContext.request.contextPath}/persons/open/import"
+              enctype="multipart/form-data">
+            <div class="grid">
+                <div class="field full">
+                    <label for="excelFile">Excel 文件</label>
+                    <input id="excelFile" name="excelFile" type="file" required accept=".xls,.xlsx">
+                    <div class="tip">首行表头，列顺序为：单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例。</div>
+                </div>
+            </div>
+            <div class="actions">
+                <button class="button" type="submit">导入开户</button>
             </div>
         </form>
     </section>

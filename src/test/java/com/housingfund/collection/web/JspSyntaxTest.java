@@ -38,6 +38,17 @@ public class JspSyntaxTest {
     }
 
     @Test
+    public void personOpenPageContainsExcelBatchImportEntry() throws IOException {
+        String content = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "open.jsp"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(content.contains("/persons/open/import"));
+        assertTrue(content.contains("enctype=\"multipart/form-data\""));
+        assertTrue(content.contains("单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例"));
+        assertTrue(content.contains("importResult.failures"));
+    }
+
+    @Test
     public void queryJspPagesExist() {
         assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "unit", "query.jsp")));
         assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "query.jsp")));

@@ -24,6 +24,7 @@ public class SchemaAlignmentTest {
 
         String tb001 = tableBlock(schema, "TB001");
         assertColumn(tb001, "SEQNAME");
+        assertColumnType(tb001, "SEQNAME", "CHAR(20)");
         assertColumn(tb001, "SEQ");
         assertColumn(tb001, "MAXSEQ");
         assertColumn(tb001, "DESC");
@@ -42,6 +43,11 @@ public class SchemaAlignmentTest {
                 "UNITNAME", "UNITTYPE", "PHONE", "AGENTNAME", "AGENTIDCARD", "UNITRATIO", "PERRATIO"}) {
             assertNoColumn(tb002, oldColumn);
         }
+        assertColumnType(tb002, "ORGCODE", "CHAR(20)");
+        assertColumnType(tb002, "INSTCODE", "CHAR(8)");
+        for (String amountColumn : new String[]{"BALANCE", "BASENUMBER", "UNITPAYSUM", "PERPAYSUM"}) {
+            assertColumnType(tb002, amountColumn, "DECIMAL(16,2)");
+        }
 
         String tb003 = tableBlock(schema, "TB003");
         for (String column : new String[]{
@@ -55,6 +61,12 @@ public class SchemaAlignmentTest {
                 "PERACCNUM", "PHONE", "ADDRESS", "BASENUM", "UNITRATIO", "PERRATIO",
                 "UNITMONTHPAY", "PERMONTHPAY", "PERBALANCE", "STATUS", "CREATE_TIME", "UPDATE_TIME"}) {
             assertNoColumn(tb003, oldColumn);
+        }
+        assertColumnType(tb003, "INSTCODE", "CHAR(8)");
+        for (String amountColumn : new String[]{
+                "BALANCE", "BASENUMBER", "UNITMONPAYSUM", "PERMONPAYSUM",
+                "YPAYAMT", "YDRAWAMT", "YINTERESTBAL"}) {
+            assertColumnType(tb003, amountColumn, "DECIMAL(16,2)");
         }
     }
 
@@ -121,6 +133,12 @@ public class SchemaAlignmentTest {
 
     private static void assertNoColumn(String tableBlock, String column) {
         assertFalse("Unexpected column " + column, columnPattern(column).matcher(tableBlock).find());
+    }
+
+    private static void assertColumnType(String tableBlock, String column, String expectedType) {
+        Pattern pattern = Pattern.compile("(?m)^\\s*`?" + Pattern.quote(column)
+                + "`?\\s+" + Pattern.quote(expectedType) + "(\\s|$)", Pattern.CASE_INSENSITIVE);
+        assertTrue("Column " + column + " should use " + expectedType, pattern.matcher(tableBlock).find());
     }
 
     private static Pattern columnPattern(String column) {

@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 USE housingfund_collection;
 
 -- Demo data for final Tomcat acceptance and defense walkthrough.

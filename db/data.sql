@@ -1,3 +1,5 @@
+SET NAMES utf8mb4;
+
 USE housingfund_collection;
 
 INSERT INTO TB001 (SEQNAME, SEQ, MAXSEQ, `DESC`, FREEUSE1)

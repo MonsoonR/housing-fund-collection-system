@@ -120,6 +120,10 @@
                     <div class="value"><c:out value="${receipt.conflictPerAccNum}"/></div>
                 </div>
                 <div class="row">
+                    <div class="label">新建错误账户账号</div>
+                    <div class="value"><c:out value="${receipt.wrongAccountPerAccNum}"/></div>
+                </div>
+                <div class="row">
                     <div class="label">原证件号码</div>
                     <div class="value"><c:out value="${receipt.originalConflictIdCard}"/></div>
                 </div>

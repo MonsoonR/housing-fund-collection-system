@@ -12,6 +12,7 @@ public class PersonEditResult implements Serializable {
     private String unitName;
     private boolean forceChanged;
     private String conflictPerAccNum;
+    private String wrongAccountPerAccNum;
     private String originalConflictIdCard;
     private String changedConflictIdCard;
     private String resultMessage;
@@ -72,6 +73,14 @@ public class PersonEditResult implements Serializable {
 
     public void setConflictPerAccNum(String conflictPerAccNum) {
         this.conflictPerAccNum = conflictPerAccNum;
+    }
+
+    public String getWrongAccountPerAccNum() {
+        return wrongAccountPerAccNum;
+    }
+
+    public void setWrongAccountPerAccNum(String wrongAccountPerAccNum) {
+        this.wrongAccountPerAccNum = wrongAccountPerAccNum;
     }
 
     public String getOriginalConflictIdCard() {

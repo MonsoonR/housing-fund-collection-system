@@ -3,19 +3,24 @@
 ## 环境与数据库
 
 - 使用 JDK 25、Maven 3.9.16、Tomcat 9、MySQL。
-- `src/main/resources/jdbc.properties` 部署前已按本机 MySQL 修改，且不提交真实密码。
+- 仓库内 `src/main/resources/jdbc.properties` 使用 `change_me` 占位密码，不提交真实密码。
+- 本地运行时复制 `src/main/resources/jdbc.example.properties` 为 `src/main/resources/jdbc-local.properties`，填写本机 MySQL 用户名和密码。
+- `src/main/resources/jdbc-local.properties` 和 `*.local.properties` 已加入 `.gitignore`。
 - 需要重新导入课程设计测试库时执行：
 
-```bat
+```powershell
 mysql -u root -p < db/schema.sql
 mysql -u root -p housingfund_collection < db/data.sql
 mysql -u root -p housingfund_collection < db/demo-data.sql
 ```
 
+- `db/schema.sql` 会 `DROP TABLE IF EXISTS TB003/TB002/TB001` 并重建测试表。
+- `db/data.sql` 只初始化基础序号。
+- `db/demo-data.sql` 只清理并导入 `000000900xxx` 演示账号段和脚本内列出的演示证件号码。
 - 执行构建：
 
-```bat
-D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
+```powershell
+mvn clean package
 ```
 
 期望 `BUILD SUCCESS`，测试失败数和错误数均为 0。
@@ -52,6 +57,7 @@ D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
 - 访问 `/persons/open`。
 - 输入正常状态单位公积金账号后反显单位名称、单位比例、个人比例。
 - 页面只出现单位公积金账号、单位名称、单位比例、个人比例、姓名、证件类型、证件号码、缴存基数。
+- 页面包含 Excel 批量导入入口，上传列顺序为单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例。
 - 使用合法数据开户，成功后显示《个人住房公积金开户回单》。
 - 验证生成 12 位个人公积金账号。
 - 验证 `TB001.PERACCNUM.SEQ` 新开户成功后加 1。
@@ -64,6 +70,9 @@ D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
 - 缴存基数小于等于 0 应失败。
 - 单位比例、个人比例从单位资料取值，后端仍校验 `0.050-0.120`。
 - 验证单位缴存基数、单位月应缴额、个人月应缴额、单位人数正确增加。
+- Excel 导入存在空行时应跳过空行。
+- Excel 导入任一非空行失败时应整体不提交，页面显示成功数 0、失败数和逐行失败原因。
+- Excel 导入应覆盖单位不存在、单位已销户、正常证件号码已开户、销户账户重启、基数或比例为空/格式错误、Excel 内重复证件号码。
 
 ## 2.2.4 单位资料修改
 
@@ -88,8 +97,11 @@ D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
 - 后端不可通过请求参数修改个人公积金账号、单位比例、个人比例、余额、月缴额、状态、最后汇缴月等不可修改字段。
 - 修改证件号码与系统中其他账户冲突时，应回显占用个人公积金账号、证件号码、姓名、状态、单位名称、单位公积金账号。
 - 冲突时应提示是否强制变更。
-- 强制变更时，占用账户证件号码首位改为 `9`，其余位数不变；当前账户更新为正确姓名、证件类型、证件号码。
-- 当前实现未额外新建一个人账户保存错误信息，原因是课程设计固定 `TB003.IDCARD` 唯一且缺少错误账户迁移目标表；当前处理方式已完成冲突回显、强制变更提示、占用账户证件号码首位改 `9`、当前账户更新。
+- 强制变更时，系统使用 `TB001.PERACCNUM` 新建错误账户，复制原占用账户姓名、单位、状态、余额、缴存基数、比例、月缴额、开户日期、最后汇缴月、年度金额、机构、柜员和备注。
+- 新建错误账户证件号码为 `9` + 原占用证件号码后 17 位。
+- 原占用账户证件号码改为 `8` + 原占用证件号码后 17 位，用于释放正确证件号码并满足唯一约束。
+- 当前账户更新为正确姓名、证件类型、证件号码。
+- 强制变更回单显示被占用个人公积金账号、新建错误账户账号、原证件号码、变更后的错误证件号码。
 
 ## 2.2.6 单位信息查询
 

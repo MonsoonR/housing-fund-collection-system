@@ -2,6 +2,7 @@ package com.housingfund.collection.controller;
 
 import com.housingfund.collection.exception.BusinessException;
 import com.housingfund.collection.service.PersonService;
+import com.housingfund.collection.vo.PersonBatchImportResult;
 import com.housingfund.collection.vo.PersonEditForm;
 import com.housingfund.collection.vo.PersonEditResult;
 import com.housingfund.collection.vo.PersonOpenForm;
@@ -16,6 +17,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @Controller
 @RequestMapping("/persons")
@@ -76,6 +81,29 @@ public class PersonController {
         } catch (BusinessException ex) {
             model.addAttribute("unitLoaded", form.getUnitName() != null);
             model.addAttribute("error", ex.getMessage());
+            return "person/open";
+        }
+    }
+
+    @PostMapping("/open/import")
+    public String importPersons(@RequestParam("excelFile") MultipartFile excelFile,
+                                Model model) {
+        PersonOpenForm form = new PersonOpenForm();
+        form.setIdType(ID_TYPE_RESIDENT);
+        model.addAttribute("personOpenForm", form);
+        try {
+            if (excelFile == null || excelFile.isEmpty()) {
+                throw new BusinessException("请上传Excel文件");
+            }
+            PersonBatchImportResult result = personService.importPersons(
+                    excelFile.getInputStream(), excelFile.getOriginalFilename());
+            model.addAttribute("importResult", result);
+            return "person/open";
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "person/open";
+        } catch (IOException ex) {
+            model.addAttribute("error", "Excel文件读取失败");
             return "person/open";
         }
     }

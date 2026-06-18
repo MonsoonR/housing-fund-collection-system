@@ -13,20 +13,32 @@ import com.housingfund.collection.util.IdCardUtil;
 import com.housingfund.collection.vo.PersonEditForm;
 import com.housingfund.collection.vo.PersonEditResult;
 import com.housingfund.collection.vo.PersonIdConflictResult;
+import com.housingfund.collection.vo.PersonBatchImportResult;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
 import com.housingfund.collection.vo.PersonQueryForm;
 import com.housingfund.collection.vo.PersonQueryResult;
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -69,23 +81,12 @@ public class PersonServiceImpl implements PersonService {
     @Override
     @Transactional
     public PersonOpenResult openPerson(PersonOpenForm form) {
-        validate(form);
-
-        UnitBasicInfo unit = unitMapper.selectNormalByUnitAccNum(form.getUnitAccNum());
-        if (unit == null) {
-            throw new BusinessException("单位账号不存在或状态非正常");
-        }
-
-        if (personMapper.selectNormalByIdCard(form.getIdCard()) != null) {
-            throw new BusinessException("该人员已开户");
-        }
-
-        PersonBasicInfo existing = personMapper.selectByIdCard(form.getIdCard());
+        OpenCandidate candidate = validateOpenCandidate(form);
+        UnitBasicInfo unit = candidate.unit;
+        PersonBasicInfo existing = candidate.existing;
         BigDecimal baseNum = form.getBaseNum().setScale(2, RoundingMode.HALF_UP);
         BigDecimal unitMonthPay = calculateMonthPay(baseNum, unit.getUnitRatio());
         BigDecimal perMonthPay = calculateMonthPay(baseNum, unit.getPerRatio());
-        validateRatio(unit.getUnitRatio(), "单位比例必须在0.050到0.120之间");
-        validateRatio(unit.getPerRatio(), "个人比例必须在0.050到0.120之间");
         LocalDate createTime = LocalDate.now();
 
         PersonBasicInfo person;
@@ -105,6 +106,31 @@ public class PersonServiceImpl implements PersonService {
         }
 
         return buildResult(person, unit);
+    }
+
+    @Override
+    @Transactional
+    public PersonBatchImportResult importPersons(InputStream inputStream, String originalFilename) {
+        if (inputStream == null) {
+            throw new BusinessException("请上传Excel文件");
+        }
+        if (originalFilename == null
+                || !(originalFilename.toLowerCase().endsWith(".xlsx") || originalFilename.toLowerCase().endsWith(".xls"))) {
+            throw new BusinessException("仅支持xls或xlsx格式的Excel文件");
+        }
+
+        PersonBatchImportResult result = new PersonBatchImportResult();
+        List<PersonOpenForm> validRows = parseAndValidateImportRows(inputStream, result);
+        if (result.hasFailures()) {
+            result.setSuccessCount(0);
+            return result;
+        }
+
+        for (PersonOpenForm form : validRows) {
+            openPerson(form);
+        }
+        result.setSuccessCount(validRows.size());
+        return result;
     }
 
     @Override
@@ -190,11 +216,18 @@ public class PersonServiceImpl implements PersonService {
         }
 
         String wrongIdCard = conflict.getGeneratedWrongIdCard();
+        String releaseIdCard = generateReleaseIdCard(conflict.getOccupiedIdCard());
         if (personMapper.selectByIdCard(wrongIdCard) != null) {
             throw new BusinessException("强制变更生成的错误身份证号已存在");
         }
+        if (personMapper.selectByIdCard(releaseIdCard) != null) {
+            throw new BusinessException("强制变更释放身份证号已存在");
+        }
+        PersonBasicInfo occupied = personMapper.selectByPerAccNum(conflict.getOccupiedPerAccNum());
+        ensureOccupiedForForceChange(occupied);
 
-        int occupiedUpdated = personMapper.updateIdCard(conflict.getOccupiedPerAccNum(), wrongIdCard);
+        PersonBasicInfo wrongAccount = insertWrongAccountCopy(occupied, wrongIdCard);
+        int occupiedUpdated = personMapper.updateIdCard(conflict.getOccupiedPerAccNum(), releaseIdCard);
         if (occupiedUpdated == 0) {
             throw new BusinessException("占用账户身份证号强制变更失败");
         }
@@ -203,13 +236,25 @@ public class PersonServiceImpl implements PersonService {
             throw new BusinessException("个人资料修改失败");
         }
 
-        return buildEditResult(form, existing, true, conflict.getOccupiedPerAccNum(),
+        PersonEditResult result = buildEditResult(form, existing, true, conflict.getOccupiedPerAccNum(),
                 conflict.getOccupiedIdCard(), wrongIdCard);
+        result.setWrongAccountPerAccNum(wrongAccount.getPerAccNum());
+        return result;
     }
 
     private PersonBasicInfo insertNewPerson(PersonOpenForm form, UnitBasicInfo unit, BigDecimal baseNum,
                                            BigDecimal unitMonthPay, BigDecimal perMonthPay,
                                            LocalDate createTime) {
+        String perAccNum = nextPersonAccountNumber();
+        PersonBasicInfo person = buildPerson(perAccNum, form, unit, baseNum, unitMonthPay, perMonthPay, createTime);
+        int inserted = personMapper.insert(person);
+        if (inserted == 0) {
+            throw new BusinessException("个人开户失败");
+        }
+        return person;
+    }
+
+    private String nextPersonAccountNumber() {
         SystemParam sequence = paramMapper.selectBySeqnameForUpdate(PERSON_SEQUENCE_NAME);
         if (sequence == null) {
             throw new BusinessException("个人账号序号参数不存在");
@@ -220,18 +265,51 @@ public class PersonServiceImpl implements PersonService {
         if (sequence.getSeq() > sequence.getMaxseq()) {
             throw new BusinessException("个人账号序号已超过最大值");
         }
-
         String perAccNum = AccountNumberUtil.formatAccountNumber(sequence.getSeq());
-        PersonBasicInfo person = buildPerson(perAccNum, form, unit, baseNum, unitMonthPay, perMonthPay, createTime);
-        int inserted = personMapper.insert(person);
-        if (inserted == 0) {
-            throw new BusinessException("个人开户失败");
+        if (personMapper.selectByPerAccNum(perAccNum) != null) {
+            throw new BusinessException("个人账号序号生成结果已存在");
         }
         int seqUpdated = paramMapper.updateSeq(PERSON_SEQUENCE_NAME, sequence.getSeq() + 1);
         if (seqUpdated == 0) {
             throw new BusinessException("个人账号序号更新失败");
         }
-        return person;
+        return perAccNum;
+    }
+
+    private PersonBasicInfo insertWrongAccountCopy(PersonBasicInfo occupied, String wrongIdCard) {
+        PersonBasicInfo wrongAccount = copyPerson(occupied);
+        wrongAccount.setPerAccNum(nextPersonAccountNumber());
+        wrongAccount.setIdCard(wrongIdCard);
+        int inserted = personMapper.insert(wrongAccount);
+        if (inserted == 0) {
+            throw new BusinessException("错误账户保存失败");
+        }
+        return wrongAccount;
+    }
+
+    private PersonBasicInfo copyPerson(PersonBasicInfo source) {
+        PersonBasicInfo target = new PersonBasicInfo();
+        target.setPerAccNum(source.getPerAccNum());
+        target.setUnitAccNum(source.getUnitAccNum());
+        target.setPerName(source.getPerName());
+        target.setIdType(source.getIdType());
+        target.setIdCard(source.getIdCard());
+        target.setCreateTime(source.getCreateTime());
+        target.setPerBalance(source.getPerBalance());
+        target.setStatus(source.getStatus());
+        target.setBaseNum(source.getBaseNum());
+        target.setUnitRatio(source.getUnitRatio());
+        target.setPerRatio(source.getPerRatio());
+        target.setLastPayDate(source.getLastPayDate());
+        target.setUnitMonthPay(source.getUnitMonthPay());
+        target.setPerMonthPay(source.getPerMonthPay());
+        target.setYpayAmt(source.getYpayAmt());
+        target.setYdrawAmt(source.getYdrawAmt());
+        target.setYinterestBal(source.getYinterestBal());
+        target.setInstCode(source.getInstCode());
+        target.setOp(source.getOp());
+        target.setRemark(source.getRemark());
+        return target;
     }
 
     private PersonBasicInfo reactivateClosedPerson(String perAccNum, PersonOpenForm form, UnitBasicInfo unit,
@@ -336,6 +414,13 @@ public class PersonServiceImpl implements PersonService {
         return "9" + occupiedIdCard.substring(1);
     }
 
+    private String generateReleaseIdCard(String occupiedIdCard) {
+        if (occupiedIdCard == null || occupiedIdCard.isEmpty()) {
+            throw new BusinessException("占用账户身份证号不完整");
+        }
+        return "8" + occupiedIdCard.substring(1);
+    }
+
     private String findUnitName(String unitAccNum) {
         UnitBasicInfo unit = unitMapper.selectByUnitAccNum(unitAccNum);
         return unit == null ? "" : unit.getUnitName();
@@ -363,6 +448,103 @@ public class PersonServiceImpl implements PersonService {
         }
         if (form.getBaseNum() == null || form.getBaseNum().compareTo(BigDecimal.ZERO) <= 0) {
             throw new BusinessException("缴存基数必须大于0");
+        }
+    }
+
+    private OpenCandidate validateOpenCandidate(PersonOpenForm form) {
+        validate(form);
+        UnitBasicInfo unit = unitMapper.selectNormalByUnitAccNum(form.getUnitAccNum());
+        if (unit == null) {
+            throw new BusinessException("单位账号不存在或状态非正常");
+        }
+        validateRatio(unit.getUnitRatio(), "单位比例必须在0.050到0.120之间");
+        validateRatio(unit.getPerRatio(), "个人比例必须在0.050到0.120之间");
+        if (personMapper.selectNormalByIdCard(form.getIdCard()) != null) {
+            throw new BusinessException("该人员已开户");
+        }
+        return new OpenCandidate(unit, personMapper.selectByIdCard(form.getIdCard()));
+    }
+
+    private List<PersonOpenForm> parseAndValidateImportRows(InputStream inputStream,
+                                                            PersonBatchImportResult result) {
+        List<PersonOpenForm> validRows = new ArrayList<>();
+        Set<String> seenIdCards = new HashSet<>();
+        DataFormatter formatter = new DataFormatter();
+        try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+            Sheet sheet = workbook.getNumberOfSheets() == 0 ? null : workbook.getSheetAt(0);
+            if (sheet == null || sheet.getLastRowNum() < 1) {
+                result.addFailure(1, "", "", "Excel没有可导入数据");
+                return validRows;
+            }
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (isBlankImportRow(row, formatter)) {
+                    continue;
+                }
+                PersonOpenForm form = new PersonOpenForm();
+                form.setUnitAccNum(cell(row, 0, formatter));
+                form.setPerName(cell(row, 1, formatter));
+                form.setIdType(cell(row, 2, formatter));
+                form.setIdCard(cell(row, 3, formatter));
+                try {
+                    form.setBaseNum(parseDecimal(cell(row, 4, formatter), "缴存基数不能为空", "缴存基数格式错误"));
+                    BigDecimal importUnitRatio = parseDecimal(cell(row, 5, formatter), "单位比例不能为空", "单位比例格式错误");
+                    BigDecimal importPerRatio = parseDecimal(cell(row, 6, formatter), "个人比例不能为空", "个人比例格式错误");
+                    OpenCandidate candidate = validateOpenCandidate(form);
+                    if (candidate.existing != null && !STATUS_CLOSED.equals(candidate.existing.getStatus())) {
+                        throw new BusinessException("该人员已开户");
+                    }
+                    if (candidate.unit.getUnitRatio().compareTo(importUnitRatio) != 0) {
+                        throw new BusinessException("Excel单位比例与单位资料不一致");
+                    }
+                    if (candidate.unit.getPerRatio().compareTo(importPerRatio) != 0) {
+                        throw new BusinessException("Excel个人比例与单位资料不一致");
+                    }
+                    if (!seenIdCards.add(form.getIdCard())) {
+                        throw new BusinessException("Excel中证件号码重复");
+                    }
+                    validRows.add(form);
+                } catch (BusinessException ex) {
+                    result.addFailure(i + 1, trimToNull(form.getIdCard()), trimToNull(form.getPerName()), ex.getMessage());
+                }
+            }
+        } catch (IOException ex) {
+            throw new BusinessException("Excel文件读取失败");
+        }
+        if (validRows.isEmpty() && !result.hasFailures()) {
+            result.addFailure(1, "", "", "Excel没有可导入数据");
+        }
+        return validRows;
+    }
+
+    private boolean isBlankImportRow(Row row, DataFormatter formatter) {
+        if (row == null) {
+            return true;
+        }
+        for (int i = 0; i <= 6; i++) {
+            if (trimToNull(cell(row, i, formatter)) != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private String cell(Row row, int index, DataFormatter formatter) {
+        if (row == null || row.getCell(index) == null) {
+            return null;
+        }
+        return formatter.formatCellValue(row.getCell(index)).trim();
+    }
+
+    private BigDecimal parseDecimal(String value, String blankMessage, String formatMessage) {
+        String text = trimToNull(value);
+        if (text == null) {
+            throw new BusinessException(blankMessage);
+        }
+        try {
+            return new BigDecimal(text);
+        } catch (NumberFormatException ex) {
+            throw new BusinessException(formatMessage);
         }
     }
 
@@ -439,6 +621,12 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
+    private void ensureOccupiedForForceChange(PersonBasicInfo person) {
+        if (person == null) {
+            throw new BusinessException("占用账户不存在");
+        }
+    }
+
     private boolean hasEditableChanges(PersonBasicInfo existing, PersonEditForm form) {
         return !same(existing.getPerName(), form.getPerName())
                 || !same(existing.getIdType(), form.getIdType())
@@ -502,5 +690,15 @@ public class PersonServiceImpl implements PersonService {
             return "销户";
         }
         return "未知";
+    }
+
+    private static class OpenCandidate {
+        private final UnitBasicInfo unit;
+        private final PersonBasicInfo existing;
+
+        OpenCandidate(UnitBasicInfo unit, PersonBasicInfo existing) {
+            this.unit = unit;
+            this.existing = existing;
+        }
     }
 }

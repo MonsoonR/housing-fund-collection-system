@@ -1,13 +1,10 @@
 # 住房公积金管理系统——筹集子系统
 
-传统 Maven SSM Web 项目，按《网络程序设计课程设计指导书》2.2.1—2.2.7 实现筹集子系统核心模块。本文只写运行、部署、模块、数据库和验证说明，不包含课程设计报告正文。
+传统 Maven SSM Web 项目，按《网络程序设计课程设计指导书》实现筹集子系统核心业务。本文只说明运行、部署、模块、数据库和验收，不包含课程设计报告正文。
 
 ## 技术栈
 
-- JDK 25
-- Maven 3.9.16
-- `maven.compiler.release=17`
-- Spring Framework 5.3.x
+- Java / Maven
 - Spring MVC / Spring IoC
 - MyBatis / MyBatis-Spring
 - MySQL
@@ -19,94 +16,105 @@
 
 ## 指导书模块对应
 
-| 指导书章节 | 模块 | 访问路径 |
+部署到 Tomcat 后，默认上下文路径统一为 `/housingfund-collection/`，首页为：
+
+```text
+http://localhost:8080/housingfund-collection/
+```
+
+| 指导书模块 | 业务模块 | 页面路径 |
 | --- | --- | --- |
-| 2.2.1 | 系统参数维护 | `/params` |
-| 2.2.2 | 单位开户 | `/units/open` |
-| 2.2.3 | 个人开户 | `/persons/open` |
-| 2.2.4 | 单位资料修改 | `/units/edit` |
-| 2.2.5 | 个人资料修改 | `/persons/edit` |
-| 2.2.6 | 单位信息查询 | `/units/query` |
-| 2.2.7 | 个人信息查询 | `/persons/query` |
+| 系统参数维护 | 维护 `TB001` 序号和系统参数 | `/params` |
+| 单位开户 | 生成单位账号，写入 `TB002`，递增 `TB001.UNITACCNUM` | `/units/open` |
+| 个人开户 | 手工开户、销户账户重启、Excel 批量开户 | `/persons/open` |
+| 单位资料修改 | 修改单位基础资料，不修改汇总和状态字段 | `/units/edit` |
+| 个人资料修改 | 修改姓名、证件类型、证件号码，支持冲突强制变更 | `/persons/edit` |
+| 单位信息查询 | 按账号精确查询、按名称模糊查询 | `/units/query` |
+| 个人信息查询 | 按个人账号或证件号码查询 | `/persons/query` |
 
-首页路径：`/` 或 `/index`。
-
-未实现且不在本课程设计范围内：汇缴、补缴、提取、封存、启封、比例变更、基数变更、单位注销、个人注销、贷款、复杂登录权限系统。
+未实现且不在本课程设计范围内：贷款、提取、汇缴、补缴、封存、启封、单位注销、个人注销、复杂登录权限系统。
 
 ## 数据库初始化
 
-本轮已将核心表和字段向指导书 2.3.1 对齐。课程设计测试库可以重新导入，不提供复杂生产迁移脚本。
+按顺序执行：
 
-需要重新导入数据库时按顺序执行：
-
-```bat
+```powershell
 mysql -u root -p < db/schema.sql
 mysql -u root -p housingfund_collection < db/data.sql
 mysql -u root -p housingfund_collection < db/demo-data.sql
 ```
 
-`db/schema.sql` 会创建并重建：
+- `db/schema.sql` 会创建数据库并先 `DROP TABLE IF EXISTS TB003/TB002/TB001`，会清空重建课程设计测试表。
+- `db/data.sql` 不删表，只初始化 `TB001` 中 `UNITACCNUM` 和 `PERACCNUM` 两条基础序号数据。
+- `db/demo-data.sql` 不删全库，只清理 `000000900xxx` 演示账号段和脚本内列出的演示证件号码，再导入 demo 单位、正常个人、冲突占用个人和销户个人。
 
-- `TB001`：系统参数表
-- `TB002`：单位基本资料表
-- `TB003`：个人基本资料表
+核心表：
 
-`db/data.sql` 初始化账号序号：
+- `TB001`：系统参数表。
+- `TB002`：单位基本资料表。
+- `TB003`：个人基本资料表。
 
-- `UNITACCNUM, 1, 999999999, 公积金单位账号序号`
-- `PERACCNUM, 1, 999999999, 公积金个人账号序号`
-
-`db/demo-data.sql` 提供答辩演示数据，包含正常单位、资料修改单位、销户单位、正常个人、身份证冲突占用账户和销户个人重新启用数据。
-
-## 数据库字段说明
-
-字段映射详见 `docs/SCHEMA_MAPPING.md`。
-
-关键对齐结果：
-
-- `TB001` 使用指导书字段 `SEQNAME`、`SEQ`、`MAXSEQ`、`DESC`、`FREEUSE1`。`DESC` 在 MySQL 中用反引号包裹。
-- `TB002` 使用 `UNITACCNAME`、`UNITCHAR`、`UNITKIND`、`UNITPHONE`、`UNITLINKMAN`、`UNITAGENTPAPNO`、`UNITPROP`、`PERPROP` 等指导书字段。
-- `TB003` 使用 `ACCNUM`、`OPENDATE`、`BALANCE`、`PERACCSTATE`、`BASENUMBER`、`UNITPROP`、`INDIPROP`、`UNITMONPAYSUM`、`PERMONPAYSUM` 等指导书字段。
-- `TB003` 额外保留 `PERNAME`、`IDTYPE`、`IDCARD`，原因是指导书个人开户和个人资料修改交易要素要求姓名、证件类型、证件号码，但 2.3.1 表结构未完整列出。
+字段映射和指导书冲突处理详见 `docs/SCHEMA_MAPPING.md`。
 
 ## 数据库连接配置
 
-Spring 当前仍读取：
-
-```text
-src/main/resources/jdbc.properties
-```
-
-仓库中的 `jdbc.password` 是占位值：
+仓库内配置只允许放占位值。`src/main/resources/jdbc.properties` 中密码必须保持：
 
 ```properties
 jdbc.password=change_me
 ```
 
-部署前按本机 MySQL 修改 `jdbc.properties`。示例配置见：
+本地运行时复制示例配置并填写自己的 MySQL 用户名和密码：
+
+```powershell
+Copy-Item src/main/resources/jdbc.example.properties src/main/resources/jdbc-local.properties
+```
+
+然后编辑 `src/main/resources/jdbc-local.properties`。Spring 会先读取 `jdbc.properties`，再读取可选的 `jdbc-local.properties` 覆盖本地配置。
+
+不要提交真实数据库密码。`.gitignore` 已忽略：
 
 ```text
-src/main/resources/jdbc.example.properties
+*.local.properties
+src/main/resources/jdbc-local.properties
 ```
 
-不要提交真实数据库密码。需要本地私有配置时可使用 `*.local.properties` 或 `src/main/resources/jdbc-local.properties`，这些路径已加入 `.gitignore`。
+## Excel 批量个人开户
 
-## Maven 构建
-
-```bat
-D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package
-```
-
-期望结果：
+入口在个人开户页面：
 
 ```text
-BUILD SUCCESS
-Tests run: 全部通过
-Failures: 0
-Errors: 0
+http://localhost:8080/housingfund-collection/persons/open
 ```
 
-WAR 输出路径：
+上传文件支持 `.xls` 和 `.xlsx`。首行是表头，后续列顺序固定：
+
+```text
+单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例
+```
+
+导入策略为“全部成功才提交”：任一非空数据行失败时，本批次成功数为 0，不生成个人账号，不更新单位汇总和 `TB001.PERACCNUM`。页面显示成功数量、失败数量和逐行失败原因。
+
+## 个人资料强制变更说明
+
+当 A 账户要改成的证件号码已被 B 账户占用，并选择强制变更时：
+
+- 使用 `TB001.PERACCNUM` 生成新个人账号 C。
+- C 复制 B 原有姓名、单位账号、证件类型、状态、余额、缴存基数、缴存比例、月缴额、开户日期、最后汇缴月、年度金额、机构、柜员和备注。
+- C 的证件号码使用 `9` + B 原证件号码后 17 位，作为错误账户保存记录。
+- B 的证件号码改为 `8` + B 原证件号码后 17 位，用于释放原证件号码并满足 `TB003.IDCARD` 唯一约束。
+- A 更新为正确姓名、证件类型和证件号码。
+- 全过程在 Service 层事务内完成。
+
+该方案保留指导书要求的“新建一个人账户存储占用的个人账户信息（错误的）”，同时避免唯一约束冲突。
+
+## 构建
+
+```powershell
+mvn clean package
+```
+
+构建成功后 WAR 输出：
 
 ```text
 target/housingfund-collection.war
@@ -115,18 +123,21 @@ target/housingfund-collection.war
 ## Tomcat 9 部署
 
 1. 启动 MySQL。
-2. 按需重新导入 `db/schema.sql`、`db/data.sql`、`db/demo-data.sql`。
-3. 根据本机 MySQL 修改 `src/main/resources/jdbc.properties`。
-4. 执行 Maven 构建。
+2. 按需导入 `db/schema.sql`、`db/data.sql`、`db/demo-data.sql`。
+3. 配置本机 `src/main/resources/jdbc-local.properties`。
+4. 执行 `mvn clean package`。
 5. 将 `target/housingfund-collection.war` 放入 Tomcat 9 的 `webapps` 目录。
 6. 启动 Tomcat。
 7. 访问 `http://localhost:8080/housingfund-collection/`。
 
-## 七个访问路径
+`.idea` 中的本机 Tomcat 配置不作为验收依据，验收以 WAR 名称 `housingfund-collection.war` 和上述访问路径为准。
+
+## 验收路径
 
 - `http://localhost:8080/housingfund-collection/params`
 - `http://localhost:8080/housingfund-collection/units/open`
 - `http://localhost:8080/housingfund-collection/persons/open`
+- `http://localhost:8080/housingfund-collection/persons/open` 页面内 Excel 批量导入
 - `http://localhost:8080/housingfund-collection/units/edit`
 - `http://localhost:8080/housingfund-collection/persons/edit`
 - `http://localhost:8080/housingfund-collection/units/query`
@@ -134,10 +145,6 @@ target/housingfund-collection.war
 
 ## 验收资料
 
-- `docs/ACCEPTANCE_CHECKLIST.md`：按指导书 2.2.1—2.2.7 排列的手动验收清单。
+- `docs/ACCEPTANCE_CHECKLIST.md`：手动验收清单。
 - `docs/DEMO_FLOW.md`：答辩演示流程。
-- `docs/SCHEMA_MAPPING.md`：指导书表名和字段名与项目实际字段名的映射。
-
-## 个人资料强制变更说明
-
-个人资料修改已实现证件号码冲突回显、强制变更提示、占用账户证件号码首位改 `9`、当前账户更新为正确信息。指导书中“新建一个人账户存储占用的个人账户信息（错误的）”当前未额外建账，原因是课程设计固定 `TB003.IDCARD` 唯一且没有独立错误账户迁移目标表；该处理方式也写入 `docs/ACCEPTANCE_CHECKLIST.md`。
+- `docs/SCHEMA_MAPPING.md`：指导书字段、项目字段和冲突处理说明。

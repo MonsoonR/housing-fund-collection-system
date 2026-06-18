@@ -9,14 +9,19 @@ import com.housingfund.collection.mapper.PersonMapper;
 import com.housingfund.collection.mapper.UnitMapper;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
+import com.housingfund.collection.vo.PersonBatchImportResult;
 import com.housingfund.collection.vo.PersonEditForm;
 import com.housingfund.collection.vo.PersonEditResult;
 import com.housingfund.collection.vo.PersonIdConflictResult;
 import com.housingfund.collection.vo.PersonQueryForm;
 import com.housingfund.collection.vo.PersonQueryResult;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.junit.Test;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.math.BigDecimal;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
@@ -268,6 +273,69 @@ public class PersonServiceImplTest {
     }
 
     @Test
+    public void importPersonsOpensAllValidExcelRowsAndSkipsBlankRows() throws Exception {
+        FakeParamMapper paramMapper = mapperWithSeq(1L, 999999999999L);
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
+
+        PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
+                row("000000000010", "李四", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080"),
+                row("", "", "", "", "", "", ""),
+                row("000000000010", "王五", "01身份证", "110105195001010012", "6000.00", "0.080", "0.080")
+        )), "persons.xlsx");
+
+        assertEquals(2, result.getSuccessCount());
+        assertEquals(0, result.getFailureCount());
+        assertTrue(result.getFailures().isEmpty());
+        assertEquals("000000000001", personMapper.selectByIdCard("11010519491231002X").getPerAccNum());
+        assertEquals("000000000002", personMapper.selectByIdCard("110105195001010012").getPerAccNum());
+        assertEquals(Long.valueOf(3L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
+        assertEquals(Integer.valueOf(2), unitMapper.selectByUnitAccNum("000000000010").getPersNum());
+    }
+
+    @Test
+    public void importPersonsReportsDuplicateRowsAndDoesNotCreateAnyAccount() throws Exception {
+        FakeParamMapper paramMapper = mapperWithSeq(1L, 999999999999L);
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
+
+        PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
+                row("000000000010", "李四", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080"),
+                row("000000000010", "李四重复", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080")
+        )), "persons.xlsx");
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals(3, result.getFailures().get(0).getRowNumber());
+        assertEquals("Excel中证件号码重复", result.getFailures().get(0).getMessage());
+        assertNull(personMapper.selectByIdCard("11010519491231002X"));
+        assertEquals(Long.valueOf(1L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
+        assertEquals(Integer.valueOf(0), unitMapper.selectByUnitAccNum("000000000010").getPersNum());
+    }
+
+    @Test
+    public void importPersonsReportsMissingUnitAndDoesNotCreateAnyAccount() throws Exception {
+        FakeParamMapper paramMapper = mapperWithSeq(1L, 999999999999L);
+        FakePersonMapper personMapper = new FakePersonMapper();
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, new FakeUnitMapper(), paramMapper);
+
+        PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
+                row("000000000010", "李四", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080")
+        )), "persons.xlsx");
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(1, result.getFailureCount());
+        assertEquals(2, result.getFailures().get(0).getRowNumber());
+        assertEquals("单位账号不存在或状态非正常", result.getFailures().get(0).getMessage());
+        assertNull(personMapper.selectByIdCard("11010519491231002X"));
+        assertEquals(Long.valueOf(1L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
+    }
+
+    @Test
     public void queryPersonByAccountReturnsResult() {
         FakePersonMapper personMapper = new FakePersonMapper();
         personMapper.addQueryResult(buildQueryPerson());
@@ -502,13 +570,17 @@ public class PersonServiceImplTest {
     }
 
     @Test
-    public void forceUpdatePersonMovesOccupiedIdCardAndUpdatesCurrentPerson() {
+    public void forceUpdatePersonCreatesWrongAccountAndUpdatesCurrentPerson() {
         FakeUnitMapper unitMapper = new FakeUnitMapper();
         unitMapper.insert(buildUnit("000000000010"));
         FakePersonMapper personMapper = new FakePersonMapper();
         personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
-        personMapper.insert(buildEditablePerson("000000000002", "王五", "110105195001010012", "0"));
-        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonBasicInfo occupied = buildEditablePerson("000000000002", "王五", "110105195001010012", "0");
+        occupied.setPerBalance(new BigDecimal("1234.56"));
+        occupied.setRemark("原占用账户备注");
+        personMapper.insert(occupied);
+        FakeParamMapper paramMapper = mapperWithSeq(5L, 999999999999L);
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
         PersonEditForm form = validEditForm("000000000001");
         form.setPerName("李四修改");
         form.setIdCard("110105195001010012");
@@ -517,13 +589,19 @@ public class PersonServiceImplTest {
 
         assertTrue(result.isForceChanged());
         assertEquals("000000000002", result.getConflictPerAccNum());
+        assertEquals("000000000005", result.getWrongAccountPerAccNum());
         assertEquals("110105195001010012", result.getOriginalConflictIdCard());
         assertEquals("910105195001010012", result.getChangedConflictIdCard());
         assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000001").getIdCard());
         assertEquals("李四修改", personMapper.selectByPerAccNum("000000000001").getPerName());
-        assertEquals("910105195001010012", personMapper.selectByPerAccNum("000000000002").getIdCard());
+        assertEquals("910105195001010012", personMapper.selectByPerAccNum("000000000005").getIdCard());
+        assertEquals("王五", personMapper.selectByPerAccNum("000000000005").getPerName());
+        assertEquals(new BigDecimal("1234.56"), personMapper.selectByPerAccNum("000000000005").getPerBalance());
+        assertEquals("原占用账户备注", personMapper.selectByPerAccNum("000000000005").getRemark());
+        assertEquals(Long.valueOf(6L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
         assertNotNull(personMapper.selectByPerAccNum("000000000001"));
         assertNotNull(personMapper.selectByPerAccNum("000000000002"));
+        assertNotNull(personMapper.selectByPerAccNum("000000000005"));
     }
 
     @Test
@@ -697,6 +775,31 @@ public class PersonServiceImplTest {
         form.setIdCard("11010519491231002X");
         form.setBaseNum(new BigDecimal("5000"));
         return form;
+    }
+
+    private static String[] row(String unitAccNum, String perName, String idType, String idCard,
+                                String baseNum, String unitRatio, String perRatio) {
+        return new String[]{unitAccNum, perName, idType, idCard, baseNum, unitRatio, perRatio};
+    }
+
+    private static byte[] excelBytes(String[]... rows) throws Exception {
+        try (XSSFWorkbook workbook = new XSSFWorkbook();
+             ByteArrayOutputStream output = new ByteArrayOutputStream()) {
+            var sheet = workbook.createSheet("persons");
+            Row header = sheet.createRow(0);
+            String[] headers = {"单位账号", "姓名", "证件类型", "证件号码", "缴存基数", "单位比例", "个人比例"};
+            for (int i = 0; i < headers.length; i++) {
+                header.createCell(i).setCellValue(headers[i]);
+            }
+            for (int r = 0; r < rows.length; r++) {
+                Row row = sheet.createRow(r + 1);
+                for (int c = 0; c < rows[r].length; c++) {
+                    row.createCell(c).setCellValue(rows[r][c]);
+                }
+            }
+            workbook.write(output);
+            return output.toByteArray();
+        }
     }
 
     private static PersonEditForm validEditForm(String perAccNum) {

@@ -6,7 +6,7 @@
 
 | 指导书字段名 | 项目实际字段名 | 是否一致 | 说明 |
 | --- | --- | --- | --- |
-| SEQNAME | SEQNAME | 是 | 键值信息 |
+| SEQNAME | SEQNAME | 是 | `CHAR(20)`，键值信息 |
 | SEQ | SEQ | 是 | 当前序号 |
 | MAXSEQ | MAXSEQ | 是 | 最大序号 |
 | DESC | DESC | 是 | MySQL 中使用反引号 `` `DESC` `` |
@@ -46,6 +46,12 @@
 | OP | OP | 是 | op |
 | CREATDATE | CREATDATE | 是 | createDate |
 | REMARK | REMARK | 是 | remark |
+
+字段类型对齐说明：
+
+- `BALANCE`、`BASENUMBER`、`UNITPAYSUM`、`PERPAYSUM` 使用 `DECIMAL(16,2)`。
+- `INSTCODE` 使用 `CHAR(8)`。
+- `ORGCODE` 指导书表结构写作 `CHARACTER(20)`，交易要素要求 9 位。项目数据库采用 `CHAR(20)` 对齐表结构，Service/JSP 校验仍按 9 位组织机构代码执行。
 
 旧字段迁移结果：
 
@@ -89,6 +95,12 @@
 | 姓名 | PERNAME | 是 | 指导书个人开户、个人资料修改交易要素要求，但 2.3.1 表结构未完整列出 |
 | 证件类型 | IDTYPE | 是 | 指导书个人开户、个人资料修改交易要素要求 |
 | 证件号码 | IDCARD | 是 | 指导书个人开户、个人资料修改交易要素要求 |
+
+字段类型对齐说明：
+
+- `BALANCE`、`BASENUMBER`、`UNITMONPAYSUM`、`PERMONPAYSUM`、`YPAYAMT`、`YDRAWAMT`、`YINTERESTBAL` 使用 `DECIMAL(16,2)`。
+- `INSTCODE` 使用 `CHAR(8)`。
+- `PERNAME`、`IDTYPE`、`IDCARD` 继续保留，因为个人开户、个人资料修改和 Excel 批量导入都必须保存姓名、证件类型和证件号码。
 
 旧字段迁移结果：
 
