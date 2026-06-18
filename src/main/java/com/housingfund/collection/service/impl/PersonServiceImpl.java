@@ -12,6 +12,8 @@ import com.housingfund.collection.util.AccountNumberUtil;
 import com.housingfund.collection.util.IdCardUtil;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
+import com.housingfund.collection.vo.PersonQueryForm;
+import com.housingfund.collection.vo.PersonQueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -27,6 +30,7 @@ public class PersonServiceImpl implements PersonService {
     private static final String ID_TYPE_RESIDENT = "居民身份证";
     private static final String STATUS_NORMAL = "0";
     private static final String STATUS_CLOSED = "9";
+    private static final DateTimeFormatter PAY_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
 
     private final PersonMapper personMapper;
     private final UnitMapper unitMapper;
@@ -76,6 +80,23 @@ public class PersonServiceImpl implements PersonService {
         }
 
         return buildResult(person, unit);
+    }
+
+    @Override
+    public PersonQueryResult queryPerson(PersonQueryForm form) {
+        validateQuery(form);
+
+        PersonQueryResult result;
+        if (form.getPerAccNum() != null) {
+            result = personMapper.selectQueryByPerAccNum(form.getPerAccNum());
+        } else {
+            result = personMapper.selectQueryByIdCard(form.getIdCard());
+        }
+        if (result == null) {
+            return null;
+        }
+        fillQueryComputedFields(result);
+        return result;
     }
 
     private PersonBasicInfo insertNewPerson(PersonOpenForm form, UnitBasicInfo unit, BigDecimal baseNum,
@@ -191,6 +212,38 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
+    private void validateQuery(PersonQueryForm form) {
+        if (form == null) {
+            throw new BusinessException("请输入个人账号或身份证号");
+        }
+        form.setPerAccNum(trimToNull(form.getPerAccNum()));
+        form.setIdCard(trimToNull(form.getIdCard()));
+        if (form.getPerAccNum() == null && form.getIdCard() == null) {
+            throw new BusinessException("请输入个人账号或身份证号");
+        }
+        if (form.getPerAccNum() != null && !AccountNumberUtil.isValidAccountNumber(form.getPerAccNum())) {
+            throw new BusinessException("个人账号长度必须为12位");
+        }
+        if (form.getPerAccNum() == null && form.getIdCard() != null) {
+            form.setIdCard(form.getIdCard().toUpperCase());
+            if (!IdCardUtil.isValid(form.getIdCard())) {
+                throw new BusinessException("身份证号不正确");
+            }
+        }
+    }
+
+    private void fillQueryComputedFields(PersonQueryResult result) {
+        result.setUnitRatio(zeroIfNull(result.getUnitRatio()));
+        result.setPerRatio(zeroIfNull(result.getPerRatio()));
+        result.setTotalRatio(result.getUnitRatio().add(result.getPerRatio()));
+        result.setUnitMonthPay(zeroIfNull(result.getUnitMonthPay()));
+        result.setPerMonthPay(zeroIfNull(result.getPerMonthPay()));
+        result.setTotalMonthPay(result.getUnitMonthPay().add(result.getPerMonthPay()));
+        result.setPerBalance(zeroIfNull(result.getPerBalance()));
+        result.setLastPayMonth(result.getLastPayDate() == null ? "" : result.getLastPayDate().format(PAY_MONTH_FORMATTER));
+        result.setStatusText(personStateText(result.getStatus()));
+    }
+
     private BigDecimal calculateMonthPay(BigDecimal baseNum, BigDecimal ratio) {
         if (ratio == null) {
             throw new BusinessException("单位缴存比例参数不完整");
@@ -212,5 +265,19 @@ public class PersonServiceImpl implements PersonService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private BigDecimal zeroIfNull(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
+    }
+
+    private String personStateText(String status) {
+        if (STATUS_NORMAL.equals(status)) {
+            return "正常";
+        }
+        if (STATUS_CLOSED.equals(status)) {
+            return "销户";
+        }
+        return "未知";
     }
 }

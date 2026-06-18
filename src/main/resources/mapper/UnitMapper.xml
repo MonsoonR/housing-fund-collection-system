@@ -62,6 +62,14 @@
         LIMIT 1
     </select>
 
+    <select id="selectByUnitNameLike" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb002
+        WHERE `UNITNAME` LIKE CONCAT('%', #{unitName}, '%')
+        ORDER BY `UNITACCNUM`
+    </select>
+
     <insert id="insert" parameterType="UnitBasicInfo">
         INSERT INTO tb002 (
             `UNITACCNUM`, `UNITNAME`, `UNITADDR`, `ORGCODE`, `UNITKIND`, `UNITTYPE`,

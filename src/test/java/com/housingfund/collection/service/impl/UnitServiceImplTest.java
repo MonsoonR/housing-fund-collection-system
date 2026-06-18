@@ -7,6 +7,8 @@ import com.housingfund.collection.mapper.ParamMapper;
 import com.housingfund.collection.mapper.UnitMapper;
 import com.housingfund.collection.vo.UnitOpenForm;
 import com.housingfund.collection.vo.UnitOpenResult;
+import com.housingfund.collection.vo.UnitQueryForm;
+import com.housingfund.collection.vo.UnitQueryResult;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -18,6 +20,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class UnitServiceImplTest {
@@ -113,6 +116,76 @@ public class UnitServiceImplTest {
         assertEquals(Long.valueOf(8L), paramMapper.selectBySeqname("UNITACCNUM").getSeq());
     }
 
+    @Test
+    public void queryUnitsByAccountReturnsSingleResult() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildQueryUnit("000000000010", "测试单位"));
+        UnitServiceImpl service = new UnitServiceImpl(unitMapper, mapperWithSeq(1L, 999999999999L));
+        UnitQueryForm form = new UnitQueryForm();
+        form.setUnitAccNum("000000000010");
+        form.setUnitName("忽略名称");
+
+        List<UnitQueryResult> results = service.queryUnits(form);
+
+        assertEquals(1, results.size());
+        UnitQueryResult result = results.get(0);
+        assertEquals("测试单位", result.getUnitName());
+        assertEquals("000000000010", result.getUnitAccNum());
+        assertEquals("测试地址", result.getUnitAddr());
+        assertEquals("张三", result.getAgentName());
+        assertEquals("0551-12345678", result.getPhone());
+        assertEquals(new BigDecimal("1000.00"), result.getBalance());
+        assertEquals(new BigDecimal("0.080"), result.getUnitRatio());
+        assertEquals(new BigDecimal("0.070"), result.getPerRatio());
+        assertEquals(new BigDecimal("0.150"), result.getTotalRatio());
+        assertEquals("2026-05", result.getLastPayMonth());
+        assertEquals(new BigDecimal("800.00"), result.getUnitMonthPay());
+        assertEquals(new BigDecimal("700.00"), result.getPerMonthPay());
+        assertEquals(new BigDecimal("1500.00"), result.getTotalMonthPay());
+        assertEquals(Integer.valueOf(5), result.getPersNum());
+        assertEquals("正常", result.getAccStateText());
+    }
+
+    @Test
+    public void queryUnitsByNameLikeReturnsMultipleResults() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildQueryUnit("000000000010", "测试单位一"));
+        unitMapper.insert(buildQueryUnit("000000000011", "测试单位二"));
+        unitMapper.insert(buildQueryUnit("000000000012", "其他单位"));
+        UnitServiceImpl service = new UnitServiceImpl(unitMapper, mapperWithSeq(1L, 999999999999L));
+        UnitQueryForm form = new UnitQueryForm();
+        form.setUnitName("测试");
+
+        List<UnitQueryResult> results = service.queryUnits(form);
+
+        assertEquals(2, results.size());
+        assertEquals("000000000010", results.get(0).getUnitAccNum());
+        assertEquals("000000000011", results.get(1).getUnitAccNum());
+    }
+
+    @Test
+    public void queryUnitsRejectsEmptyCondition() {
+        UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.queryUnits(new UnitQueryForm());
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("请输入单位账号或单位名称", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void queryUnitsReturnsEmptyListWhenNotFound() {
+        UnitServiceImpl service = new UnitServiceImpl(new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        UnitQueryForm form = new UnitQueryForm();
+        form.setUnitAccNum("000000009999");
+
+        List<UnitQueryResult> results = service.queryUnits(form);
+
+        assertTrue(results.isEmpty());
+    }
+
     private static FakeParamMapper mapperWithSeq(Long seq, Long maxseq) {
         FakeParamMapper mapper = new FakeParamMapper();
         mapper.insert(buildParam(seq, maxseq));
@@ -143,6 +216,27 @@ public class UnitServiceImplTest {
         form.setPerRatio(new BigDecimal("0.080"));
         form.setRemark("测试备注");
         return form;
+    }
+
+    private static UnitBasicInfo buildQueryUnit(String unitAccNum, String unitName) {
+        UnitBasicInfo unit = new UnitBasicInfo();
+        unit.setUnitAccNum(unitAccNum);
+        unit.setUnitName(unitName);
+        unit.setUnitAddr("测试地址");
+        unit.setOrgCode("A12345678");
+        unit.setPhone("0551-12345678");
+        unit.setAgentName("张三");
+        unit.setUnitRatio(new BigDecimal("0.080"));
+        unit.setPerRatio(new BigDecimal("0.070"));
+        unit.setAccState("0");
+        unit.setBalance(new BigDecimal("1000.00"));
+        unit.setBaseNumber(new BigDecimal("10000.00"));
+        unit.setUnitPaySum(new BigDecimal("800.00"));
+        unit.setPerPaySum(new BigDecimal("700.00"));
+        unit.setPersNum(5);
+        unit.setLastPayDate(LocalDate.of(2026, 5, 1));
+        unit.setCreateDate(LocalDate.of(2026, 1, 1));
+        return unit;
     }
 
     private static class FakeParamMapper implements ParamMapper {
@@ -231,6 +325,17 @@ public class UnitServiceImplTest {
                 }
             }
             return null;
+        }
+
+        @Override
+        public List<UnitBasicInfo> selectByUnitNameLike(String unitName) {
+            List<UnitBasicInfo> results = new ArrayList<>();
+            for (UnitBasicInfo unit : data.values()) {
+                if (unit.getUnitName() != null && unit.getUnitName().contains(unitName)) {
+                    results.add(unit);
+                }
+            }
+            return results;
         }
 
         @Override

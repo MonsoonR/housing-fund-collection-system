@@ -106,12 +106,12 @@
             <span>待实现</span>
         </article>
         <article class="module">
-            <strong>单位信息查询</strong>
-            <span>待实现</span>
+            <strong><a href="${pageContext.request.contextPath}/units/query">单位信息查询</a></strong>
+            <span>按单位账号或名称查询单位信息</span>
         </article>
         <article class="module">
-            <strong>个人信息查询</strong>
-            <span>待实现</span>
+            <strong><a href="${pageContext.request.contextPath}/persons/query">个人信息查询</a></strong>
+            <span>按个人账号或身份证号查询个人信息</span>
         </article>
     </section>
 

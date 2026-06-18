@@ -4,6 +4,8 @@ import com.housingfund.collection.exception.BusinessException;
 import com.housingfund.collection.service.UnitService;
 import com.housingfund.collection.vo.UnitOpenForm;
 import com.housingfund.collection.vo.UnitOpenResult;
+import com.housingfund.collection.vo.UnitQueryForm;
+import com.housingfund.collection.vo.UnitQueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -12,6 +14,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.List;
 
 @Controller
 @RequestMapping("/units")
@@ -47,6 +51,33 @@ public class UnitController {
         } catch (BusinessException ex) {
             model.addAttribute("error", ex.getMessage());
             return "unit/open";
+        }
+    }
+
+    @GetMapping("/query")
+    public String queryForm(Model model) {
+        if (!model.containsAttribute("unitQueryForm")) {
+            model.addAttribute("unitQueryForm", new UnitQueryForm());
+        }
+        return "unit/query";
+    }
+
+    @PostMapping("/query")
+    public String query(@ModelAttribute("unitQueryForm") UnitQueryForm form,
+                        BindingResult bindingResult,
+                        Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "表单数据格式不正确");
+            return "unit/query";
+        }
+        try {
+            List<UnitQueryResult> results = unitService.queryUnits(form);
+            model.addAttribute("queryResults", results);
+            model.addAttribute("searched", true);
+            return "unit/query";
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "unit/query";
         }
     }
 }

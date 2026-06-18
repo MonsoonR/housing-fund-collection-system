@@ -9,6 +9,8 @@ import com.housingfund.collection.mapper.PersonMapper;
 import com.housingfund.collection.mapper.UnitMapper;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
+import com.housingfund.collection.vo.PersonQueryForm;
+import com.housingfund.collection.vo.PersonQueryResult;
 import org.junit.Test;
 
 import java.math.BigDecimal;
@@ -20,6 +22,7 @@ import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 public class PersonServiceImplTest {
@@ -151,6 +154,85 @@ public class PersonServiceImplTest {
         assertEquals(new BigDecimal("400.00"), personMapper.selectByPerAccNum("000000000088").getUnitMonthPay());
     }
 
+    @Test
+    public void queryPersonByAccountReturnsResult() {
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.addQueryResult(buildQueryPerson());
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        PersonQueryForm form = new PersonQueryForm();
+        form.setPerAccNum("000000000001");
+        form.setIdCard("11010519491231002X");
+
+        PersonQueryResult result = service.queryPerson(form);
+
+        assertNotNull(result);
+        assertEquals("测试单位", result.getUnitName());
+        assertEquals("000000000010", result.getUnitAccNum());
+        assertEquals("李四", result.getPerName());
+        assertEquals("000000000001", result.getPerAccNum());
+        assertEquals("11010519491231002X", result.getIdCard());
+        assertEquals(new BigDecimal("0.080"), result.getUnitRatio());
+        assertEquals(new BigDecimal("0.070"), result.getPerRatio());
+        assertEquals(new BigDecimal("0.150"), result.getTotalRatio());
+        assertEquals(new BigDecimal("400.00"), result.getUnitMonthPay());
+        assertEquals(new BigDecimal("350.00"), result.getPerMonthPay());
+        assertEquals(new BigDecimal("750.00"), result.getTotalMonthPay());
+        assertEquals("2026-05", result.getLastPayMonth());
+        assertEquals("正常", result.getStatusText());
+    }
+
+    @Test
+    public void queryPersonByIdCardReturnsResult() {
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.addQueryResult(buildQueryPerson());
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        PersonQueryForm form = new PersonQueryForm();
+        form.setIdCard("11010519491231002X");
+
+        PersonQueryResult result = service.queryPerson(form);
+
+        assertNotNull(result);
+        assertEquals("000000000001", result.getPerAccNum());
+        assertEquals("李四", result.getPerName());
+    }
+
+    @Test
+    public void queryPersonRejectsEmptyCondition() {
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.queryPerson(new PersonQueryForm());
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("请输入个人账号或身份证号", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void queryPersonRejectsInvalidIdCard() {
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        PersonQueryForm form = new PersonQueryForm();
+        form.setIdCard("123456");
+
+        try {
+            service.queryPerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("身份证号不正确", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void queryPersonReturnsNullWhenNotFound() {
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        PersonQueryForm form = new PersonQueryForm();
+        form.setPerAccNum("000000009999");
+
+        PersonQueryResult result = service.queryPerson(form);
+
+        assertNull(result);
+    }
+
     private static FakeParamMapper mapperWithSeq(Long seq, Long maxseq) {
         FakeParamMapper mapper = new FakeParamMapper();
         mapper.insert(buildParam(seq, maxseq));
@@ -209,6 +291,24 @@ public class PersonServiceImplTest {
         form.setPhone("13800138000");
         form.setAddress("测试地址");
         return form;
+    }
+
+    private static PersonQueryResult buildQueryPerson() {
+        PersonQueryResult result = new PersonQueryResult();
+        result.setUnitName("测试单位");
+        result.setUnitAccNum("000000000010");
+        result.setPerName("李四");
+        result.setPerAccNum("000000000001");
+        result.setIdCard("11010519491231002X");
+        result.setPerBalance(new BigDecimal("2000.00"));
+        result.setCreateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        result.setLastPayDate(java.time.LocalDate.of(2026, 5, 1));
+        result.setUnitRatio(new BigDecimal("0.080"));
+        result.setPerRatio(new BigDecimal("0.070"));
+        result.setUnitMonthPay(new BigDecimal("400.00"));
+        result.setPerMonthPay(new BigDecimal("350.00"));
+        result.setStatus("0");
+        return result;
     }
 
     private static class FakeParamMapper implements ParamMapper {
@@ -295,6 +395,11 @@ public class PersonServiceImplTest {
         }
 
         @Override
+        public List<UnitBasicInfo> selectByUnitNameLike(String unitName) {
+            return new ArrayList<>();
+        }
+
+        @Override
         public int insert(UnitBasicInfo unit) {
             data.put(unit.getUnitAccNum(), unit);
             return 1;
@@ -317,6 +422,13 @@ public class PersonServiceImplTest {
 
     private static class FakePersonMapper implements PersonMapper {
         private final Map<String, PersonBasicInfo> data = new LinkedHashMap<>();
+        private final Map<String, PersonQueryResult> queryByAccount = new LinkedHashMap<>();
+        private final Map<String, PersonQueryResult> queryByIdCard = new LinkedHashMap<>();
+
+        void addQueryResult(PersonQueryResult result) {
+            queryByAccount.put(result.getPerAccNum(), result);
+            queryByIdCard.put(result.getIdCard(), result);
+        }
 
         @Override
         public PersonBasicInfo selectByPerAccNum(String perAccNum) {
@@ -337,6 +449,16 @@ public class PersonServiceImplTest {
         public PersonBasicInfo selectNormalByIdCard(String idCard) {
             PersonBasicInfo person = selectByIdCard(idCard);
             return person != null && "0".equals(person.getStatus()) ? person : null;
+        }
+
+        @Override
+        public PersonQueryResult selectQueryByPerAccNum(String perAccNum) {
+            return queryByAccount.get(perAccNum);
+        }
+
+        @Override
+        public PersonQueryResult selectQueryByIdCard(String idCard) {
+            return queryByIdCard.get(idCard);
         }
 
         @Override

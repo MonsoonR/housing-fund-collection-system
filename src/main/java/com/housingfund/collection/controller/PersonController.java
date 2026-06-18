@@ -4,6 +4,8 @@ import com.housingfund.collection.exception.BusinessException;
 import com.housingfund.collection.service.PersonService;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
+import com.housingfund.collection.vo.PersonQueryForm;
+import com.housingfund.collection.vo.PersonQueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -51,6 +53,33 @@ public class PersonController {
         } catch (BusinessException ex) {
             model.addAttribute("error", ex.getMessage());
             return "person/open";
+        }
+    }
+
+    @GetMapping("/query")
+    public String queryForm(Model model) {
+        if (!model.containsAttribute("personQueryForm")) {
+            model.addAttribute("personQueryForm", new PersonQueryForm());
+        }
+        return "person/query";
+    }
+
+    @PostMapping("/query")
+    public String query(@ModelAttribute("personQueryForm") PersonQueryForm form,
+                        BindingResult bindingResult,
+                        Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "表单数据格式不正确");
+            return "person/query";
+        }
+        try {
+            PersonQueryResult result = personService.queryPerson(form);
+            model.addAttribute("queryResult", result);
+            model.addAttribute("searched", true);
+            return "person/query";
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "person/query";
         }
     }
 }

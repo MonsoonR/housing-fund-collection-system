@@ -4,6 +4,7 @@ import com.housingfund.collection.entity.UnitBasicInfo;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 public interface UnitMapper {
 
@@ -12,6 +13,8 @@ public interface UnitMapper {
     UnitBasicInfo selectNormalByUnitAccNum(@Param("unitAccNum") String unitAccNum);
 
     UnitBasicInfo selectNormalByOrgCode(@Param("orgCode") String orgCode);
+
+    List<UnitBasicInfo> selectByUnitNameLike(@Param("unitName") String unitName);
 
     int insert(UnitBasicInfo unit);
 

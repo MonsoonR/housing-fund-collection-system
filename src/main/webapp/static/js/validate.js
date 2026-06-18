@@ -162,6 +162,45 @@
         return true;
     };
 
+    window.validateUnitQueryForm = function (form) {
+        var unitAccNum = trim(form.elements["unitAccNum"].value);
+        var unitName = trim(form.elements["unitName"].value);
+
+        if (!unitAccNum && !unitName) {
+            alert("请输入单位账号或单位名称");
+            form.elements["unitAccNum"].focus();
+            return false;
+        }
+        if (unitAccNum && !/^\d{12}$/.test(unitAccNum)) {
+            alert("单位账号长度必须为12位");
+            form.elements["unitAccNum"].focus();
+            return false;
+        }
+        return true;
+    };
+
+    window.validatePersonQueryForm = function (form) {
+        var perAccNum = trim(form.elements["perAccNum"].value);
+        var idCard = trim(form.elements["idCard"].value);
+
+        if (!perAccNum && !idCard) {
+            alert("请输入个人账号或身份证号");
+            form.elements["perAccNum"].focus();
+            return false;
+        }
+        if (perAccNum && !/^\d{12}$/.test(perAccNum)) {
+            alert("个人账号长度必须为12位");
+            form.elements["perAccNum"].focus();
+            return false;
+        }
+        if (!perAccNum && idCard && !isValidIdCard(idCard)) {
+            alert("身份证号不正确");
+            form.elements["idCard"].focus();
+            return false;
+        }
+        return true;
+    };
+
     function isRatioInRange(value) {
         if (!/^0\.\d{3}$/.test(value)) {
             return false;

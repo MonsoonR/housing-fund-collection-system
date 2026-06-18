@@ -23,6 +23,22 @@
         <result column="UPDATE_TIME" property="updateTime"/>
     </resultMap>
 
+    <resultMap id="PersonQueryResultMap" type="com.housingfund.collection.vo.PersonQueryResult">
+        <result column="UNITNAME" property="unitName"/>
+        <result column="UNITACCNUM" property="unitAccNum"/>
+        <result column="PERNAME" property="perName"/>
+        <result column="PERACCNUM" property="perAccNum"/>
+        <result column="IDCARD" property="idCard"/>
+        <result column="PERBALANCE" property="perBalance"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="LASTPAYDATE" property="lastPayDate"/>
+        <result column="UNITRATIO" property="unitRatio"/>
+        <result column="PERRATIO" property="perRatio"/>
+        <result column="UNITMONTHPAY" property="unitMonthPay"/>
+        <result column="PERMONTHPAY" property="perMonthPay"/>
+        <result column="STATUS" property="status"/>
+    </resultMap>
+
     <sql id="BaseColumns">
         `PERACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `PHONE`, `ADDRESS`,
         `BASENUM`, `UNITRATIO`, `PERRATIO`, `UNITMONTHPAY`, `PERMONTHPAY`,
@@ -50,6 +66,48 @@
         FROM tb003
         WHERE `IDCARD` = #{idCard}
           AND `STATUS` = '0'
+        LIMIT 1
+    </select>
+
+    <select id="selectQueryByPerAccNum" resultMap="PersonQueryResultMap">
+        SELECT
+            p.`PERACCNUM`,
+            p.`UNITACCNUM`,
+            p.`PERNAME`,
+            p.`IDCARD`,
+            p.`PERBALANCE`,
+            p.`CREATE_TIME`,
+            p.`UNITRATIO`,
+            p.`PERRATIO`,
+            p.`UNITMONTHPAY`,
+            p.`PERMONTHPAY`,
+            p.`STATUS`,
+            u.`UNITNAME`,
+            u.`LASTPAYDATE`
+        FROM tb003 p
+        LEFT JOIN tb002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`PERACCNUM` = #{perAccNum}
+        LIMIT 1
+    </select>
+
+    <select id="selectQueryByIdCard" resultMap="PersonQueryResultMap">
+        SELECT
+            p.`PERACCNUM`,
+            p.`UNITACCNUM`,
+            p.`PERNAME`,
+            p.`IDCARD`,
+            p.`PERBALANCE`,
+            p.`CREATE_TIME`,
+            p.`UNITRATIO`,
+            p.`PERRATIO`,
+            p.`UNITMONTHPAY`,
+            p.`PERMONTHPAY`,
+            p.`STATUS`,
+            u.`UNITNAME`,
+            u.`LASTPAYDATE`
+        FROM tb003 p
+        LEFT JOIN tb002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`IDCARD` = #{idCard}
         LIMIT 1
     </select>
 

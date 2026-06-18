@@ -1,6 +1,6 @@
 # 住房公积金管理系统——筹集子系统
 
-本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块和个人开户模块。
+本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块、个人开户模块、单位信息查询模块和个人信息查询模块。
 
 ## 技术栈
 
@@ -49,8 +49,10 @@ src/main/webapp/
   WEB-INF/jsp/param/list.jsp
   WEB-INF/jsp/unit/open.jsp
   WEB-INF/jsp/unit/receipt.jsp
+  WEB-INF/jsp/unit/query.jsp
   WEB-INF/jsp/person/open.jsp
   WEB-INF/jsp/person/receipt.jsp
+  WEB-INF/jsp/person/query.jsp
 src/test/java/com/housingfund/collection/
   service/impl/ParamServiceImplTest.java
   service/impl/UnitServiceImplTest.java
@@ -107,6 +109,8 @@ target/housingfund-collection.war
 - 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
 - 2026-06-18：完成个人开户闭环后，使用 `mvn clean package`。
 - 结果：构建成功，20 个测试通过，生成 `target/housingfund-collection.war`。
+- 2026-06-18：完成单位信息查询和个人信息查询后，使用 `mvn clean package`。
+- 结果：构建成功，30 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
@@ -122,6 +126,8 @@ http://localhost:8080/housingfund-collection/
 http://localhost:8080/housingfund-collection/params
 http://localhost:8080/housingfund-collection/units/open
 http://localhost:8080/housingfund-collection/persons/open
+http://localhost:8080/housingfund-collection/units/query
+http://localhost:8080/housingfund-collection/persons/query
 ```
 
 ## 当前阶段已包含
@@ -135,12 +141,15 @@ http://localhost:8080/housingfund-collection/persons/open
 - 系统参数维护 JSP：`param/list.jsp`、`param/form.jsp`
 - 单位开户 JSP：`unit/open.jsp`、`unit/receipt.jsp`
 - 个人开户 JSP：`person/open.jsp`、`person/receipt.jsp`
+- 查询 JSP：`unit/query.jsp`、`person/query.jsp`
 - 前端基础校验脚本：`static/js/validate.js`
 - `tb001`、`tb002`、`tb003` 数据库脚本
 - 基础 controller、entity、util、exception
 - 系统参数维护模块：新增、删除、修改、查询 `tb001`
 - 单位开户模块：录入单位资料、生成单位账号、写入 `tb002`、更新 `UNITACCNUM.seq`
 - 个人开户模块：录入个人资料、生成或重新启用个人账号、写入 `tb003`、更新 `PERACCNUM.seq` 和单位汇总字段
+- 单位信息查询模块：按单位账号精确查询，或按单位名称模糊查询，展示单位汇总和缴存信息
+- 个人信息查询模块：按个人账号或身份证号精确查询，关联显示缴存单位和个人缴存信息
 - 系统参数 Service 单元测试类：`ParamServiceImplTest`
 - 单位开户 Service 单元测试类：`UnitServiceImplTest`
 - 个人开户 Service 单元测试类：`PersonServiceImplTest`
@@ -258,10 +267,59 @@ http://localhost:8080/housingfund-collection/persons/open
 9. 输入缴存基数 `0` 或负数，确认页面或后端提示“缴存基数必须大于0”。
 10. 将已有个人账户 `STATUS` 手工改为 `9` 后，用相同身份证号再次开户，确认原个人账号被重新启用且 `PERACCNUM.seq` 不增加。
 
+## 单位信息查询模块
+
+访问入口：
+
+```text
+http://localhost:8080/housingfund-collection/units/query
+```
+
+支持功能：
+
+- 输入单位账号时按 12 位单位账号精确查询。
+- 未输入单位账号但输入单位名称时，按单位名称模糊查询。
+- 两个条件都为空时提示“请输入单位账号或单位名称”。
+- 查询无结果时页面显示“未查询到单位信息”。
+- 查询结果展示单位名称、单位账号、单位地址、经办人姓名、联系电话、公积金余额、单位比例、个人比例、合计比例、最后汇缴月、单位月缴额、个人月缴额、合计月缴额、单位人数和账户状态。
+
+手动测试步骤：
+
+1. 访问 `/units/query`。
+2. 输入已有单位账号，例如 `000000000001`，确认结果表格显示该单位的完整信息。
+3. 清空单位账号，输入单位名称关键字，例如 `测试`，确认可返回多个匹配单位。
+4. 两个查询条件都留空提交，确认提示“请输入单位账号或单位名称”。
+5. 输入不存在的单位账号，例如 `000000009999`，确认显示“未查询到单位信息”。
+6. 输入非 12 位单位账号，确认前端或后端提示“单位账号长度必须为12位”。
+
+## 个人信息查询模块
+
+访问入口：
+
+```text
+http://localhost:8080/housingfund-collection/persons/query
+```
+
+支持功能：
+
+- 输入个人账号时按 12 位个人账号精确查询。
+- 未输入个人账号但输入身份证号时，按身份证号精确查询。
+- 两个条件都为空时提示“请输入个人账号或身份证号”。
+- 查询无结果时页面显示“未查询到个人信息”。
+- 查询结果关联 `tb003` 和 `tb002`，展示缴存单位全称、缴存单位账号、姓名、个人账号、身份证号、余额、开户时间、最后汇缴月、单位比例、个人比例、合计比例、单位月缴额、个人月缴额、合计月缴额和个人账户状态。
+
+手动测试步骤：
+
+1. 先确认已有个人开户数据，可用 `/persons/open` 创建个人账户。
+2. 访问 `/persons/query`。
+3. 输入已有个人账号，例如 `000000000001`，确认显示该个人及其缴存单位信息。
+4. 清空个人账号，输入身份证号，例如 `11010519491231002X`，确认可按身份证号查询。
+5. 两个查询条件都留空提交，确认提示“请输入个人账号或身份证号”。
+6. 输入不存在的个人账号，例如 `000000009999`，确认显示“未查询到个人信息”。
+7. 输入错误身份证号，例如 `123456`，确认前端或后端提示“身份证号不正确”。
+
 ## 当前未完成
 
 - 单位资料修改
 - 个人资料修改
-- 单位信息查询
-- 个人信息查询
 - 其他业务模块的 Service、Mapper、VO 和业务 JSP 页面

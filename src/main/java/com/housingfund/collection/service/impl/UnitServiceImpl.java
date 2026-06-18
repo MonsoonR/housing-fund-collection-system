@@ -11,18 +11,24 @@ import com.housingfund.collection.util.DateUtil;
 import com.housingfund.collection.util.IdCardUtil;
 import com.housingfund.collection.vo.UnitOpenForm;
 import com.housingfund.collection.vo.UnitOpenResult;
+import com.housingfund.collection.vo.UnitQueryForm;
+import com.housingfund.collection.vo.UnitQueryResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @Service
 public class UnitServiceImpl implements UnitService {
 
     private static final String UNIT_SEQUENCE_NAME = "UNITACCNUM";
+    private static final DateTimeFormatter PAY_MONTH_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM");
     private static final BigDecimal MIN_RATIO = new BigDecimal("0.050");
     private static final BigDecimal MAX_RATIO = new BigDecimal("0.120");
     private static final Set<String> UNIT_KINDS = Set.of("1", "2", "3", "4", "5");
@@ -71,6 +77,27 @@ public class UnitServiceImpl implements UnitService {
         }
 
         return buildResult(unit);
+    }
+
+    @Override
+    public List<UnitQueryResult> queryUnits(UnitQueryForm form) {
+        validateQuery(form);
+
+        List<UnitBasicInfo> units = new ArrayList<>();
+        if (form.getUnitAccNum() != null) {
+            UnitBasicInfo unit = unitMapper.selectByUnitAccNum(form.getUnitAccNum());
+            if (unit != null) {
+                units.add(unit);
+            }
+        } else {
+            units.addAll(unitMapper.selectByUnitNameLike(form.getUnitName()));
+        }
+
+        List<UnitQueryResult> results = new ArrayList<>();
+        for (UnitBasicInfo unit : units) {
+            results.add(buildQueryResult(unit));
+        }
+        return results;
     }
 
     private UnitBasicInfo buildUnit(UnitOpenForm form, String unitAccNum, LocalDate createDate) {
@@ -148,6 +175,41 @@ public class UnitServiceImpl implements UnitService {
         form.setRemark(trimToNull(form.getRemark()));
     }
 
+    private void validateQuery(UnitQueryForm form) {
+        if (form == null) {
+            throw new BusinessException("请输入单位账号或单位名称");
+        }
+        form.setUnitAccNum(trimToNull(form.getUnitAccNum()));
+        form.setUnitName(trimToNull(form.getUnitName()));
+        if (form.getUnitAccNum() == null && form.getUnitName() == null) {
+            throw new BusinessException("请输入单位账号或单位名称");
+        }
+        if (form.getUnitAccNum() != null && !AccountNumberUtil.isValidAccountNumber(form.getUnitAccNum())) {
+            throw new BusinessException("单位账号长度必须为12位");
+        }
+    }
+
+    private UnitQueryResult buildQueryResult(UnitBasicInfo unit) {
+        UnitQueryResult result = new UnitQueryResult();
+        result.setUnitName(unit.getUnitName());
+        result.setUnitAccNum(unit.getUnitAccNum());
+        result.setUnitAddr(unit.getUnitAddr());
+        result.setAgentName(unit.getAgentName());
+        result.setPhone(unit.getPhone());
+        result.setBalance(zeroIfNull(unit.getBalance()));
+        result.setUnitRatio(zeroIfNull(unit.getUnitRatio()));
+        result.setPerRatio(zeroIfNull(unit.getPerRatio()));
+        result.setTotalRatio(result.getUnitRatio().add(result.getPerRatio()));
+        result.setLastPayMonth(formatPayMonth(unit.getLastPayDate()));
+        result.setUnitMonthPay(zeroIfNull(unit.getUnitPaySum()));
+        result.setPerMonthPay(zeroIfNull(unit.getPerPaySum()));
+        result.setTotalMonthPay(result.getUnitMonthPay().add(result.getPerMonthPay()));
+        result.setPersNum(unit.getPersNum());
+        result.setAccState(unit.getAccState());
+        result.setAccStateText(unitStateText(unit.getAccState()));
+        return result;
+    }
+
     private void validateRatio(BigDecimal value, String nullMessage, String rangeMessage) {
         if (value == null) {
             throw new BusinessException(nullMessage);
@@ -171,5 +233,20 @@ public class UnitServiceImpl implements UnitService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private BigDecimal zeroIfNull(BigDecimal value) {
+        return value == null ? BigDecimal.ZERO : value;
+    }
+
+    private String formatPayMonth(LocalDate value) {
+        return value == null ? "" : value.format(PAY_MONTH_FORMATTER);
+    }
+
+    private String unitStateText(String accState) {
+        if ("0".equals(accState)) {
+            return "正常";
+        }
+        return "非正常";
     }
 }
