@@ -81,7 +81,7 @@
 <main class="page">
     <section class="header">
         <h1>${systemName}</h1>
-        <p>传统 Maven SSM Web 项目。当前阶段提供系统参数维护、开户、资料修改和信息查询 7 个核心入口。</p>
+        <p>传统 Maven SSM Web 项目。已完成系统参数维护、开户、资料修改和信息查询 7 个核心模块。</p>
     </section>
 
     <section class="modules" aria-label="功能模块">
