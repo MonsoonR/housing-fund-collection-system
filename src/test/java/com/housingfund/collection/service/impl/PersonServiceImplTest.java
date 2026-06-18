@@ -9,11 +9,16 @@ import com.housingfund.collection.mapper.PersonMapper;
 import com.housingfund.collection.mapper.UnitMapper;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
+import com.housingfund.collection.vo.PersonEditForm;
+import com.housingfund.collection.vo.PersonEditResult;
+import com.housingfund.collection.vo.PersonIdConflictResult;
 import com.housingfund.collection.vo.PersonQueryForm;
 import com.housingfund.collection.vo.PersonQueryResult;
 import org.junit.Test;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,8 +26,10 @@ import java.util.List;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 public class PersonServiceImplTest {
@@ -233,6 +240,293 @@ public class PersonServiceImplTest {
         assertNull(result);
     }
 
+    @Test
+    public void getEditablePersonReturnsExistingNormalPersonWithUnitInfo() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+
+        PersonEditForm form = service.getEditablePerson("000000000001");
+
+        assertEquals("000000000001", form.getPerAccNum());
+        assertEquals("000000000010", form.getUnitAccNum());
+        assertEquals("测试单位", form.getUnitName());
+        assertEquals("李四", form.getPerName());
+        assertEquals("居民身份证", form.getIdType());
+        assertEquals("11010519491231002X", form.getIdCard());
+        assertEquals("13800138000", form.getPhone());
+        assertEquals("测试地址", form.getAddress());
+    }
+
+    @Test
+    public void getEditablePersonRejectsMissingPerson() {
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.getEditablePerson("000000009999");
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("个人账号不存在", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void updatePersonRejectsClosedPerson() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "9"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setPerName("李四修改");
+
+        try {
+            service.updatePerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("已销户个人不能修改", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void updatePersonRejectsNoChangedFields() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+
+        try {
+            service.updatePerson(validEditForm("000000000001"));
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("请至少修改一项个人资料", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void updatePersonChangesNameSuccessfully() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setPerName("李四修改");
+
+        PersonEditResult result = service.updatePerson(form);
+
+        assertFalse(result.isForceChanged());
+        assertNull(result.getConflictResult());
+        assertEquals("000000000001", result.getPerAccNum());
+        assertEquals("李四修改", result.getPerName());
+        assertEquals("11010519491231002X", result.getIdCard());
+        assertEquals("000000000010", result.getUnitAccNum());
+        assertEquals("测试单位", result.getUnitName());
+        assertEquals("修改成功", result.getResultMessage());
+        assertNotNull(result.getUpdateTime());
+        assertEquals("李四修改", personMapper.selectByPerAccNum("000000000001").getPerName());
+    }
+
+    @Test
+    public void updatePersonChangesIdCardSuccessfully() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setIdCard("110105195001010012");
+
+        PersonEditResult result = service.updatePerson(form);
+
+        assertEquals("110105195001010012", result.getIdCard());
+        assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000001").getIdCard());
+        assertNull(personMapper.selectByIdCard("11010519491231002X"));
+    }
+
+    @Test
+    public void updatePersonReturnsConflictWhenNewIdCardUsedByAnotherPerson() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        unitMapper.insert(buildUnit("000000000011"));
+        unitMapper.selectByUnitAccNum("000000000011").setUnitName("占用单位");
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonBasicInfo occupied = buildEditablePerson("000000000002", "王五", "110105195001010012", "0");
+        occupied.setUnitAccNum("000000000011");
+        personMapper.insert(occupied);
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setIdCard("110105195001010012");
+
+        PersonEditResult result = service.updatePerson(form);
+
+        assertNotNull(result.getConflictResult());
+        assertEquals("该身份证号已被其他个人账户占用，是否强制变更？", result.getResultMessage());
+        assertEquals("11010519491231002X", personMapper.selectByPerAccNum("000000000001").getIdCard());
+        assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000002").getIdCard());
+    }
+
+    @Test
+    public void conflictResultContainsOccupiedPersonAndUnitInfo() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        unitMapper.insert(buildUnit("000000000011"));
+        unitMapper.selectByUnitAccNum("000000000011").setUnitName("占用单位");
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        PersonBasicInfo occupied = buildEditablePerson("000000000002", "王五", "110105195001010012", "9");
+        occupied.setUnitAccNum("000000000011");
+        personMapper.insert(occupied);
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setIdCard("110105195001010012");
+
+        PersonIdConflictResult conflict = service.checkIdCardConflict(form);
+
+        assertNotNull(conflict);
+        assertEquals("000000000002", conflict.getOccupiedPerAccNum());
+        assertEquals("110105195001010012", conflict.getOccupiedIdCard());
+        assertEquals("王五", conflict.getOccupiedPerName());
+        assertEquals("9", conflict.getOccupiedStatus());
+        assertEquals("销户", conflict.getOccupiedStatusText());
+        assertEquals("000000000011", conflict.getOccupiedUnitAccNum());
+        assertEquals("占用单位", conflict.getOccupiedUnitName());
+    }
+
+    @Test
+    public void forceUpdatePersonMovesOccupiedIdCardAndUpdatesCurrentPerson() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildEditablePerson("000000000001", "李四", "11010519491231002X", "0"));
+        personMapper.insert(buildEditablePerson("000000000002", "王五", "110105195001010012", "0"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setPerName("李四修改");
+        form.setIdCard("110105195001010012");
+        form.setPhone("13900139000");
+        form.setAddress("修改地址");
+
+        PersonEditResult result = service.forceUpdatePerson(form);
+
+        assertTrue(result.isForceChanged());
+        assertEquals("000000000002", result.getConflictPerAccNum());
+        assertEquals("110105195001010012", result.getOriginalConflictIdCard());
+        assertEquals("910105195001010012", result.getChangedConflictIdCard());
+        assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000001").getIdCard());
+        assertEquals("李四修改", personMapper.selectByPerAccNum("000000000001").getPerName());
+        assertEquals("13900139000", personMapper.selectByPerAccNum("000000000001").getPhone());
+        assertEquals("修改地址", personMapper.selectByPerAccNum("000000000001").getAddress());
+        assertEquals("910105195001010012", personMapper.selectByPerAccNum("000000000002").getIdCard());
+        assertNotNull(personMapper.selectByPerAccNum("000000000001"));
+        assertNotNull(personMapper.selectByPerAccNum("000000000002"));
+    }
+
+    @Test
+    public void forceUpdatePersonRejectsExistingGeneratedWrongIdCardWithoutChangingData() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        PersonBasicInfo current = buildEditablePerson("000000000001", "李四", "11010519491231002X", "0");
+        PersonBasicInfo occupied = buildEditablePerson("000000000002", "王五", "110105195001010012", "0");
+        PersonBasicInfo wrongIdOwner = buildEditablePerson("000000000003", "赵六", "910105195001010012", "0");
+        personMapper.insert(current);
+        personMapper.insert(occupied);
+        personMapper.insert(wrongIdOwner);
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setIdCard("110105195001010012");
+
+        try {
+            service.forceUpdatePerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("强制变更生成的错误身份证号已存在", ex.getMessage());
+        }
+        assertEquals("11010519491231002X", personMapper.selectByPerAccNum("000000000001").getIdCard());
+        assertEquals("110105195001010012", personMapper.selectByPerAccNum("000000000002").getIdCard());
+        assertEquals("910105195001010012", personMapper.selectByPerAccNum("000000000003").getIdCard());
+    }
+
+    @Test
+    public void updatePersonRejectsInvalidIdCard() {
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setIdCard("123456");
+
+        try {
+            service.updatePerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("身份证号不正确", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void updatePersonRejectsNonResidentIdType() {
+        PersonServiceImpl service = new PersonServiceImpl(new FakePersonMapper(), new FakeUnitMapper(), mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setIdType("护照");
+
+        try {
+            service.updatePerson(form);
+            fail("Expected BusinessException");
+        } catch (BusinessException ex) {
+            assertEquals("证件类型目前只支持居民身份证", ex.getMessage());
+        }
+    }
+
+    @Test
+    public void updatePersonChangesOnlyEditableFields() {
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        PersonBasicInfo original = buildEditablePerson("000000000001", "李四", "11010519491231002X", "0");
+        original.setUnitAccNum("000000000010");
+        original.setBaseNum(new BigDecimal("6000.00"));
+        original.setUnitRatio(new BigDecimal("0.090"));
+        original.setPerRatio(new BigDecimal("0.070"));
+        original.setUnitMonthPay(new BigDecimal("540.00"));
+        original.setPerMonthPay(new BigDecimal("420.00"));
+        original.setPerBalance(new BigDecimal("1234.56"));
+        original.setCreateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        original.setUpdateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        personMapper.insert(original);
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, mapperWithSeq(1L, 999999999999L));
+        PersonEditForm form = validEditForm("000000000001");
+        form.setPerName("李四修改");
+        form.setPhone("13900139000");
+        form.setAddress("修改地址");
+
+        service.updatePerson(form);
+        PersonBasicInfo updated = personMapper.selectByPerAccNum("000000000001");
+
+        assertEquals("000000000001", updated.getPerAccNum());
+        assertEquals("000000000010", updated.getUnitAccNum());
+        assertEquals(new BigDecimal("6000.00"), updated.getBaseNum());
+        assertEquals(new BigDecimal("0.090"), updated.getUnitRatio());
+        assertEquals(new BigDecimal("0.070"), updated.getPerRatio());
+        assertEquals(new BigDecimal("540.00"), updated.getUnitMonthPay());
+        assertEquals(new BigDecimal("420.00"), updated.getPerMonthPay());
+        assertEquals(new BigDecimal("1234.56"), updated.getPerBalance());
+        assertEquals("0", updated.getStatus());
+        assertEquals(LocalDateTime.of(2026, 1, 2, 9, 30), updated.getCreateTime());
+        assertEquals("李四修改", updated.getPerName());
+        assertEquals("13900139000", updated.getPhone());
+        assertEquals("修改地址", updated.getAddress());
+    }
+
+    @Test
+    public void forceUpdatePersonIsTransactional() throws NoSuchMethodException {
+        Method method = PersonServiceImpl.class.getMethod("forceUpdatePerson", PersonEditForm.class);
+
+        assertNotNull(method.getAnnotation(Transactional.class));
+    }
+
     private static FakeParamMapper mapperWithSeq(Long seq, Long maxseq) {
         FakeParamMapper mapper = new FakeParamMapper();
         mapper.insert(buildParam(seq, maxseq));
@@ -291,6 +585,41 @@ public class PersonServiceImplTest {
         form.setPhone("13800138000");
         form.setAddress("测试地址");
         return form;
+    }
+
+    private static PersonEditForm validEditForm(String perAccNum) {
+        PersonEditForm form = new PersonEditForm();
+        form.setPerAccNum(perAccNum);
+        form.setUnitAccNum("000000000010");
+        form.setUnitName("测试单位");
+        form.setPerName("李四");
+        form.setIdType("居民身份证");
+        form.setIdCard("11010519491231002X");
+        form.setPhone("13800138000");
+        form.setAddress("测试地址");
+        return form;
+    }
+
+    private static PersonBasicInfo buildEditablePerson(String perAccNum, String perName,
+                                                       String idCard, String status) {
+        PersonBasicInfo person = new PersonBasicInfo();
+        person.setPerAccNum(perAccNum);
+        person.setUnitAccNum("000000000010");
+        person.setPerName(perName);
+        person.setIdType("居民身份证");
+        person.setIdCard(idCard);
+        person.setPhone("13800138000");
+        person.setAddress("测试地址");
+        person.setBaseNum(new BigDecimal("5000.00"));
+        person.setUnitRatio(new BigDecimal("0.080"));
+        person.setPerRatio(new BigDecimal("0.080"));
+        person.setUnitMonthPay(new BigDecimal("400.00"));
+        person.setPerMonthPay(new BigDecimal("400.00"));
+        person.setPerBalance(BigDecimal.ZERO);
+        person.setStatus(status);
+        person.setCreateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        person.setUpdateTime(LocalDateTime.of(2026, 1, 2, 9, 30));
+        return person;
     }
 
     private static PersonQueryResult buildQueryPerson() {
@@ -473,6 +802,44 @@ public class PersonServiceImplTest {
         }
 
         @Override
+        public PersonEditForm selectEditableByPerAccNum(String perAccNum) {
+            PersonBasicInfo person = data.get(perAccNum);
+            if (person == null) {
+                return null;
+            }
+            PersonEditForm form = new PersonEditForm();
+            form.setPerAccNum(person.getPerAccNum());
+            form.setUnitAccNum(person.getUnitAccNum());
+            form.setUnitName("000000000011".equals(person.getUnitAccNum()) ? "占用单位" : "测试单位");
+            form.setPerName(person.getPerName());
+            form.setIdType(person.getIdType());
+            form.setIdCard(person.getIdCard());
+            form.setPhone(person.getPhone());
+            form.setAddress(person.getAddress());
+            form.setStatus(person.getStatus());
+            return form;
+        }
+
+        @Override
+        public PersonIdConflictResult selectIdCardConflict(String idCard, String excludePerAccNum) {
+            for (PersonBasicInfo person : data.values()) {
+                if (idCard.equals(person.getIdCard()) && !person.getPerAccNum().equals(excludePerAccNum)) {
+                    PersonIdConflictResult result = new PersonIdConflictResult();
+                    result.setCurrentPerAccNum(excludePerAccNum);
+                    result.setOccupiedPerAccNum(person.getPerAccNum());
+                    result.setOccupiedIdCard(person.getIdCard());
+                    result.setOccupiedPerName(person.getPerName());
+                    result.setOccupiedStatus(person.getStatus());
+                    result.setOccupiedStatusText("9".equals(person.getStatus()) ? "销户" : "正常");
+                    result.setOccupiedUnitAccNum(person.getUnitAccNum());
+                    result.setOccupiedUnitName("000000000011".equals(person.getUnitAccNum()) ? "占用单位" : "测试单位");
+                    return result;
+                }
+            }
+            return null;
+        }
+
+        @Override
         public int insert(PersonBasicInfo person) {
             data.put(person.getPerAccNum(), person);
             return 1;
@@ -485,6 +852,39 @@ public class PersonServiceImplTest {
             }
             data.put(person.getPerAccNum(), person);
             return 1;
+        }
+
+        @Override
+        public int updateEditableFields(PersonBasicInfo person) {
+            PersonBasicInfo existing = data.get(person.getPerAccNum());
+            if (existing == null || "9".equals(existing.getStatus()) || isIdCardUsedByAnother(person.getIdCard(), person.getPerAccNum())) {
+                return 0;
+            }
+            existing.setPerName(person.getPerName());
+            existing.setIdType(person.getIdType());
+            existing.setIdCard(person.getIdCard());
+            existing.setPhone(person.getPhone());
+            existing.setAddress(person.getAddress());
+            return 1;
+        }
+
+        @Override
+        public int updateIdCard(String perAccNum, String idCard) {
+            PersonBasicInfo existing = data.get(perAccNum);
+            if (existing == null || isIdCardUsedByAnother(idCard, perAccNum)) {
+                return 0;
+            }
+            existing.setIdCard(idCard);
+            return 1;
+        }
+
+        private boolean isIdCardUsedByAnother(String idCard, String perAccNum) {
+            for (PersonBasicInfo person : data.values()) {
+                if (idCard.equals(person.getIdCard()) && !person.getPerAccNum().equals(perAccNum)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 }

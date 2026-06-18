@@ -10,6 +10,9 @@ import com.housingfund.collection.mapper.UnitMapper;
 import com.housingfund.collection.service.PersonService;
 import com.housingfund.collection.util.AccountNumberUtil;
 import com.housingfund.collection.util.IdCardUtil;
+import com.housingfund.collection.vo.PersonEditForm;
+import com.housingfund.collection.vo.PersonEditResult;
+import com.housingfund.collection.vo.PersonIdConflictResult;
 import com.housingfund.collection.vo.PersonOpenForm;
 import com.housingfund.collection.vo.PersonOpenResult;
 import com.housingfund.collection.vo.PersonQueryForm;
@@ -22,6 +25,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.Objects;
 
 @Service
 public class PersonServiceImpl implements PersonService {
@@ -97,6 +101,89 @@ public class PersonServiceImpl implements PersonService {
         }
         fillQueryComputedFields(result);
         return result;
+    }
+
+    @Override
+    public PersonEditForm getEditablePerson(String perAccNum) {
+        String normalizedPerAccNum = validatePersonAccNum(perAccNum);
+        PersonEditForm form = personMapper.selectEditableByPerAccNum(normalizedPerAccNum);
+        ensureEditable(form);
+        form.setStatusText(personStateText(form.getStatus()));
+        return form;
+    }
+
+    @Override
+    public PersonIdConflictResult checkIdCardConflict(PersonEditForm form) {
+        validateEditFields(form);
+        PersonBasicInfo existing = personMapper.selectByPerAccNum(form.getPerAccNum());
+        ensureEditable(existing);
+        return findConflict(form, existing);
+    }
+
+    @Override
+    @Transactional
+    public PersonEditResult updatePerson(PersonEditForm form) {
+        validateEditFields(form);
+
+        PersonBasicInfo existing = personMapper.selectByPerAccNum(form.getPerAccNum());
+        ensureEditable(existing);
+        if (!hasEditableChanges(existing, form)) {
+            throw new BusinessException("请至少修改一项个人资料");
+        }
+
+        PersonIdConflictResult conflict = findConflict(form, existing);
+        if (conflict != null) {
+            PersonEditResult result = buildEditResult(form, existing, false,
+                    conflict.getOccupiedPerAccNum(), conflict.getOccupiedIdCard(),
+                    conflict.getGeneratedWrongIdCard());
+            result.setConflictResult(conflict);
+            result.setResultMessage("该身份证号已被其他个人账户占用，是否强制变更？");
+            return result;
+        }
+
+        int updated = personMapper.updateEditableFields(buildEditableUpdate(form));
+        if (updated == 0) {
+            throw new BusinessException("个人资料修改失败");
+        }
+        return buildEditResult(form, existing, false, null, null, null);
+    }
+
+    @Override
+    @Transactional
+    public PersonEditResult forceUpdatePerson(PersonEditForm form) {
+        validateEditFields(form);
+
+        PersonBasicInfo existing = personMapper.selectByPerAccNum(form.getPerAccNum());
+        ensureEditable(existing);
+        if (!hasEditableChanges(existing, form)) {
+            throw new BusinessException("请至少修改一项个人资料");
+        }
+
+        PersonIdConflictResult conflict = findConflict(form, existing);
+        if (conflict == null) {
+            int updated = personMapper.updateEditableFields(buildEditableUpdate(form));
+            if (updated == 0) {
+                throw new BusinessException("个人资料修改失败");
+            }
+            return buildEditResult(form, existing, false, null, null, null);
+        }
+
+        String wrongIdCard = conflict.getGeneratedWrongIdCard();
+        if (personMapper.selectByIdCard(wrongIdCard) != null) {
+            throw new BusinessException("强制变更生成的错误身份证号已存在");
+        }
+
+        int occupiedUpdated = personMapper.updateIdCard(conflict.getOccupiedPerAccNum(), wrongIdCard);
+        if (occupiedUpdated == 0) {
+            throw new BusinessException("占用账户身份证号强制变更失败");
+        }
+        int currentUpdated = personMapper.updateEditableFields(buildEditableUpdate(form));
+        if (currentUpdated == 0) {
+            throw new BusinessException("个人资料修改失败");
+        }
+
+        return buildEditResult(form, existing, true, conflict.getOccupiedPerAccNum(),
+                conflict.getOccupiedIdCard(), wrongIdCard);
     }
 
     private PersonBasicInfo insertNewPerson(PersonOpenForm form, UnitBasicInfo unit, BigDecimal baseNum,
@@ -176,6 +263,61 @@ public class PersonServiceImpl implements PersonService {
         return result;
     }
 
+    private PersonBasicInfo buildEditableUpdate(PersonEditForm form) {
+        PersonBasicInfo person = new PersonBasicInfo();
+        person.setPerAccNum(form.getPerAccNum());
+        person.setPerName(form.getPerName());
+        person.setIdType(form.getIdType());
+        person.setIdCard(form.getIdCard());
+        person.setPhone(form.getPhone());
+        person.setAddress(form.getAddress());
+        return person;
+    }
+
+    private PersonEditResult buildEditResult(PersonEditForm form, PersonBasicInfo existing,
+                                             boolean forceChanged, String conflictPerAccNum,
+                                             String originalConflictIdCard, String changedConflictIdCard) {
+        PersonEditResult result = new PersonEditResult();
+        result.setPerAccNum(form.getPerAccNum());
+        result.setPerName(form.getPerName());
+        result.setIdCard(form.getIdCard());
+        result.setUnitAccNum(existing.getUnitAccNum());
+        result.setUnitName(findUnitName(existing.getUnitAccNum()));
+        result.setForceChanged(forceChanged);
+        result.setConflictPerAccNum(conflictPerAccNum);
+        result.setOriginalConflictIdCard(originalConflictIdCard);
+        result.setChangedConflictIdCard(changedConflictIdCard);
+        result.setResultMessage("修改成功");
+        result.setUpdateTime(LocalDateTime.now());
+        return result;
+    }
+
+    private PersonIdConflictResult findConflict(PersonEditForm form, PersonBasicInfo existing) {
+        PersonIdConflictResult conflict = personMapper.selectIdCardConflict(form.getIdCard(), form.getPerAccNum());
+        if (conflict == null) {
+            return null;
+        }
+        conflict.setCurrentPerAccNum(existing.getPerAccNum());
+        conflict.setCurrentPerName(existing.getPerName());
+        conflict.setNewPerName(form.getPerName());
+        conflict.setNewIdCard(form.getIdCard());
+        conflict.setOccupiedStatusText(personStateText(conflict.getOccupiedStatus()));
+        conflict.setGeneratedWrongIdCard(generateWrongIdCard(conflict.getOccupiedIdCard()));
+        return conflict;
+    }
+
+    private String generateWrongIdCard(String occupiedIdCard) {
+        if (occupiedIdCard == null || occupiedIdCard.isEmpty()) {
+            throw new BusinessException("占用账户身份证号不完整");
+        }
+        return "9" + occupiedIdCard.substring(1);
+    }
+
+    private String findUnitName(String unitAccNum) {
+        UnitBasicInfo unit = unitMapper.selectByUnitAccNum(unitAccNum);
+        return unit == null ? "" : unit.getUnitName();
+    }
+
     private void validate(PersonOpenForm form) {
         if (form == null) {
             throw new BusinessException("个人开户信息不能为空");
@@ -212,6 +354,36 @@ public class PersonServiceImpl implements PersonService {
         }
     }
 
+    private void validateEditFields(PersonEditForm form) {
+        if (form == null) {
+            throw new BusinessException("个人资料修改信息不能为空");
+        }
+        form.setPerAccNum(validatePersonAccNum(form.getPerAccNum()));
+        form.setPerName(requireText(form.getPerName(), "个人姓名不能为空"));
+        if (form.getPerName().matches("[\\u4e00-\\u9fa5]+") && form.getPerName().length() > 12) {
+            throw new BusinessException("个人姓名不能超过12个汉字");
+        }
+        if (form.getPerName().length() > 50) {
+            throw new BusinessException("个人姓名不能超过50个字符");
+        }
+        form.setIdType(requireText(form.getIdType(), "证件类型不能为空"));
+        if (!ID_TYPE_RESIDENT.equals(form.getIdType())) {
+            throw new BusinessException("证件类型目前只支持居民身份证");
+        }
+        form.setIdCard(requireText(form.getIdCard(), "证件号码不能为空").toUpperCase());
+        if (!IdCardUtil.isValid(form.getIdCard())) {
+            throw new BusinessException("身份证号不正确");
+        }
+        form.setPhone(trimToNull(form.getPhone()));
+        if (form.getPhone() != null && form.getPhone().length() > 30) {
+            throw new BusinessException("联系电话不能超过30个字符");
+        }
+        form.setAddress(trimToNull(form.getAddress()));
+        if (form.getAddress() != null && form.getAddress().length() > 200) {
+            throw new BusinessException("联系地址不能超过200个字符");
+        }
+    }
+
     private void validateQuery(PersonQueryForm form) {
         if (form == null) {
             throw new BusinessException("请输入个人账号或身份证号");
@@ -230,6 +402,40 @@ public class PersonServiceImpl implements PersonService {
                 throw new BusinessException("身份证号不正确");
             }
         }
+    }
+
+    private String validatePersonAccNum(String perAccNum) {
+        String normalizedPerAccNum = requireText(perAccNum, "个人账号不能为空");
+        if (!AccountNumberUtil.isValidAccountNumber(normalizedPerAccNum)) {
+            throw new BusinessException("个人账号长度必须为12位");
+        }
+        return normalizedPerAccNum;
+    }
+
+    private void ensureEditable(PersonEditForm form) {
+        if (form == null) {
+            throw new BusinessException("个人账号不存在");
+        }
+        if (STATUS_CLOSED.equals(form.getStatus())) {
+            throw new BusinessException("已销户个人不能修改");
+        }
+    }
+
+    private void ensureEditable(PersonBasicInfo person) {
+        if (person == null) {
+            throw new BusinessException("个人账号不存在");
+        }
+        if (STATUS_CLOSED.equals(person.getStatus())) {
+            throw new BusinessException("已销户个人不能修改");
+        }
+    }
+
+    private boolean hasEditableChanges(PersonBasicInfo existing, PersonEditForm form) {
+        return !same(existing.getPerName(), form.getPerName())
+                || !same(existing.getIdType(), form.getIdType())
+                || !same(existing.getIdCard(), form.getIdCard())
+                || !same(existing.getPhone(), form.getPhone())
+                || !same(existing.getAddress(), form.getAddress());
     }
 
     private void fillQueryComputedFields(PersonQueryResult result) {
@@ -265,6 +471,10 @@ public class PersonServiceImpl implements PersonService {
         }
         String trimmed = value.trim();
         return trimmed.isEmpty() ? null : trimmed;
+    }
+
+    private boolean same(String left, String right) {
+        return Objects.equals(trimToNull(left), trimToNull(right));
     }
 
     private BigDecimal zeroIfNull(BigDecimal value) {

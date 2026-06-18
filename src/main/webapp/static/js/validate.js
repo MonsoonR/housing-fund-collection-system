@@ -287,6 +287,73 @@
         return true;
     };
 
+    window.validatePersonEditSearchForm = function (form) {
+        var perAccNum = trim(form.elements["perAccNum"].value);
+
+        if (!/^\d{12}$/.test(perAccNum)) {
+            alert("个人账号长度必须为12位");
+            form.elements["perAccNum"].focus();
+            return false;
+        }
+        return true;
+    };
+
+    window.validatePersonEditForm = function (form) {
+        var perAccNum = trim(form.elements["perAccNum"].value);
+        var perName = trim(form.elements["perName"].value);
+        var idType = trim(form.elements["idType"].value);
+        var idCard = trim(form.elements["idCard"].value);
+        var phone = trim(form.elements["phone"].value);
+        var address = trim(form.elements["address"].value);
+
+        if (!/^\d{12}$/.test(perAccNum)) {
+            alert("个人账号长度必须为12位");
+            form.elements["perAccNum"].focus();
+            return false;
+        }
+        if (!perName) {
+            alert("个人姓名不能为空");
+            form.elements["perName"].focus();
+            return false;
+        }
+        if (/^[\u4e00-\u9fa5]+$/.test(perName) && perName.length > 12) {
+            alert("个人姓名不能超过12个汉字");
+            form.elements["perName"].focus();
+            return false;
+        }
+        if (perName.length > 50) {
+            alert("个人姓名不能超过50个字符");
+            form.elements["perName"].focus();
+            return false;
+        }
+        if (idType !== "居民身份证") {
+            alert("证件类型目前只支持居民身份证");
+            form.elements["idType"].focus();
+            return false;
+        }
+        if (!isValidIdCard(idCard)) {
+            alert("身份证号不正确");
+            form.elements["idCard"].focus();
+            return false;
+        }
+        if (phone.length > 30) {
+            alert("联系电话不能超过30个字符");
+            form.elements["phone"].focus();
+            return false;
+        }
+        if (address.length > 200) {
+            alert("联系地址不能超过200个字符");
+            form.elements["address"].focus();
+            return false;
+        }
+        if (hasOriginalPersonEditFields(form) && !hasPersonEditChanges(form)) {
+            alert("请至少修改一项个人资料");
+            form.elements["perName"].focus();
+            return false;
+        }
+        return true;
+    };
+
     function isRatioInRange(value) {
         if (!/^0\.\d{3}$/.test(value)) {
             return false;
@@ -316,6 +383,14 @@
                 form.elements["originalRemark"];
     }
 
+    function hasOriginalPersonEditFields(form) {
+        return form.elements["originalPerName"] &&
+                form.elements["originalIdType"] &&
+                form.elements["originalIdCard"] &&
+                form.elements["originalPhone"] &&
+                form.elements["originalAddress"];
+    }
+
     function hasUnitEditChanges(form) {
         return trim(form.elements["unitName"].value) !== trim(form.elements["originalUnitName"].value) ||
                 trim(form.elements["unitAddr"].value) !== trim(form.elements["originalUnitAddr"].value) ||
@@ -327,6 +402,14 @@
                 trim(form.elements["agentName"].value) !== trim(form.elements["originalAgentName"].value) ||
                 trim(form.elements["agentIdCard"].value) !== trim(form.elements["originalAgentIdCard"].value) ||
                 trim(form.elements["remark"].value) !== trim(form.elements["originalRemark"].value);
+    }
+
+    function hasPersonEditChanges(form) {
+        return trim(form.elements["perName"].value) !== trim(form.elements["originalPerName"].value) ||
+                trim(form.elements["idType"].value) !== trim(form.elements["originalIdType"].value) ||
+                trim(form.elements["idCard"].value).toUpperCase() !== trim(form.elements["originalIdCard"].value).toUpperCase() ||
+                trim(form.elements["phone"].value) !== trim(form.elements["originalPhone"].value) ||
+                trim(form.elements["address"].value) !== trim(form.elements["originalAddress"].value);
     }
 
     function isValidIdCard(value) {

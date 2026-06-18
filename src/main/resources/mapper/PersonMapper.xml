@@ -39,6 +39,27 @@
         <result column="STATUS" property="status"/>
     </resultMap>
 
+    <resultMap id="PersonEditFormResultMap" type="com.housingfund.collection.vo.PersonEditForm">
+        <result column="UNITNAME" property="unitName"/>
+        <result column="UNITACCNUM" property="unitAccNum"/>
+        <result column="PERNAME" property="perName"/>
+        <result column="PERACCNUM" property="perAccNum"/>
+        <result column="IDTYPE" property="idType"/>
+        <result column="IDCARD" property="idCard"/>
+        <result column="PHONE" property="phone"/>
+        <result column="ADDRESS" property="address"/>
+        <result column="STATUS" property="status"/>
+    </resultMap>
+
+    <resultMap id="PersonIdConflictResultMap" type="com.housingfund.collection.vo.PersonIdConflictResult">
+        <result column="OCCUPIED_PERACCNUM" property="occupiedPerAccNum"/>
+        <result column="OCCUPIED_IDCARD" property="occupiedIdCard"/>
+        <result column="OCCUPIED_PERNAME" property="occupiedPerName"/>
+        <result column="OCCUPIED_STATUS" property="occupiedStatus"/>
+        <result column="OCCUPIED_UNITACCNUM" property="occupiedUnitAccNum"/>
+        <result column="OCCUPIED_UNITNAME" property="occupiedUnitName"/>
+    </resultMap>
+
     <sql id="BaseColumns">
         `PERACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `PHONE`, `ADDRESS`,
         `BASENUM`, `UNITRATIO`, `PERRATIO`, `UNITMONTHPAY`, `PERMONTHPAY`,
@@ -111,6 +132,38 @@
         LIMIT 1
     </select>
 
+    <select id="selectEditableByPerAccNum" resultMap="PersonEditFormResultMap">
+        SELECT
+            p.`PERACCNUM`,
+            p.`UNITACCNUM`,
+            p.`PERNAME`,
+            p.`IDTYPE`,
+            p.`IDCARD`,
+            p.`PHONE`,
+            p.`ADDRESS`,
+            p.`STATUS`,
+            u.`UNITNAME`
+        FROM tb003 p
+        LEFT JOIN tb002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`PERACCNUM` = #{perAccNum}
+        LIMIT 1
+    </select>
+
+    <select id="selectIdCardConflict" resultMap="PersonIdConflictResultMap">
+        SELECT
+            p.`PERACCNUM` AS OCCUPIED_PERACCNUM,
+            p.`IDCARD` AS OCCUPIED_IDCARD,
+            p.`PERNAME` AS OCCUPIED_PERNAME,
+            p.`STATUS` AS OCCUPIED_STATUS,
+            p.`UNITACCNUM` AS OCCUPIED_UNITACCNUM,
+            u.`UNITNAME` AS OCCUPIED_UNITNAME
+        FROM tb003 p
+        LEFT JOIN tb002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`IDCARD` = #{idCard}
+          AND p.`PERACCNUM` &lt;&gt; #{excludePerAccNum}
+        LIMIT 1
+    </select>
+
     <insert id="insert" parameterType="PersonBasicInfo">
         INSERT INTO tb003 (
             `PERACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `PHONE`, `ADDRESS`,
@@ -142,5 +195,22 @@
             `UPDATE_TIME` = #{updateTime}
         WHERE `PERACCNUM` = #{perAccNum}
           AND `STATUS` = '9'
+    </update>
+
+    <update id="updateEditableFields" parameterType="PersonBasicInfo">
+        UPDATE tb003
+        SET `PERNAME` = #{perName},
+            `IDTYPE` = #{idType},
+            `IDCARD` = #{idCard},
+            `PHONE` = #{phone},
+            `ADDRESS` = #{address}
+        WHERE `PERACCNUM` = #{perAccNum}
+          AND `STATUS` &lt;&gt; '9'
+    </update>
+
+    <update id="updateIdCard">
+        UPDATE tb003
+        SET `IDCARD` = #{idCard}
+        WHERE `PERACCNUM` = #{perAccNum}
     </update>
 </mapper>

@@ -102,8 +102,8 @@
             <span>按单位账号查询并修改单位资料</span>
         </article>
         <article class="module">
-            <strong>个人资料修改</strong>
-            <span>待实现</span>
+            <strong><a href="${pageContext.request.contextPath}/persons/edit">个人资料修改</a></strong>
+            <span>按个人账号查询并修改个人资料</span>
         </article>
         <article class="module">
             <strong><a href="${pageContext.request.contextPath}/units/query">单位信息查询</a></strong>

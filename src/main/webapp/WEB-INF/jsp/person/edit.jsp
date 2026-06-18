@@ -1,0 +1,234 @@
+<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人资料修改</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, "Microsoft YaHei", sans-serif;
+            color: #1f2937;
+            background: #f3f4f6;
+        }
+
+        .page {
+            max-width: 920px;
+            margin: 36px auto;
+            padding: 0 24px;
+        }
+
+        .panel {
+            padding: 24px 28px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+
+        .panel + .panel {
+            margin-top: 18px;
+        }
+
+        h1,
+        h2 {
+            margin: 0 0 20px;
+            font-weight: 600;
+        }
+
+        h1 {
+            font-size: 24px;
+        }
+
+        h2 {
+            font-size: 18px;
+        }
+
+        .alert {
+            padding: 12px 14px;
+            margin-bottom: 16px;
+            border-radius: 4px;
+            color: #991b1b;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .field.full {
+            grid-column: 1 / -1;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px 11px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 14px;
+            background: #ffffff;
+        }
+
+        input[readonly] {
+            color: #4b5563;
+            background: #f9fafb;
+        }
+
+        textarea {
+            min-height: 84px;
+            resize: vertical;
+        }
+
+        .tip {
+            margin-top: 5px;
+            color: #6b7280;
+            font-size: 12px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 22px;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 16px;
+            border: 1px solid #0f766e;
+            border-radius: 4px;
+            color: #ffffff;
+            background: #0f766e;
+            font-size: 14px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .button.secondary {
+            color: #0f766e;
+            background: #ffffff;
+        }
+
+        @media (max-width: 720px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+    <script src="${pageContext.request.contextPath}/static/js/validate.js"></script>
+</head>
+<body>
+<main class="page">
+    <section class="panel">
+        <h1>个人资料修改</h1>
+
+        <c:if test="${not empty error}">
+            <div class="alert"><c:out value="${error}"/></div>
+        </c:if>
+
+        <form method="get" action="${pageContext.request.contextPath}/persons/edit/form"
+              onsubmit="return validatePersonEditSearchForm(this);">
+            <div class="grid">
+                <div class="field">
+                    <label for="searchPerAccNum">个人账号</label>
+                    <input id="searchPerAccNum" name="perAccNum" type="text" required maxlength="12"
+                           pattern="[0-9]{12}" value="${fn:escapeXml(personEditForm.perAccNum)}">
+                    <div class="tip">请输入 12 位个人账号。</div>
+                </div>
+            </div>
+
+            <div class="actions">
+                <button class="button" type="submit">查询个人账户</button>
+                <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+            </div>
+        </form>
+    </section>
+
+    <c:if test="${personLoaded}">
+        <section class="panel">
+            <h2>修改资料</h2>
+
+            <form method="post" action="${pageContext.request.contextPath}/persons/edit"
+                  onsubmit="return validatePersonEditForm(this);">
+                <input type="hidden" name="originalPerName" value="${fn:escapeXml(personEditForm.perName)}">
+                <input type="hidden" name="originalIdType" value="${fn:escapeXml(personEditForm.idType)}">
+                <input type="hidden" name="originalIdCard" value="${fn:escapeXml(personEditForm.idCard)}">
+                <input type="hidden" name="originalPhone" value="${fn:escapeXml(personEditForm.phone)}">
+                <input type="hidden" name="originalAddress" value="${fn:escapeXml(personEditForm.address)}">
+
+                <div class="grid">
+                    <div class="field">
+                        <label for="editPerAccNum">个人账号</label>
+                        <input id="editPerAccNum" name="perAccNum" type="text" readonly
+                               value="${fn:escapeXml(personEditForm.perAccNum)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="unitAccNum">单位账号</label>
+                        <input id="unitAccNum" name="unitAccNum" type="text" readonly
+                               value="${fn:escapeXml(personEditForm.unitAccNum)}">
+                    </div>
+
+                    <div class="field full">
+                        <label for="unitName">单位名称</label>
+                        <input id="unitName" name="unitName" type="text" readonly
+                               value="${fn:escapeXml(personEditForm.unitName)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="perName">姓名</label>
+                        <input id="perName" name="perName" type="text" required maxlength="50"
+                               value="${fn:escapeXml(personEditForm.perName)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="idType">证件类型</label>
+                        <select id="idType" name="idType" required>
+                            <option value="居民身份证" ${personEditForm.idType eq '居民身份证' ? 'selected' : ''}>居民身份证</option>
+                        </select>
+                    </div>
+
+                    <div class="field">
+                        <label for="idCard">证件号码</label>
+                        <input id="idCard" name="idCard" type="text" required maxlength="18"
+                               pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personEditForm.idCard)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="phone">联系电话</label>
+                        <input id="phone" name="phone" type="text" maxlength="30"
+                               value="${fn:escapeXml(personEditForm.phone)}">
+                    </div>
+
+                    <div class="field full">
+                        <label for="address">联系地址</label>
+                        <textarea id="address" name="address" maxlength="200"><c:out value="${personEditForm.address}"/></textarea>
+                    </div>
+                </div>
+
+                <div class="actions">
+                    <button class="button" type="submit">提交修改</button>
+                    <a class="button secondary" href="${pageContext.request.contextPath}/persons/edit">重新查询</a>
+                </div>
+            </form>
+        </section>
+    </c:if>
+</main>
+</body>
+</html>

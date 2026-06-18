@@ -1,6 +1,6 @@
 # 住房公积金管理系统——筹集子系统
 
-本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块、个人开户模块、单位资料修改模块、单位信息查询模块和个人信息查询模块。
+本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块、个人开户模块、单位资料修改模块、个人资料修改模块、单位信息查询模块和个人信息查询模块。
 
 ## 技术栈
 
@@ -54,6 +54,9 @@ src/main/webapp/
   WEB-INF/jsp/unit/query.jsp
   WEB-INF/jsp/person/open.jsp
   WEB-INF/jsp/person/receipt.jsp
+  WEB-INF/jsp/person/edit.jsp
+  WEB-INF/jsp/person/edit-conflict.jsp
+  WEB-INF/jsp/person/edit-receipt.jsp
   WEB-INF/jsp/person/query.jsp
 src/test/java/com/housingfund/collection/
   service/impl/ParamServiceImplTest.java
@@ -115,6 +118,8 @@ target/housingfund-collection.war
 - 结果：构建成功，30 个测试通过，生成 `target/housingfund-collection.war`。
 - 2026-06-18：完成单位资料修改闭环后，使用 `mvn clean package`。
 - 结果：构建成功，41 个测试通过，生成 `target/housingfund-collection.war`。
+- 2026-06-18：完成个人资料修改闭环后，使用 `mvn clean package`。
+- 结果：构建成功，56 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
@@ -131,6 +136,7 @@ http://localhost:8080/housingfund-collection/params
 http://localhost:8080/housingfund-collection/units/open
 http://localhost:8080/housingfund-collection/persons/open
 http://localhost:8080/housingfund-collection/units/edit
+http://localhost:8080/housingfund-collection/persons/edit
 http://localhost:8080/housingfund-collection/units/query
 http://localhost:8080/housingfund-collection/persons/query
 ```
@@ -147,6 +153,7 @@ http://localhost:8080/housingfund-collection/persons/query
 - 单位开户 JSP：`unit/open.jsp`、`unit/receipt.jsp`
 - 单位资料修改 JSP：`unit/edit.jsp`、`unit/edit-receipt.jsp`
 - 个人开户 JSP：`person/open.jsp`、`person/receipt.jsp`
+- 个人资料修改 JSP：`person/edit.jsp`、`person/edit-conflict.jsp`、`person/edit-receipt.jsp`
 - 查询 JSP：`unit/query.jsp`、`person/query.jsp`
 - 前端基础校验脚本：`static/js/validate.js`
 - `tb001`、`tb002`、`tb003` 数据库脚本
@@ -155,6 +162,7 @@ http://localhost:8080/housingfund-collection/persons/query
 - 单位开户模块：录入单位资料、生成单位账号、写入 `tb002`、更新 `UNITACCNUM.seq`
 - 个人开户模块：录入个人资料、生成或重新启用个人账号、写入 `tb003`、更新 `PERACCNUM.seq` 和单位汇总字段
 - 单位资料修改模块：按单位账号查询并反显单位资料，只允许修改单位名称、地址、组织机构代码、单位类别、企业类型、发薪日期、联系电话、单位经办人、经办人身份证号码和备注
+- 个人资料修改模块：按个人账号查询并反显个人资料和所属单位，只允许修改姓名、证件类型、证件号码、联系电话和联系地址；身份证号被其他账户占用时支持占用信息回显和强制变更
 - 单位信息查询模块：按单位账号精确查询，或按单位名称模糊查询，展示单位汇总和缴存信息
 - 个人信息查询模块：按个人账号或身份证号精确查询，关联显示缴存单位和个人缴存信息
 - 系统参数 Service 单元测试类：`ParamServiceImplTest`
@@ -273,6 +281,59 @@ http://localhost:8080/housingfund-collection/units/edit
 8. 准备另一个单位后，将当前单位的组织机构代码和单位名称同时改成另一个单位的值，确认提示“修改后的组织机构代码和单位名称已被其他单位占用”。
 9. 输入组织机构代码 `ABC`、发薪日期 `32` 或身份证号 `123456`，确认页面或后端提示对应校验错误。
 
+## 个人资料修改模块
+
+访问入口：
+
+```text
+http://localhost:8080/housingfund-collection/persons/edit
+```
+
+支持功能：
+
+- 输入 12 位个人账号，查询 `tb003` 并关联 `tb002` 反显所属单位账号和单位名称。
+- 只允许修改姓名、证件类型、证件号码、联系电话和联系地址。
+- 不修改个人账号、单位账号、缴存基数、单位比例、个人比例、单位月缴额、个人月缴额、余额、状态和创建时间。
+- 修改后的身份证号未被占用时，直接更新当前个人账户资料。
+- 修改后的身份证号被其他个人账户占用时，不直接报错结束，而是回显占用个人账号、占用身份证号、占用姓名、占用状态、占用单位账号和占用单位名称。
+- 用户确认强制变更后，在同一事务内先将占用账户身份证号首位改为 `9`，其余位数保持不变，再将当前账户更新为提交资料。
+- 本模块不新增业务日志表，也不需要重新导入数据库脚本；强制变更通过保留占用账户并修改其身份证首位为 `9` 保留可追溯信息。
+
+核心校验：
+
+- 个人账号必填且长度必须为 12 位。
+- 个人账号不存在时提示“个人账号不存在”；`STATUS='9'` 时提示“已销户个人不能修改”。
+- 个人姓名必填；纯中文姓名最多 12 个汉字，其他输入最多 50 个字符。
+- 证件类型目前统一使用 `居民身份证`。
+- 身份证号按 18 位居民身份证规则校验。
+- 联系电话可为空；填写时最多 30 个字符。联系地址可为空；填写时最多 200 个字符。
+- 至少修改一项个人资料。
+- 强制变更生成的错误身份证号已经存在时，提示“强制变更生成的错误身份证号已存在”，并中止本次修改。
+
+普通修改手动测试步骤：
+
+1. 先确认已有正常个人账户，可用 `/persons/open` 创建个人账户。示例：个人账号 `000000000001`，姓名 `李四`，身份证号 `11010519491231002X`。
+2. 访问 `/persons/edit`，输入个人账号 `000000000001` 查询，确认页面反显个人账号、单位账号、单位名称、姓名、证件类型、身份证号、联系电话和联系地址。
+3. 将姓名改为 `李四修改`，或将联系电话改为 `13900139000` 后提交。
+4. 确认回执显示个人账号、姓名、身份证号、单位账号、单位名称、是否执行强制变更、修改结果和修改时间。
+5. 回到数据库检查 `tb003`：允许修改字段已变化，`PERACCNUM`、`UNITACCNUM`、`BASENUM`、`UNITRATIO`、`PERRATIO`、`UNITMONTHPAY`、`PERMONTHPAY`、`PERBALANCE`、`STATUS`、`CREATE_TIME` 未变化。
+6. 查询成功后不改任何字段直接提交，确认提示“请至少修改一项个人资料”。
+7. 输入不存在的个人账号，例如 `000000009999`，确认提示“个人账号不存在”。
+8. 将测试个人账户 `STATUS` 手工改为 `9` 后再查询或提交修改，确认提示“已销户个人不能修改”；测试完成后按需要改回 `0`。
+9. 输入身份证号 `123456` 或证件类型非 `居民身份证`，确认页面或后端提示对应校验错误。
+
+身份证占用强制变更手动测试步骤：
+
+1. 准备同一测试库中的两个正常个人账户：A 账号 `000000000001`，身份证号 `11010519491231002X`；B 账号 `000000000002`，身份证号 `110105195001010012`。
+2. 访问 `/persons/edit`，查询 A 账号 `000000000001`。
+3. 将 A 的身份证号改为 B 正在使用的 `110105195001010012` 后提交。
+4. 确认页面进入冲突确认页，显示“该身份证号已被其他个人账户占用，是否强制变更？”，并回显 B 的个人账号、身份证号、姓名、状态、单位账号和单位名称。
+5. 点击“返回修改”，确认回到修改表单且保留刚才输入。
+6. 再次提交冲突后点击“确认强制变更”。
+7. 确认回执显示已执行强制变更、被占用个人账号 `000000000002`、原身份证号 `110105195001010012`、变更后的错误身份证号 `910105195001010012`。
+8. 回到数据库检查：A 的 `IDCARD` 已变为 `110105195001010012`；B 仍存在且 `IDCARD` 已变为 `910105195001010012`；A、B 的个人账号没有互换，账户未被删除。
+9. 如库中已有 `910105195001010012`，再次执行强制变更应提示“强制变更生成的错误身份证号已存在”，A 和 B 的身份证号不应发生变化。
+
 ## 个人开户模块
 
 访问入口：
@@ -366,5 +427,4 @@ http://localhost:8080/housingfund-collection/persons/query
 
 ## 当前未完成
 
-- 个人资料修改
 - 其他业务模块的 Service、Mapper、VO 和业务 JSP 页面
