@@ -137,3 +137,7 @@ target/housingfund-collection.war
 - `docs/ACCEPTANCE_CHECKLIST.md`：按指导书 2.2.1—2.2.7 排列的手动验收清单。
 - `docs/DEMO_FLOW.md`：答辩演示流程。
 - `docs/SCHEMA_MAPPING.md`：指导书表名和字段名与项目实际字段名的映射。
+
+## 个人资料强制变更说明
+
+个人资料修改已实现证件号码冲突回显、强制变更提示、占用账户证件号码首位改 `9`、当前账户更新为正确信息。指导书中“新建一个人账户存储占用的个人账户信息（错误的）”当前未额外建账，原因是课程设计固定 `TB003.IDCARD` 唯一且没有独立错误账户迁移目标表；该处理方式也写入 `docs/ACCEPTANCE_CHECKLIST.md`。
