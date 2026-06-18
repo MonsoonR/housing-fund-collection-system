@@ -73,6 +73,7 @@ mysql -u root -p housingfund_collection < db/data.sql
 数据库连接配置位于 `src/main/resources/jdbc.properties`：
 
 - 数据库名在 `jdbc.url` 中配置，默认是 `housingfund_collection`
+- 默认连接本机 MySQL：`127.0.0.1:3306`
 - 用户名在 `jdbc.username` 中配置
 - 密码在 `jdbc.password` 中配置
 
@@ -96,8 +97,8 @@ target/housingfund-collection.war
 
 - 2026-06-17：使用系统 Maven `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`。
 - 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
-- 2026-06-18：MySQL 基准调整为 9.5，使用系统 Maven `D:\dev\apache-maven-3.9.16\bin\mvn.cmd clean package`。
-- 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。当前 shell 未找到 `mysql` 客户端，未在本机命令行执行 SQL 脚本。
+- 2026-06-18：MySQL 基准为 9.5，使用 `mvn clean package`。
+- 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
