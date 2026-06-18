@@ -94,8 +94,8 @@
             <span>新增缴存单位并生成单位账号</span>
         </article>
         <article class="module">
-            <strong>个人开户</strong>
-            <span>待实现</span>
+            <strong><a href="${pageContext.request.contextPath}/persons/open">个人开户</a></strong>
+            <span>新增个人账户并生成个人账号</span>
         </article>
         <article class="module">
             <strong>单位资料修改</strong>

@@ -1,6 +1,6 @@
 # 住房公积金管理系统——筹集子系统
 
-本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块和单位开户模块。
+本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块和个人开户模块。
 
 ## 技术栈
 
@@ -40,6 +40,7 @@ src/main/resources/
   spring-mvc.xml
   mapper/ParamMapper.xml
   mapper/UnitMapper.xml
+  mapper/PersonMapper.xml
 src/main/webapp/
   static/js/validate.js
   WEB-INF/web.xml
@@ -48,9 +49,12 @@ src/main/webapp/
   WEB-INF/jsp/param/list.jsp
   WEB-INF/jsp/unit/open.jsp
   WEB-INF/jsp/unit/receipt.jsp
+  WEB-INF/jsp/person/open.jsp
+  WEB-INF/jsp/person/receipt.jsp
 src/test/java/com/housingfund/collection/
   service/impl/ParamServiceImplTest.java
   service/impl/UnitServiceImplTest.java
+  service/impl/PersonServiceImplTest.java
   web/JspSyntaxTest.java
 ```
 
@@ -62,6 +66,8 @@ src/test/java/com/housingfund/collection/
 
 1. 执行 `db/schema.sql` 创建数据库和三张核心表。
 2. 执行 `db/data.sql` 初始化账号序号参数。
+
+如果已经导入过旧版脚本，本轮个人开户为 `tb003` 增加了 `UNITMONTHPAY`、`PERMONTHPAY` 字段，并将 `STATUS` 语义统一为 `0` 正常、`9` 销户。测试库建议重新执行 `db/schema.sql` 和 `db/data.sql`；已有业务数据的环境需要先备份，再手工 `ALTER TABLE` 补齐字段和状态含义。
 
 PowerShell 示例命令：
 
@@ -99,6 +105,8 @@ target/housingfund-collection.war
 - 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
 - 2026-06-18：MySQL 基准为 9.5，使用 `mvn clean package`。
 - 结果：构建成功，12 个测试通过，生成 `target/housingfund-collection.war`。
+- 2026-06-18：完成个人开户闭环后，使用 `mvn clean package`。
+- 结果：构建成功，20 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
@@ -113,6 +121,7 @@ target/housingfund-collection.war
 http://localhost:8080/housingfund-collection/
 http://localhost:8080/housingfund-collection/params
 http://localhost:8080/housingfund-collection/units/open
+http://localhost:8080/housingfund-collection/persons/open
 ```
 
 ## 当前阶段已包含
@@ -125,13 +134,16 @@ http://localhost:8080/housingfund-collection/units/open
 - 首页 `index.jsp`
 - 系统参数维护 JSP：`param/list.jsp`、`param/form.jsp`
 - 单位开户 JSP：`unit/open.jsp`、`unit/receipt.jsp`
+- 个人开户 JSP：`person/open.jsp`、`person/receipt.jsp`
 - 前端基础校验脚本：`static/js/validate.js`
 - `tb001`、`tb002`、`tb003` 数据库脚本
 - 基础 controller、entity、util、exception
 - 系统参数维护模块：新增、删除、修改、查询 `tb001`
 - 单位开户模块：录入单位资料、生成单位账号、写入 `tb002`、更新 `UNITACCNUM.seq`
+- 个人开户模块：录入个人资料、生成或重新启用个人账号、写入 `tb003`、更新 `PERACCNUM.seq` 和单位汇总字段
 - 系统参数 Service 单元测试类：`ParamServiceImplTest`
 - 单位开户 Service 单元测试类：`UnitServiceImplTest`
+- 个人开户 Service 单元测试类：`PersonServiceImplTest`
 - JSP 基础语法回归测试：`JspSyntaxTest`
 
 ## 系统参数维护模块
@@ -206,9 +218,48 @@ http://localhost:8080/housingfund-collection/units/open
 6. 输入单位比例 `0.049` 或个人比例 `0.121`，确认页面或后端提示比例范围错误。
 7. 将 `UNITACCNUM.seq` 调整为大于 `maxseq` 后提交，确认提示“单位账号序号已超过最大值”。
 
+## 个人开户模块
+
+访问入口：
+
+```text
+http://localhost:8080/housingfund-collection/persons/open
+```
+
+支持功能：
+
+- 填写个人开户表单并提交。
+- 根据 `tb001` 中 `SEQNAME='PERACCNUM'` 的当前序号生成 12 位个人账号。
+- 同一事务内完成单位状态校验、身份证重复校验、锁定序号、插入 `tb003`、更新 `PERACCNUM.seq=seq+1`、更新 `tb002` 单位汇总字段。
+- 身份证号存在且个人账户状态为 `9` 销户时，重新启用原个人账号，不消耗新的 `PERACCNUM` 序号。
+- 开户成功后显示个人账号、姓名、身份证号、单位账号、单位名称、缴存基数、单位比例、个人比例、单位月缴额、个人月缴额和开户时间。
+- 业务失败返回开户表单并显示错误信息，保留已填写内容。
+
+核心校验：
+
+- 单位账号必填，长度必须为 12 位，且单位必须存在并处于 `ACCSTATE='0'` 正常状态。
+- 个人姓名必填；纯中文姓名最多 12 个汉字，其他输入最多 50 个字符。
+- 证件类型目前统一使用 `居民身份证`。
+- 身份证号按 18 位居民身份证规则校验。
+- 缴存基数必填且必须大于 0，后端使用 `BigDecimal` 计算并保留 2 位小数。
+- 身份证号对应正常账户已存在时提示“该人员已开户”。
+- `tb003.STATUS` 统一为 `0` 正常、`9` 销户。
+
+手动测试步骤：
+
+1. 先通过 `/units/open` 新增一个正常单位，或确认数据库中已有 `ACCSTATE='0'` 的单位。
+2. 访问 `/persons/open`，输入该单位账号，例如 `000000000001`。
+3. 输入个人数据：姓名 `李四`，证件类型 `居民身份证`，身份证号 `11010519491231002X`，缴存基数 `5000.00`，联系电话和地址可留空或填写。
+4. 提交后确认回执显示 12 位个人账号；当 `PERACCNUM.seq=1` 时账号应为 `000000000001`。
+5. 回到数据库检查 `tb003` 新增个人资料，`tb001.PERACCNUM.seq` 加 1。
+6. 检查对应 `tb002`：`BASENUMBER` 增加个人缴存基数，`UNITPAYSUM` 增加单位月缴额，`PERPAYSUM` 增加个人月缴额，`PERSNUM` 加 1。
+7. 再次使用同一身份证号开户，确认提示“该人员已开户”并保留表单内容。
+8. 输入不存在或非正常状态的单位账号，确认提示“单位账号不存在或状态非正常”。
+9. 输入缴存基数 `0` 或负数，确认页面或后端提示“缴存基数必须大于0”。
+10. 将已有个人账户 `STATUS` 手工改为 `9` 后，用相同身份证号再次开户，确认原个人账号被重新启用且 `PERACCNUM.seq` 不增加。
+
 ## 当前未完成
 
-- 个人开户
 - 单位资料修改
 - 个人资料修改
 - 单位信息查询

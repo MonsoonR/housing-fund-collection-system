@@ -44,6 +44,15 @@
         WHERE `UNITACCNUM` = #{unitAccNum}
     </select>
 
+    <select id="selectNormalByUnitAccNum" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb002
+        WHERE `UNITACCNUM` = #{unitAccNum}
+          AND `ACCSTATE` = '0'
+        LIMIT 1
+    </select>
+
     <select id="selectNormalByOrgCode" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
@@ -66,4 +75,14 @@
             #{persNum}, #{lastPayDate}, #{instCode}, #{op}, #{createDate}
         )
     </insert>
+
+    <update id="updatePaymentSummary">
+        UPDATE tb002
+        SET `BASENUMBER` = `BASENUMBER` + #{baseNum},
+            `UNITPAYSUM` = `UNITPAYSUM` + #{unitMonthPay},
+            `PERPAYSUM` = `PERPAYSUM` + #{perMonthPay},
+            `PERSNUM` = `PERSNUM` + 1
+        WHERE `UNITACCNUM` = #{unitAccNum}
+          AND `ACCSTATE` = '0'
+    </update>
 </mapper>

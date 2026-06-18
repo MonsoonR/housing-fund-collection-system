@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.housingfund.collection.mapper.PersonMapper">
+
+    <resultMap id="PersonBasicInfoResultMap" type="PersonBasicInfo">
+        <id column="PERACCNUM" property="perAccNum"/>
+        <result column="UNITACCNUM" property="unitAccNum"/>
+        <result column="PERNAME" property="perName"/>
+        <result column="IDTYPE" property="idType"/>
+        <result column="IDCARD" property="idCard"/>
+        <result column="PHONE" property="phone"/>
+        <result column="ADDRESS" property="address"/>
+        <result column="BASENUM" property="baseNum"/>
+        <result column="UNITRATIO" property="unitRatio"/>
+        <result column="PERRATIO" property="perRatio"/>
+        <result column="UNITMONTHPAY" property="unitMonthPay"/>
+        <result column="PERMONTHPAY" property="perMonthPay"/>
+        <result column="PERBALANCE" property="perBalance"/>
+        <result column="STATUS" property="status"/>
+        <result column="CREATE_TIME" property="createTime"/>
+        <result column="UPDATE_TIME" property="updateTime"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        `PERACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `PHONE`, `ADDRESS`,
+        `BASENUM`, `UNITRATIO`, `PERRATIO`, `UNITMONTHPAY`, `PERMONTHPAY`,
+        `PERBALANCE`, `STATUS`, `CREATE_TIME`, `UPDATE_TIME`
+    </sql>
+
+    <select id="selectByPerAccNum" resultMap="PersonBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb003
+        WHERE `PERACCNUM` = #{perAccNum}
+    </select>
+
+    <select id="selectByIdCard" resultMap="PersonBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb003
+        WHERE `IDCARD` = #{idCard}
+        LIMIT 1
+    </select>
+
+    <select id="selectNormalByIdCard" resultMap="PersonBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb003
+        WHERE `IDCARD` = #{idCard}
+          AND `STATUS` = '0'
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="PersonBasicInfo">
+        INSERT INTO tb003 (
+            `PERACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `PHONE`, `ADDRESS`,
+            `BASENUM`, `UNITRATIO`, `PERRATIO`, `UNITMONTHPAY`, `PERMONTHPAY`,
+            `PERBALANCE`, `STATUS`, `CREATE_TIME`, `UPDATE_TIME`
+        ) VALUES (
+            #{perAccNum}, #{unitAccNum}, #{perName}, #{idType}, #{idCard}, #{phone}, #{address},
+            #{baseNum}, #{unitRatio}, #{perRatio}, #{unitMonthPay}, #{perMonthPay},
+            #{perBalance}, #{status}, #{createTime}, #{updateTime}
+        )
+    </insert>
+
+    <update id="reactivate" parameterType="PersonBasicInfo">
+        UPDATE tb003
+        SET `UNITACCNUM` = #{unitAccNum},
+            `PERNAME` = #{perName},
+            `IDTYPE` = #{idType},
+            `IDCARD` = #{idCard},
+            `PHONE` = #{phone},
+            `ADDRESS` = #{address},
+            `BASENUM` = #{baseNum},
+            `UNITRATIO` = #{unitRatio},
+            `PERRATIO` = #{perRatio},
+            `UNITMONTHPAY` = #{unitMonthPay},
+            `PERMONTHPAY` = #{perMonthPay},
+            `PERBALANCE` = #{perBalance},
+            `STATUS` = #{status},
+            `CREATE_TIME` = #{createTime},
+            `UPDATE_TIME` = #{updateTime}
+        WHERE `PERACCNUM` = #{perAccNum}
+          AND `STATUS` = '9'
+    </update>
+</mapper>

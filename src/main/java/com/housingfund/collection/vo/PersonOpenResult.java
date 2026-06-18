@@ -1,27 +1,22 @@
-package com.housingfund.collection.entity;
+package com.housingfund.collection.vo;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-public class PersonBasicInfo implements Serializable {
+public class PersonOpenResult implements Serializable {
 
     private String perAccNum;
-    private String unitAccNum;
     private String perName;
-    private String idType;
     private String idCard;
-    private String phone;
-    private String address;
+    private String unitAccNum;
+    private String unitName;
     private BigDecimal baseNum;
     private BigDecimal unitRatio;
     private BigDecimal perRatio;
     private BigDecimal unitMonthPay;
     private BigDecimal perMonthPay;
-    private BigDecimal perBalance;
-    private String status;
     private LocalDateTime createTime;
-    private LocalDateTime updateTime;
 
     public String getPerAccNum() {
         return perAccNum;
@@ -29,14 +24,6 @@ public class PersonBasicInfo implements Serializable {
 
     public void setPerAccNum(String perAccNum) {
         this.perAccNum = perAccNum;
-    }
-
-    public String getUnitAccNum() {
-        return unitAccNum;
-    }
-
-    public void setUnitAccNum(String unitAccNum) {
-        this.unitAccNum = unitAccNum;
     }
 
     public String getPerName() {
@@ -47,14 +34,6 @@ public class PersonBasicInfo implements Serializable {
         this.perName = perName;
     }
 
-    public String getIdType() {
-        return idType;
-    }
-
-    public void setIdType(String idType) {
-        this.idType = idType;
-    }
-
     public String getIdCard() {
         return idCard;
     }
@@ -63,20 +42,20 @@ public class PersonBasicInfo implements Serializable {
         this.idCard = idCard;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getUnitAccNum() {
+        return unitAccNum;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setUnitAccNum(String unitAccNum) {
+        this.unitAccNum = unitAccNum;
     }
 
-    public String getAddress() {
-        return address;
+    public String getUnitName() {
+        return unitName;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setUnitName(String unitName) {
+        this.unitName = unitName;
     }
 
     public BigDecimal getBaseNum() {
@@ -119,35 +98,11 @@ public class PersonBasicInfo implements Serializable {
         this.perMonthPay = perMonthPay;
     }
 
-    public BigDecimal getPerBalance() {
-        return perBalance;
-    }
-
-    public void setPerBalance(BigDecimal perBalance) {
-        this.perBalance = perBalance;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public LocalDateTime getCreateTime() {
         return createTime;
     }
 
     public void setCreateTime(LocalDateTime createTime) {
         this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
     }
 }

@@ -31,6 +31,12 @@ public class JspSyntaxTest {
                 invalidUsages.isEmpty());
     }
 
+    @Test
+    public void personOpenJspPagesExist() {
+        assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "open.jsp")));
+        assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "receipt.jsp")));
+    }
+
     private static void collectInvalidUsages(Path path, List<String> invalidUsages) {
         try {
             List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);

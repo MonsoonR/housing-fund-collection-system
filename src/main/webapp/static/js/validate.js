@@ -99,7 +99,7 @@
             form.elements["agentName"].focus();
             return false;
         }
-        if (!/^\d{17}[\dXx]$/.test(agentIdCard)) {
+        if (!isValidIdCard(agentIdCard)) {
             alert("经办人身份证号码不正确");
             form.elements["agentIdCard"].focus();
             return false;
@@ -117,11 +117,79 @@
         return true;
     };
 
+    window.validatePersonOpenForm = function (form) {
+        var unitAccNum = trim(form.elements["unitAccNum"].value);
+        var perName = trim(form.elements["perName"].value);
+        var idType = trim(form.elements["idType"].value);
+        var idCard = trim(form.elements["idCard"].value);
+        var baseNum = trim(form.elements["baseNum"].value);
+
+        if (!/^\d{12}$/.test(unitAccNum)) {
+            alert("单位账号长度必须为12位");
+            form.elements["unitAccNum"].focus();
+            return false;
+        }
+        if (!perName) {
+            alert("个人姓名不能为空");
+            form.elements["perName"].focus();
+            return false;
+        }
+        if (/^[\u4e00-\u9fa5]+$/.test(perName) && perName.length > 12) {
+            alert("个人姓名不能超过12个汉字");
+            form.elements["perName"].focus();
+            return false;
+        }
+        if (perName.length > 50) {
+            alert("个人姓名不能超过50个字符");
+            form.elements["perName"].focus();
+            return false;
+        }
+        if (idType !== "居民身份证") {
+            alert("证件类型目前只支持居民身份证");
+            form.elements["idType"].focus();
+            return false;
+        }
+        if (!isValidIdCard(idCard)) {
+            alert("身份证号不正确");
+            form.elements["idCard"].focus();
+            return false;
+        }
+        if (!/^\d+(\.\d{1,2})?$/.test(baseNum) || Number(baseNum) <= 0) {
+            alert("缴存基数必须大于0");
+            form.elements["baseNum"].focus();
+            return false;
+        }
+        return true;
+    };
+
     function isRatioInRange(value) {
         if (!/^0\.\d{3}$/.test(value)) {
             return false;
         }
         var ratio = Number(value);
         return ratio >= 0.050 && ratio <= 0.120;
+    }
+
+    function isValidIdCard(value) {
+        if (!/^\d{17}[\dXx]$/.test(value)) {
+            return false;
+        }
+        var year = Number(value.substring(6, 10));
+        var month = Number(value.substring(10, 12));
+        var day = Number(value.substring(12, 14));
+        var birthDate = new Date(year, month - 1, day);
+        if (birthDate.getFullYear() !== year ||
+                birthDate.getMonth() !== month - 1 ||
+                birthDate.getDate() !== day ||
+                birthDate > new Date()) {
+            return false;
+        }
+        var weights = [7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2];
+        var checkCodes = ["1", "0", "X", "9", "8", "7", "6", "5", "4", "3", "2"];
+        var sum = 0;
+        for (var i = 0; i < weights.length; i++) {
+            sum += Number(value.charAt(i)) * weights[i];
+        }
+        return checkCodes[sum % 11] === value.charAt(17).toUpperCase();
     }
 })();

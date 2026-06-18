@@ -218,6 +218,12 @@ public class UnitServiceImplTest {
         }
 
         @Override
+        public UnitBasicInfo selectNormalByUnitAccNum(String unitAccNum) {
+            UnitBasicInfo unit = data.get(unitAccNum);
+            return unit != null && "0".equals(unit.getAccState()) ? unit : null;
+        }
+
+        @Override
         public UnitBasicInfo selectNormalByOrgCode(String orgCode) {
             for (UnitBasicInfo unit : data.values()) {
                 if (orgCode.equals(unit.getOrgCode()) && "0".equals(unit.getAccState())) {
@@ -230,6 +236,20 @@ public class UnitServiceImplTest {
         @Override
         public int insert(UnitBasicInfo unit) {
             data.put(unit.getUnitAccNum(), unit);
+            return 1;
+        }
+
+        @Override
+        public int updatePaymentSummary(String unitAccNum, BigDecimal baseNum,
+                                        BigDecimal unitMonthPay, BigDecimal perMonthPay) {
+            UnitBasicInfo unit = data.get(unitAccNum);
+            if (unit == null || !"0".equals(unit.getAccState())) {
+                return 0;
+            }
+            unit.setBaseNumber(unit.getBaseNumber().add(baseNum));
+            unit.setUnitPaySum(unit.getUnitPaySum().add(unitMonthPay));
+            unit.setPerPaySum(unit.getPerPaySum().add(perMonthPay));
+            unit.setPersNum(unit.getPersNum() + 1);
             return 1;
         }
     }
