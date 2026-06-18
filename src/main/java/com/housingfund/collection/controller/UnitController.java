@@ -1,7 +1,10 @@
 package com.housingfund.collection.controller;
 
+import com.housingfund.collection.entity.UnitBasicInfo;
 import com.housingfund.collection.exception.BusinessException;
 import com.housingfund.collection.service.UnitService;
+import com.housingfund.collection.vo.UnitEditForm;
+import com.housingfund.collection.vo.UnitEditResult;
 import com.housingfund.collection.vo.UnitOpenForm;
 import com.housingfund.collection.vo.UnitOpenResult;
 import com.housingfund.collection.vo.UnitQueryForm;
@@ -79,5 +82,79 @@ public class UnitController {
             model.addAttribute("error", ex.getMessage());
             return "unit/query";
         }
+    }
+
+    @GetMapping("/edit")
+    public String editSearchForm(Model model) {
+        if (!model.containsAttribute("unitEditForm")) {
+            model.addAttribute("unitEditForm", new UnitEditForm());
+        }
+        return "unit/edit";
+    }
+
+    @GetMapping("/edit/form")
+    public String editForm(@ModelAttribute("unitEditForm") UnitEditForm form,
+                           BindingResult bindingResult,
+                           Model model) {
+        return loadEditForm(form, bindingResult, model);
+    }
+
+    @PostMapping("/edit/search")
+    public String searchEditForm(@ModelAttribute("unitEditForm") UnitEditForm form,
+                                 BindingResult bindingResult,
+                                 Model model) {
+        return loadEditForm(form, bindingResult, model);
+    }
+
+    @PostMapping("/edit")
+    public String update(@ModelAttribute("unitEditForm") UnitEditForm form,
+                         BindingResult bindingResult,
+                         Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "表单数据格式不正确");
+            model.addAttribute("unitLoaded", true);
+            return "unit/edit";
+        }
+        try {
+            UnitEditResult result = unitService.updateUnit(form);
+            model.addAttribute("receipt", result);
+            return "unit/edit-receipt";
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            model.addAttribute("unitLoaded", true);
+            return "unit/edit";
+        }
+    }
+
+    private String loadEditForm(UnitEditForm form, BindingResult bindingResult, Model model) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", "表单数据格式不正确");
+            return "unit/edit";
+        }
+        try {
+            UnitBasicInfo unit = unitService.getEditableUnit(form.getUnitAccNum());
+            model.addAttribute("unitEditForm", buildEditForm(unit));
+            model.addAttribute("unitLoaded", true);
+            return "unit/edit";
+        } catch (BusinessException ex) {
+            model.addAttribute("error", ex.getMessage());
+            return "unit/edit";
+        }
+    }
+
+    private UnitEditForm buildEditForm(UnitBasicInfo unit) {
+        UnitEditForm form = new UnitEditForm();
+        form.setUnitAccNum(unit.getUnitAccNum());
+        form.setUnitName(unit.getUnitName());
+        form.setUnitAddr(unit.getUnitAddr());
+        form.setOrgCode(unit.getOrgCode());
+        form.setUnitKind(unit.getUnitKind());
+        form.setUnitType(unit.getUnitType());
+        form.setSalaryDate(unit.getSalaryDate());
+        form.setPhone(unit.getPhone());
+        form.setAgentName(unit.getAgentName());
+        form.setAgentIdCard(unit.getAgentIdCard());
+        form.setRemark(unit.getRemark());
+        return form;
     }
 }

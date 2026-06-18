@@ -9,6 +9,8 @@ import com.housingfund.collection.service.UnitService;
 import com.housingfund.collection.util.AccountNumberUtil;
 import com.housingfund.collection.util.DateUtil;
 import com.housingfund.collection.util.IdCardUtil;
+import com.housingfund.collection.vo.UnitEditForm;
+import com.housingfund.collection.vo.UnitEditResult;
 import com.housingfund.collection.vo.UnitOpenForm;
 import com.housingfund.collection.vo.UnitOpenResult;
 import com.housingfund.collection.vo.UnitQueryForm;
@@ -19,9 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -100,6 +104,38 @@ public class UnitServiceImpl implements UnitService {
         return results;
     }
 
+    @Override
+    public UnitBasicInfo getEditableUnit(String unitAccNum) {
+        String normalizedUnitAccNum = validateUnitAccNum(unitAccNum);
+        UnitBasicInfo unit = unitMapper.selectByUnitAccNum(normalizedUnitAccNum);
+        ensureEditable(unit);
+        return unit;
+    }
+
+    @Override
+    @Transactional
+    public UnitEditResult updateUnit(UnitEditForm form) {
+        validateEdit(form);
+
+        UnitBasicInfo existing = unitMapper.selectByUnitAccNum(form.getUnitAccNum());
+        ensureEditable(existing);
+        if (!hasEditableChanges(existing, form)) {
+            throw new BusinessException("请至少修改一项单位资料");
+        }
+        UnitBasicInfo duplicate = unitMapper.selectDuplicateOrgCodeAndUnitName(
+                form.getOrgCode(), form.getUnitName(), form.getUnitAccNum());
+        if (duplicate != null) {
+            throw new BusinessException("修改后的组织机构代码和单位名称已被其他单位占用");
+        }
+
+        UnitBasicInfo update = buildEditableUpdate(form);
+        int updated = unitMapper.updateEditableFields(update);
+        if (updated == 0) {
+            throw new BusinessException("单位资料修改失败");
+        }
+        return buildEditResult(update);
+    }
+
     private UnitBasicInfo buildUnit(UnitOpenForm form, String unitAccNum, LocalDate createDate) {
         UnitBasicInfo unit = new UnitBasicInfo();
         unit.setUnitAccNum(unitAccNum);
@@ -139,6 +175,34 @@ public class UnitServiceImpl implements UnitService {
         return result;
     }
 
+    private UnitBasicInfo buildEditableUpdate(UnitEditForm form) {
+        UnitBasicInfo unit = new UnitBasicInfo();
+        unit.setUnitAccNum(form.getUnitAccNum());
+        unit.setUnitName(form.getUnitName());
+        unit.setUnitAddr(form.getUnitAddr());
+        unit.setOrgCode(form.getOrgCode());
+        unit.setUnitKind(form.getUnitKind());
+        unit.setUnitType(form.getUnitType());
+        unit.setSalaryDate(form.getSalaryDate());
+        unit.setPhone(form.getPhone());
+        unit.setAgentName(form.getAgentName());
+        unit.setAgentIdCard(form.getAgentIdCard());
+        unit.setRemark(form.getRemark());
+        return unit;
+    }
+
+    private UnitEditResult buildEditResult(UnitBasicInfo unit) {
+        UnitEditResult result = new UnitEditResult();
+        result.setUnitAccNum(unit.getUnitAccNum());
+        result.setUnitName(unit.getUnitName());
+        result.setOrgCode(unit.getOrgCode());
+        result.setPhone(unit.getPhone());
+        result.setAgentName(unit.getAgentName());
+        result.setResultMessage("修改成功");
+        result.setUpdateTime(LocalDateTime.now());
+        return result;
+    }
+
     private void validate(UnitOpenForm form) {
         if (form == null) {
             throw new BusinessException("单位开户信息不能为空");
@@ -175,6 +239,41 @@ public class UnitServiceImpl implements UnitService {
         form.setRemark(trimToNull(form.getRemark()));
     }
 
+    private void validateEdit(UnitEditForm form) {
+        if (form == null) {
+            throw new BusinessException("单位资料修改信息不能为空");
+        }
+        form.setUnitAccNum(validateUnitAccNum(form.getUnitAccNum()));
+        form.setUnitName(requireText(form.getUnitName(), "单位名称不能为空"));
+        if (form.getUnitName().length() > 50) {
+            throw new BusinessException("单位名称不能超过50个字符");
+        }
+        form.setUnitAddr(requireText(form.getUnitAddr(), "单位地址不能为空"));
+        form.setOrgCode(requireText(form.getOrgCode(), "组织机构代码不能为空"));
+        if (form.getOrgCode().length() != 9) {
+            throw new BusinessException("组织机构代码长度必须为9位");
+        }
+        form.setUnitKind(requireText(form.getUnitKind(), "单位类别不能为空"));
+        if (!UNIT_KINDS.contains(form.getUnitKind())) {
+            throw new BusinessException("单位类别取值不正确");
+        }
+        form.setUnitType(requireText(form.getUnitType(), "企业类型不能为空"));
+        if (!UNIT_TYPES.contains(form.getUnitType())) {
+            throw new BusinessException("企业类型取值不正确");
+        }
+        form.setSalaryDate(requireText(form.getSalaryDate(), "发薪日期不能为空"));
+        if (!form.getSalaryDate().matches("0[1-9]|[12][0-9]|3[01]")) {
+            throw new BusinessException("发薪日期必须在01到31之间");
+        }
+        form.setPhone(requireText(form.getPhone(), "联系电话不能为空"));
+        form.setAgentName(requireText(form.getAgentName(), "单位经办人不能为空"));
+        form.setAgentIdCard(requireText(form.getAgentIdCard(), "经办人身份证号码不能为空"));
+        if (!IdCardUtil.isValid(form.getAgentIdCard())) {
+            throw new BusinessException("经办人身份证号码不正确");
+        }
+        form.setRemark(trimToNull(form.getRemark()));
+    }
+
     private void validateQuery(UnitQueryForm form) {
         if (form == null) {
             throw new BusinessException("请输入单位账号或单位名称");
@@ -187,6 +286,40 @@ public class UnitServiceImpl implements UnitService {
         if (form.getUnitAccNum() != null && !AccountNumberUtil.isValidAccountNumber(form.getUnitAccNum())) {
             throw new BusinessException("单位账号长度必须为12位");
         }
+    }
+
+    private String validateUnitAccNum(String unitAccNum) {
+        String normalizedUnitAccNum = requireText(unitAccNum, "单位账号不能为空");
+        if (!AccountNumberUtil.isValidAccountNumber(normalizedUnitAccNum)) {
+            throw new BusinessException("单位账号长度必须为12位");
+        }
+        return normalizedUnitAccNum;
+    }
+
+    private void ensureEditable(UnitBasicInfo unit) {
+        if (unit == null) {
+            throw new BusinessException("单位账号不存在");
+        }
+        if ("9".equals(unit.getAccState())) {
+            throw new BusinessException("已销户单位不能修改");
+        }
+    }
+
+    private boolean hasEditableChanges(UnitBasicInfo existing, UnitEditForm form) {
+        return !same(existing.getUnitName(), form.getUnitName())
+                || !same(existing.getUnitAddr(), form.getUnitAddr())
+                || !same(existing.getOrgCode(), form.getOrgCode())
+                || !same(existing.getUnitKind(), form.getUnitKind())
+                || !same(existing.getUnitType(), form.getUnitType())
+                || !same(existing.getSalaryDate(), form.getSalaryDate())
+                || !same(existing.getPhone(), form.getPhone())
+                || !same(existing.getAgentName(), form.getAgentName())
+                || !same(existing.getAgentIdCard(), form.getAgentIdCard())
+                || !same(existing.getRemark(), form.getRemark());
+    }
+
+    private boolean same(String left, String right) {
+        return Objects.equals(trimToNull(left), trimToNull(right));
     }
 
     private UnitQueryResult buildQueryResult(UnitBasicInfo unit) {

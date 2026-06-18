@@ -1,6 +1,6 @@
 # 住房公积金管理系统——筹集子系统
 
-本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块、个人开户模块、单位信息查询模块和个人信息查询模块。
+本项目是传统 Maven SSM Web 项目，用于课程设计。当前已包含基础配置、数据库脚本、首页入口、基础 Java 类、系统参数维护模块、单位开户模块、个人开户模块、单位资料修改模块、单位信息查询模块和个人信息查询模块。
 
 ## 技术栈
 
@@ -49,6 +49,8 @@ src/main/webapp/
   WEB-INF/jsp/param/list.jsp
   WEB-INF/jsp/unit/open.jsp
   WEB-INF/jsp/unit/receipt.jsp
+  WEB-INF/jsp/unit/edit.jsp
+  WEB-INF/jsp/unit/edit-receipt.jsp
   WEB-INF/jsp/unit/query.jsp
   WEB-INF/jsp/person/open.jsp
   WEB-INF/jsp/person/receipt.jsp
@@ -111,6 +113,8 @@ target/housingfund-collection.war
 - 结果：构建成功，20 个测试通过，生成 `target/housingfund-collection.war`。
 - 2026-06-18：完成单位信息查询和个人信息查询后，使用 `mvn clean package`。
 - 结果：构建成功，30 个测试通过，生成 `target/housingfund-collection.war`。
+- 2026-06-18：完成单位资料修改闭环后，使用 `mvn clean package`。
+- 结果：构建成功，41 个测试通过，生成 `target/housingfund-collection.war`。
 
 ## 部署
 
@@ -126,6 +130,7 @@ http://localhost:8080/housingfund-collection/
 http://localhost:8080/housingfund-collection/params
 http://localhost:8080/housingfund-collection/units/open
 http://localhost:8080/housingfund-collection/persons/open
+http://localhost:8080/housingfund-collection/units/edit
 http://localhost:8080/housingfund-collection/units/query
 http://localhost:8080/housingfund-collection/persons/query
 ```
@@ -140,6 +145,7 @@ http://localhost:8080/housingfund-collection/persons/query
 - 首页 `index.jsp`
 - 系统参数维护 JSP：`param/list.jsp`、`param/form.jsp`
 - 单位开户 JSP：`unit/open.jsp`、`unit/receipt.jsp`
+- 单位资料修改 JSP：`unit/edit.jsp`、`unit/edit-receipt.jsp`
 - 个人开户 JSP：`person/open.jsp`、`person/receipt.jsp`
 - 查询 JSP：`unit/query.jsp`、`person/query.jsp`
 - 前端基础校验脚本：`static/js/validate.js`
@@ -148,6 +154,7 @@ http://localhost:8080/housingfund-collection/persons/query
 - 系统参数维护模块：新增、删除、修改、查询 `tb001`
 - 单位开户模块：录入单位资料、生成单位账号、写入 `tb002`、更新 `UNITACCNUM.seq`
 - 个人开户模块：录入个人资料、生成或重新启用个人账号、写入 `tb003`、更新 `PERACCNUM.seq` 和单位汇总字段
+- 单位资料修改模块：按单位账号查询并反显单位资料，只允许修改单位名称、地址、组织机构代码、单位类别、企业类型、发薪日期、联系电话、单位经办人、经办人身份证号码和备注
 - 单位信息查询模块：按单位账号精确查询，或按单位名称模糊查询，展示单位汇总和缴存信息
 - 个人信息查询模块：按个人账号或身份证号精确查询，关联显示缴存单位和个人缴存信息
 - 系统参数 Service 单元测试类：`ParamServiceImplTest`
@@ -226,6 +233,45 @@ http://localhost:8080/housingfund-collection/units/open
 5. 再次使用相同组织机构代码开户，确认提示“该单位已建户”并保留表单内容。
 6. 输入单位比例 `0.049` 或个人比例 `0.121`，确认页面或后端提示比例范围错误。
 7. 将 `UNITACCNUM.seq` 调整为大于 `maxseq` 后提交，确认提示“单位账号序号已超过最大值”。
+
+## 单位资料修改模块
+
+访问入口：
+
+```text
+http://localhost:8080/housingfund-collection/units/edit
+```
+
+支持功能：
+
+- 输入 12 位单位账号，查询 `tb002` 并反显可修改字段。
+- 只允许修改单位名称、单位地址、组织机构代码、单位类别、企业类型、发薪日期、联系电话、单位经办人、经办人身份证号码和备注。
+- 不修改单位账号、单位比例、个人比例、余额、缴存基数、单位人数、单位月缴额、个人月缴额、账户状态、最后汇缴月、机构代码、柜员和开户日期。
+- 修改成功后显示单位账号、单位名称、组织机构代码、联系电话、单位经办人、修改结果和修改时间。
+- 业务失败返回修改表单并保留已输入内容。
+
+核心校验：
+
+- 单位账号必填且长度必须为 12 位。
+- 单位不存在时提示“单位账号不存在”；`ACCSTATE='9'` 时提示“已销户单位不能修改”。
+- 单位名称必填且最多 50 个字符；单位地址、组织机构代码、联系电话、单位经办人、经办人身份证号码必填。
+- 组织机构代码长度必须为 9 位。
+- 单位类别取值为 `1` 到 `5`；企业类型取值为 `110`、`120`、`130`、`140`、`150`、`160`、`170`、`190`、`200`、`300`、`900`。
+- 发薪日期必须是 `01` 到 `31`。
+- 经办人身份证号码按 18 位居民身份证规则校验。
+- 至少修改一项；修改后的组织机构代码和单位名称不能同时与其他单位重复。
+
+手动测试步骤：
+
+1. 先通过 `/units/open` 新增一个正常单位，或确认数据库中已有 `ACCSTATE='0'` 的单位，例如 `000000000001`。
+2. 访问 `/units/edit`，输入单位账号 `000000000001` 查询，确认页面反显单位名称、单位地址、组织机构代码、单位类别、企业类型、发薪日期、联系电话、单位经办人、经办人身份证号码和备注。
+3. 修改单位名称为 `测试单位修改后`，或修改联系电话为 `0551-87654321` 后提交，确认回执显示“修改成功”和修改时间。
+4. 回到数据库检查 `tb002`：允许修改字段已变化，`UNITACCNUM`、`UNITRATIO`、`PERRATIO`、`BALANCE`、`BASENUMBER`、`PERSNUM`、`UNITPAYSUM`、`PERPAYSUM`、`ACCSTATE`、`LASTPAYDATE`、`INSTCODE`、`OP`、`CREATDATE` 未变化。
+5. 输入不存在的单位账号，例如 `000000009999`，确认提示“单位账号不存在”。
+6. 将测试单位 `ACCSTATE` 手工改为 `9` 后再查询或提交修改，确认提示“已销户单位不能修改”；测试完成后按需要改回 `0`。
+7. 查询成功后不改任何字段直接提交，确认提示“请至少修改一项单位资料”。
+8. 准备另一个单位后，将当前单位的组织机构代码和单位名称同时改成另一个单位的值，确认提示“修改后的组织机构代码和单位名称已被其他单位占用”。
+9. 输入组织机构代码 `ABC`、发薪日期 `32` 或身份证号 `123456`，确认页面或后端提示对应校验错误。
 
 ## 个人开户模块
 
@@ -320,6 +366,5 @@ http://localhost:8080/housingfund-collection/persons/query
 
 ## 当前未完成
 
-- 单位资料修改
 - 个人资料修改
 - 其他业务模块的 Service、Mapper、VO 和业务 JSP 页面

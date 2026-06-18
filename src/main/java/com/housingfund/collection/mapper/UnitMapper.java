@@ -14,9 +14,15 @@ public interface UnitMapper {
 
     UnitBasicInfo selectNormalByOrgCode(@Param("orgCode") String orgCode);
 
+    UnitBasicInfo selectDuplicateOrgCodeAndUnitName(@Param("orgCode") String orgCode,
+                                                    @Param("unitName") String unitName,
+                                                    @Param("excludeUnitAccNum") String excludeUnitAccNum);
+
     List<UnitBasicInfo> selectByUnitNameLike(@Param("unitName") String unitName);
 
     int insert(UnitBasicInfo unit);
+
+    int updateEditableFields(UnitBasicInfo unit);
 
     int updatePaymentSummary(@Param("unitAccNum") String unitAccNum,
                              @Param("baseNum") BigDecimal baseNum,

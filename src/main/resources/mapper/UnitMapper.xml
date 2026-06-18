@@ -62,6 +62,16 @@
         LIMIT 1
     </select>
 
+    <select id="selectDuplicateOrgCodeAndUnitName" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM tb002
+        WHERE `ORGCODE` = #{orgCode}
+          AND `UNITNAME` = #{unitName}
+          AND `UNITACCNUM` &lt;&gt; #{excludeUnitAccNum}
+        LIMIT 1
+    </select>
+
     <select id="selectByUnitNameLike" resultMap="UnitBasicInfoResultMap">
         SELECT
         <include refid="BaseColumns"/>
@@ -83,6 +93,22 @@
             #{persNum}, #{lastPayDate}, #{instCode}, #{op}, #{createDate}
         )
     </insert>
+
+    <update id="updateEditableFields" parameterType="UnitBasicInfo">
+        UPDATE tb002
+        SET `UNITNAME` = #{unitName},
+            `UNITADDR` = #{unitAddr},
+            `ORGCODE` = #{orgCode},
+            `UNITKIND` = #{unitKind},
+            `UNITTYPE` = #{unitType},
+            `SALARYDATE` = #{salaryDate},
+            `PHONE` = #{phone},
+            `AGENTNAME` = #{agentName},
+            `AGENTIDCARD` = #{agentIdCard},
+            `REMARK` = #{remark}
+        WHERE `UNITACCNUM` = #{unitAccNum}
+          AND `ACCSTATE` &lt;&gt; '9'
+    </update>
 
     <update id="updatePaymentSummary">
         UPDATE tb002

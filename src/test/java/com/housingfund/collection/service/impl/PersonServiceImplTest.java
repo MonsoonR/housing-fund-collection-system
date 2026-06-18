@@ -395,6 +395,12 @@ public class PersonServiceImplTest {
         }
 
         @Override
+        public UnitBasicInfo selectDuplicateOrgCodeAndUnitName(String orgCode, String unitName,
+                                                               String excludeUnitAccNum) {
+            return null;
+        }
+
+        @Override
         public List<UnitBasicInfo> selectByUnitNameLike(String unitName) {
             return new ArrayList<>();
         }
@@ -403,6 +409,11 @@ public class PersonServiceImplTest {
         public int insert(UnitBasicInfo unit) {
             data.put(unit.getUnitAccNum(), unit);
             return 1;
+        }
+
+        @Override
+        public int updateEditableFields(UnitBasicInfo unit) {
+            return 0;
         }
 
         @Override

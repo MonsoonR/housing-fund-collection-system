@@ -43,6 +43,12 @@ public class JspSyntaxTest {
         assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "query.jsp")));
     }
 
+    @Test
+    public void unitEditJspPagesExist() {
+        assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "unit", "edit.jsp")));
+        assertTrue(Files.exists(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "unit", "edit-receipt.jsp")));
+    }
+
     private static void collectInvalidUsages(Path path, List<String> invalidUsages) {
         try {
             List<String> lines = Files.readAllLines(path, StandardCharsets.UTF_8);
