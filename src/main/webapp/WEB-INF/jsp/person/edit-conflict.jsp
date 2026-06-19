@@ -173,7 +173,7 @@
             </div>
         </div>
 
-        <p class="note">确认后，占用账户证件号码首位将改为 9，其余位数保持不变。</p>
+        <p class="note">确认后，系统会新建错误账户保存占用账户原信息，错误账户证件号码首位为 9；原占用账户证件号码首位释放为 8。</p>
 
         <div class="actions">
             <form method="post" action="${pageContext.request.contextPath}/persons/edit/force">
