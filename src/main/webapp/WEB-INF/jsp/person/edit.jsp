@@ -14,6 +14,7 @@
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>个人资料修改</h1>
+        <p class="page-desc">按个人公积金账号查询后，修改姓名、证件类型和证件号码。</p>
 
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
@@ -23,7 +24,7 @@
               onsubmit="return validatePersonEditSearchForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="searchPerAccNum">个人公积金账号</label>
+                    <label for="searchPerAccNum">个人公积金账号<span class="required">*</span></label>
                     <input id="searchPerAccNum" name="perAccNum" type="text" required maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(personEditForm.perAccNum)}">
                     <div class="tip">请输入 12 位个人公积金账号。</div>
@@ -74,20 +75,20 @@
                     <h2>个人基本信息</h2>
                     <div class="grid">
                     <div class="field">
-                        <label for="perName">姓名</label>
+                        <label for="perName">姓名<span class="required">*</span></label>
                         <input id="perName" name="perName" type="text" required maxlength="12"
                                value="${fn:escapeXml(personEditForm.perName)}">
                     </div>
 
                     <div class="field">
-                        <label for="idType">证件类型</label>
+                        <label for="idType">证件类型<span class="required">*</span></label>
                         <select id="idType" name="idType" required>
                             <option value="01身份证" ${personEditForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
                         </select>
                     </div>
 
                     <div class="field">
-                        <label for="idCard">证件号码</label>
+                        <label for="idCard">证件号码<span class="required">*</span></label>
                         <input id="idCard" name="idCard" type="text" required maxlength="18"
                                pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personEditForm.idCard)}">
                     </div>

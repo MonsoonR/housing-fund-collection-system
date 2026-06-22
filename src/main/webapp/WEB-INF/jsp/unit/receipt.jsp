@@ -12,6 +12,7 @@
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>单位开户成功回单</h1>
+        <p class="page-desc">办理结果已生成，请核对单位账号和开户信息。</p>
 
         <div class="receipt">
             <div class="row">

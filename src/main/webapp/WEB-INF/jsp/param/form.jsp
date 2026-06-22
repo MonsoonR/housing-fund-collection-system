@@ -14,6 +14,7 @@
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1><c:out value="${mode eq 'create' ? '新增系统参数' : '修改系统参数'}"/></h1>
+        <p class="page-desc">维护系统参数键值、当前序号、最大序号和参数说明。</p>
 
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
@@ -33,7 +34,7 @@
                 <h2>参数信息</h2>
                 <div class="grid">
                     <div class="field">
-                        <label for="seqname">键值信息</label>
+                        <label for="seqname">键值信息<span class="required">*</span></label>
                         <c:choose>
                             <c:when test="${mode eq 'create'}">
                                 <input id="seqname" name="seqname" type="text" required maxlength="32"
@@ -48,19 +49,19 @@
                     </div>
 
                     <div class="field">
-                        <label for="seq">当前序号</label>
+                        <label for="seq">当前序号<span class="required">*</span></label>
                         <input id="seq" name="seq" type="number" required min="1" step="1"
                                value="${fn:escapeXml(systemParam.seq)}">
                     </div>
 
                     <div class="field">
-                        <label for="maxseq">最大序号</label>
+                        <label for="maxseq">最大序号<span class="required">*</span></label>
                         <input id="maxseq" name="maxseq" type="number" required min="1" step="1"
                                value="${fn:escapeXml(systemParam.maxseq)}">
                     </div>
 
                     <div class="field full">
-                        <label for="seqDesc">描述</label>
+                        <label for="seqDesc">描述<span class="required">*</span></label>
                         <textarea id="seqDesc" name="seqDesc" required maxlength="200"><c:out value="${systemParam.seqDesc}"/></textarea>
                     </div>
 

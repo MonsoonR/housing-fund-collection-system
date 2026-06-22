@@ -12,6 +12,7 @@
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>单位资料修改成功回单</h1>
+        <p class="page-desc">单位资料修改已完成，请核对回单信息。</p>
 
         <div class="receipt">
             <div class="row">

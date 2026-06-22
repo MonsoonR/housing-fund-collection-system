@@ -14,6 +14,7 @@
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>单位资料修改</h1>
+        <p class="page-desc">按单位公积金账号查询后，修改允许变更的单位基础资料。</p>
 
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
@@ -23,7 +24,7 @@
               onsubmit="return validateUnitEditSearchForm(this);">
             <div class="grid">
                 <div class="field">
-                    <label for="searchUnitAccNum">单位公积金账号</label>
+                    <label for="searchUnitAccNum">单位公积金账号<span class="required">*</span></label>
                     <input id="searchUnitAccNum" name="unitAccNum" type="text" required maxlength="12"
                            pattern="[0-9]{12}" value="${fn:escapeXml(unitEditForm.unitAccNum)}">
                     <div class="tip">请输入 12 位单位公积金账号。</div>
@@ -64,26 +65,26 @@
                     </div>
 
                     <div class="field">
-                        <label for="orgCode">组织机构代码</label>
+                        <label for="orgCode">组织机构代码<span class="required">*</span></label>
                         <input id="orgCode" name="orgCode" type="text" required maxlength="9" pattern="[A-Za-z0-9]{9}"
                                value="${fn:escapeXml(unitEditForm.orgCode)}">
                         <div class="tip">长度 9 位，支持字母或数字。</div>
                     </div>
 
                     <div class="field full">
-                        <label for="unitName">单位名称</label>
+                        <label for="unitName">单位名称<span class="required">*</span></label>
                         <input id="unitName" name="unitName" type="text" required maxlength="50"
                                value="${fn:escapeXml(unitEditForm.unitName)}">
                     </div>
 
                     <div class="field full">
-                        <label for="unitAddr">单位地址</label>
+                        <label for="unitAddr">单位地址<span class="required">*</span></label>
                         <input id="unitAddr" name="unitAddr" type="text" required maxlength="200"
                                value="${fn:escapeXml(unitEditForm.unitAddr)}">
                     </div>
 
                     <div class="field">
-                        <label for="unitKind">单位类别</label>
+                        <label for="unitKind">单位类别<span class="required">*</span></label>
                         <select id="unitKind" name="unitKind" required>
                             <option value="">请选择</option>
                             <option value="1" ${unitEditForm.unitKind eq '1' ? 'selected' : ''}>企业</option>
@@ -95,7 +96,7 @@
                     </div>
 
                     <div class="field">
-                        <label for="unitType">企业类型</label>
+                        <label for="unitType">企业类型<span class="required">*</span></label>
                         <select id="unitType" name="unitType" required>
                             <option value="">请选择</option>
                             <option value="110" ${unitEditForm.unitType eq '110' ? 'selected' : ''}>国有经济</option>
@@ -113,7 +114,7 @@
                     </div>
 
                     <div class="field">
-                        <label for="salaryDate">发薪日期</label>
+                        <label for="salaryDate">发薪日期<span class="required">*</span></label>
                         <input id="salaryDate" name="salaryDate" type="text" required maxlength="2"
                                pattern="0[1-9]|[12][0-9]|3[01]"
                                value="${fn:escapeXml(unitEditForm.salaryDate)}">
@@ -126,19 +127,19 @@
                     <h2>经办人信息</h2>
                     <div class="grid">
                     <div class="field">
-                        <label for="phone">联系电话</label>
+                        <label for="phone">联系电话<span class="required">*</span></label>
                         <input id="phone" name="phone" type="text" required maxlength="30"
                                value="${fn:escapeXml(unitEditForm.phone)}">
                     </div>
 
                     <div class="field">
-                        <label for="agentName">单位经办人</label>
+                        <label for="agentName">单位经办人<span class="required">*</span></label>
                         <input id="agentName" name="agentName" type="text" required maxlength="50"
                                value="${fn:escapeXml(unitEditForm.agentName)}">
                     </div>
 
                     <div class="field">
-                        <label for="agentIdCard">经办人身份证号码</label>
+                        <label for="agentIdCard">经办人身份证号码<span class="required">*</span></label>
                         <input id="agentIdCard" name="agentIdCard" type="text" required maxlength="18"
                                pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(unitEditForm.agentIdCard)}">
                     </div>

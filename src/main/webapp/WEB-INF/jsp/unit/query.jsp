@@ -14,12 +14,13 @@
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>单位信息查询</h1>
+        <p class="page-desc">按单位公积金账号精确查询，或按单位名称模糊查询。</p>
 
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
         </c:if>
 
-        <form method="post" action="${pageContext.request.contextPath}/units/query"
+        <form class="filter-form" method="post" action="${pageContext.request.contextPath}/units/query"
               onsubmit="return validateUnitQueryForm(this);">
             <div class="grid">
                 <div class="field">
