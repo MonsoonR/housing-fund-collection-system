@@ -11,7 +11,7 @@
 </head>
 <body>
 <main class="page">
-    <section class="panel">
+    <section class="panel danger-zone">
         <h1>证件号码占用确认</h1>
 
         <div class="alert warning">该证件号码已被其他个人账户占用，是否强制变更？</div>
@@ -74,7 +74,7 @@
                 <input type="hidden" name="perName" value="${fn:escapeXml(personEditForm.perName)}">
                 <input type="hidden" name="idType" value="${fn:escapeXml(personEditForm.idType)}">
                 <input type="hidden" name="idCard" value="${fn:escapeXml(personEditForm.idCard)}">
-                <button class="button" type="submit">确认强制变更</button>
+                <button class="button danger" type="submit">确认强制变更</button>
             </form>
 
             <form method="post" action="${pageContext.request.contextPath}/persons/edit/back">

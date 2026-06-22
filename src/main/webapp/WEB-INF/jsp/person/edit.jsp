@@ -47,44 +47,52 @@
                 <input type="hidden" name="originalIdType" value="${fn:escapeXml(personEditForm.idType)}">
                 <input type="hidden" name="originalIdCard" value="${fn:escapeXml(personEditForm.idCard)}">
 
-                <div class="grid">
-                    <div class="field">
-                        <label for="editPerAccNum">个人公积金账号</label>
-                        <input id="editPerAccNum" name="perAccNum" type="text" readonly
-                               value="${fn:escapeXml(personEditForm.perAccNum)}">
-                    </div>
+                <section class="form-section">
+                    <h2>账户信息</h2>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="editPerAccNum">个人公积金账号</label>
+                            <input id="editPerAccNum" name="perAccNum" type="text" readonly
+                                   value="${fn:escapeXml(personEditForm.perAccNum)}">
+                        </div>
 
-                    <div class="field">
-                        <label for="unitAccNum">单位公积金账号</label>
-                        <input id="unitAccNum" name="unitAccNum" type="text" readonly
-                               value="${fn:escapeXml(personEditForm.unitAccNum)}">
-                    </div>
+                        <div class="field">
+                            <label for="unitAccNum">单位公积金账号</label>
+                            <input id="unitAccNum" name="unitAccNum" type="text" readonly
+                                   value="${fn:escapeXml(personEditForm.unitAccNum)}">
+                        </div>
 
-                    <div class="field full">
-                        <label for="unitName">单位名称</label>
-                        <input id="unitName" name="unitName" type="text" readonly
-                               value="${fn:escapeXml(personEditForm.unitName)}">
+                        <div class="field full">
+                            <label for="unitName">单位名称</label>
+                            <input id="unitName" name="unitName" type="text" readonly
+                                   value="${fn:escapeXml(personEditForm.unitName)}">
+                        </div>
                     </div>
+                </section>
 
-                    <div class="field">
-                        <label for="perName">姓名</label>
-                        <input id="perName" name="perName" type="text" required maxlength="12"
-                               value="${fn:escapeXml(personEditForm.perName)}">
-                    </div>
+                <section class="form-section">
+                    <h2>个人基本信息</h2>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="perName">姓名</label>
+                            <input id="perName" name="perName" type="text" required maxlength="12"
+                                   value="${fn:escapeXml(personEditForm.perName)}">
+                        </div>
 
-                    <div class="field">
-                        <label for="idType">证件类型</label>
-                        <select id="idType" name="idType" required>
-                            <option value="01身份证" ${personEditForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
-                        </select>
-                    </div>
+                        <div class="field">
+                            <label for="idType">证件类型</label>
+                            <select id="idType" name="idType" required>
+                                <option value="01身份证" ${personEditForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
+                            </select>
+                        </div>
 
-                    <div class="field">
-                        <label for="idCard">证件号码</label>
-                        <input id="idCard" name="idCard" type="text" required maxlength="18"
-                               pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personEditForm.idCard)}">
+                        <div class="field full">
+                            <label for="idCard">证件号码</label>
+                            <input id="idCard" name="idCard" type="text" required maxlength="18"
+                                   pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personEditForm.idCard)}">
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 <div class="actions">
                     <button class="button" type="submit">提交修改</button>

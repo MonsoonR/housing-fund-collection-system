@@ -29,42 +29,47 @@
         </c:choose>
 
         <form method="post" action="${formAction}" onsubmit="return validateParamForm(this);">
-            <div class="field">
-                <label for="seqname">键值信息</label>
-                <c:choose>
-                    <c:when test="${mode eq 'create'}">
-                        <input id="seqname" name="seqname" type="text" required maxlength="32"
-                               value="${fn:escapeXml(systemParam.seqname)}">
-                    </c:when>
-                    <c:otherwise>
-                        <input id="seqname" name="seqname" type="text" readonly maxlength="32"
-                               value="${fn:escapeXml(systemParam.seqname)}">
-                    </c:otherwise>
-                </c:choose>
-                <div class="tip">新增后不可修改。</div>
-            </div>
+            <section class="form-section">
+                <h2>参数信息</h2>
+                <div class="grid">
+                    <div class="field">
+                        <label for="seqname">键值信息</label>
+                        <c:choose>
+                            <c:when test="${mode eq 'create'}">
+                                <input id="seqname" name="seqname" type="text" required maxlength="32"
+                                       value="${fn:escapeXml(systemParam.seqname)}">
+                            </c:when>
+                            <c:otherwise>
+                                <input id="seqname" name="seqname" type="text" readonly maxlength="32"
+                                       value="${fn:escapeXml(systemParam.seqname)}">
+                            </c:otherwise>
+                        </c:choose>
+                        <div class="tip">新增后不可修改。</div>
+                    </div>
 
-            <div class="field">
-                <label for="seq">当前序号</label>
-                <input id="seq" name="seq" type="number" required min="1" step="1"
-                       value="${fn:escapeXml(systemParam.seq)}">
-            </div>
+                    <div class="field">
+                        <label for="seq">当前序号</label>
+                        <input id="seq" name="seq" type="number" required min="1" step="1"
+                               value="${fn:escapeXml(systemParam.seq)}">
+                    </div>
 
-            <div class="field">
-                <label for="maxseq">最大序号</label>
-                <input id="maxseq" name="maxseq" type="number" required min="1" step="1"
-                       value="${fn:escapeXml(systemParam.maxseq)}">
-            </div>
+                    <div class="field">
+                        <label for="maxseq">最大序号</label>
+                        <input id="maxseq" name="maxseq" type="number" required min="1" step="1"
+                               value="${fn:escapeXml(systemParam.maxseq)}">
+                    </div>
 
-            <div class="field">
-                <label for="seqDesc">描述</label>
-                <textarea id="seqDesc" name="seqDesc" required maxlength="200"><c:out value="${systemParam.seqDesc}"/></textarea>
-            </div>
+                    <div class="field full">
+                        <label for="seqDesc">描述</label>
+                        <textarea id="seqDesc" name="seqDesc" required maxlength="200"><c:out value="${systemParam.seqDesc}"/></textarea>
+                    </div>
 
-            <div class="field">
-                <label for="freeuse1">备用1</label>
-                <textarea id="freeuse1" name="freeuse1" maxlength="200"><c:out value="${systemParam.freeuse1}"/></textarea>
-            </div>
+                    <div class="field full">
+                        <label for="freeuse1">备用1</label>
+                        <textarea id="freeuse1" name="freeuse1" maxlength="200"><c:out value="${systemParam.freeuse1}"/></textarea>
+                    </div>
+                </div>
+            </section>
 
             <div class="actions">
                 <button class="button" type="submit">保存</button>

@@ -20,32 +20,43 @@
         </c:if>
 
         <c:if test="${not empty importResult}">
-            <div class="notice">
-                批量导入结果：成功 <c:out value="${importResult.successCount}"/> 条，
-                失败 <c:out value="${importResult.failureCount}"/> 条。
-            </div>
-            <c:if test="${importResult.failureCount gt 0}">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Excel 行号</th>
-                        <th>姓名</th>
-                        <th>证件号码</th>
-                        <th>失败原因</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <c:forEach var="failure" items="${importResult.failures}">
-                        <tr>
-                            <td><c:out value="${failure.rowNumber}"/></td>
-                            <td><c:out value="${failure.perName}"/></td>
-                            <td><c:out value="${failure.idCard}"/></td>
-                            <td><c:out value="${failure.message}"/></td>
-                        </tr>
-                    </c:forEach>
-                    </tbody>
-                </table>
-            </c:if>
+            <section class="form-section import-result">
+                <h2>Excel 批量导入结果</h2>
+                <div class="summary-cards">
+                    <div class="summary-card success">
+                        成功条数
+                        <strong><c:out value="${importResult.successCount}"/></strong>
+                    </div>
+                    <div class="summary-card failure">
+                        失败条数
+                        <strong><c:out value="${importResult.failureCount}"/></strong>
+                    </div>
+                </div>
+                <c:if test="${importResult.failureCount gt 0}">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Excel 行号</th>
+                                <th>姓名</th>
+                                <th>证件号码</th>
+                                <th>失败原因</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="failure" items="${importResult.failures}">
+                                <tr>
+                                    <td><c:out value="${failure.rowNumber}"/></td>
+                                    <td><c:out value="${failure.perName}"/></td>
+                                    <td><c:out value="${failure.idCard}"/></td>
+                                    <td class="reason"><c:out value="${failure.message}"/></td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </c:if>
+            </section>
         </c:if>
 
         <form method="get" action="${pageContext.request.contextPath}/persons/open/unit"
@@ -66,7 +77,7 @@
         </form>
     </section>
 
-    <section class="panel">
+    <section class="panel import-upload" id="import">
         <h2>Excel 批量导入个人开户</h2>
         <form method="post" action="${pageContext.request.contextPath}/persons/open/import"
               enctype="multipart/form-data">
@@ -89,59 +100,72 @@
 
             <form method="post" action="${pageContext.request.contextPath}/persons/open"
                   onsubmit="return validatePersonOpenForm(this);">
-                <div class="grid">
-                    <div class="field">
-                        <label for="unitAccNum">单位公积金账号</label>
-                        <input id="unitAccNum" name="unitAccNum" type="text" readonly
-                               value="${fn:escapeXml(personOpenForm.unitAccNum)}">
-                    </div>
+                <section class="form-section">
+                    <h2>缴存单位信息</h2>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="unitAccNum">单位公积金账号</label>
+                            <input id="unitAccNum" name="unitAccNum" type="text" readonly
+                                   value="${fn:escapeXml(personOpenForm.unitAccNum)}">
+                        </div>
 
-                    <div class="field">
-                        <label for="unitName">单位名称</label>
-                        <input id="unitName" name="unitName" type="text" readonly
-                               value="${fn:escapeXml(personOpenForm.unitName)}">
-                    </div>
+                        <div class="field">
+                            <label for="unitName">单位名称</label>
+                            <input id="unitName" name="unitName" type="text" readonly
+                                   value="${fn:escapeXml(personOpenForm.unitName)}">
+                        </div>
 
-                    <div class="field">
-                        <label for="unitRatio">单位比例</label>
-                        <input id="unitRatio" name="unitRatio" type="text" readonly
-                               value="${fn:escapeXml(personOpenForm.unitRatio)}">
-                    </div>
+                        <div class="field">
+                            <label for="unitRatio">单位比例</label>
+                            <input id="unitRatio" name="unitRatio" type="text" readonly
+                                   value="${fn:escapeXml(personOpenForm.unitRatio)}">
+                        </div>
 
-                    <div class="field">
-                        <label for="perRatio">个人比例</label>
-                        <input id="perRatio" name="perRatio" type="text" readonly
-                               value="${fn:escapeXml(personOpenForm.perRatio)}">
+                        <div class="field">
+                            <label for="perRatio">个人比例</label>
+                            <input id="perRatio" name="perRatio" type="text" readonly
+                                   value="${fn:escapeXml(personOpenForm.perRatio)}">
+                        </div>
                     </div>
+                </section>
 
-                    <div class="field">
-                        <label for="perName">姓名</label>
-                        <input id="perName" name="perName" type="text" required maxlength="12"
-                               value="${fn:escapeXml(personOpenForm.perName)}">
-                    </div>
+                <section class="form-section">
+                    <h2>个人基本信息</h2>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="perName">姓名</label>
+                            <input id="perName" name="perName" type="text" required maxlength="12"
+                                   value="${fn:escapeXml(personOpenForm.perName)}">
+                        </div>
 
-                    <div class="field">
-                        <label for="idType">证件类型</label>
-                        <select id="idType" name="idType" required>
-                            <option value="01身份证"
-                                    ${personOpenForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
-                        </select>
-                    </div>
+                        <div class="field">
+                            <label for="idType">证件类型</label>
+                            <select id="idType" name="idType" required>
+                                <option value="01身份证"
+                                        ${personOpenForm.idType eq '01身份证' ? 'selected' : ''}>01身份证</option>
+                            </select>
+                        </div>
 
-                    <div class="field">
-                        <label for="idCard">证件号码</label>
-                        <input id="idCard" name="idCard" type="text" required maxlength="18"
-                               pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personOpenForm.idCard)}">
-                        <div class="tip">当前仅支持 18 位居民身份证号码。</div>
+                        <div class="field full">
+                            <label for="idCard">证件号码</label>
+                            <input id="idCard" name="idCard" type="text" required maxlength="18"
+                                   pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personOpenForm.idCard)}">
+                            <div class="tip">当前仅支持 18 位居民身份证号码。</div>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="field">
-                        <label for="baseNum">缴存基数</label>
-                        <input id="baseNum" name="baseNum" type="text" required maxlength="12"
-                               pattern="[0-9]+(\.[0-9]{1,2})?" value="${fn:escapeXml(personOpenForm.baseNum)}">
-                        <div class="tip">必须大于 0，最多保留 2 位小数。</div>
+                <section class="form-section">
+                    <h2>缴存信息</h2>
+                    <div class="grid">
+                        <div class="field">
+                            <label for="baseNum">缴存基数</label>
+                            <input id="baseNum" name="baseNum" type="text" required maxlength="12"
+                                   pattern="[0-9]+(\.[0-9]{1,2})?" value="${fn:escapeXml(personOpenForm.baseNum)}">
+                            <div class="tip">必须大于 0，最多保留 2 位小数。</div>
+                        </div>
                     </div>
-                </div>
+                </section>
 
                 <div class="actions">
                     <button class="button" type="submit">提交开户</button>
