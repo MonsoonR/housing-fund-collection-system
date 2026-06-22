@@ -7,157 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人开户</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 860px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .panel {
-            padding: 24px 28px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-
-        .panel + .panel {
-            margin-top: 18px;
-        }
-
-        h1,
-        h2 {
-            margin: 0 0 20px;
-            font-weight: 600;
-        }
-
-        h1 {
-            font-size: 24px;
-        }
-
-        h2 {
-            font-size: 18px;
-        }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            color: #991b1b;
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            font-size: 14px;
-        }
-
-        .notice {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            color: #065f46;
-            background: #d1fae5;
-            border: 1px solid #a7f3d0;
-            font-size: 14px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        input,
-        select {
-            width: 100%;
-            padding: 10px 11px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 14px;
-            background: #ffffff;
-        }
-
-        input[readonly] {
-            color: #4b5563;
-            background: #f9fafb;
-        }
-
-        .tip {
-            margin-top: 5px;
-            color: #6b7280;
-            font-size: 12px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            border: 1px solid #0f766e;
-            border-radius: 4px;
-            color: #ffffff;
-            background: #0f766e;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .button.secondary {
-            color: #0f766e;
-            background: #ffffff;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-            font-size: 14px;
-        }
-
-        th,
-        td {
-            padding: 10px 12px;
-            border: 1px solid #e5e7eb;
-            text-align: left;
-        }
-
-        th {
-            background: #f9fafb;
-            font-weight: 600;
-        }
-
-        @media (max-width: 720px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
     <script src="${pageContext.request.contextPath}/static/js/validate.js"></script>
 </head>
 <body>
-<main class="page">
+<jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>个人开户</h1>
 
@@ -166,32 +20,46 @@
         </c:if>
 
         <c:if test="${not empty importResult}">
-            <div class="notice">
-                批量导入结果：成功 <c:out value="${importResult.successCount}"/> 条，
-                失败 <c:out value="${importResult.failureCount}"/> 条。
+            <div class="import-result">
+                <h2>Excel 批量导入结果</h2>
+                <div class="import-summary">
+                    <div class="summary-item success">
+                        成功条数
+                        <strong><c:out value="${importResult.successCount}"/></strong>
+                    </div>
+                    <div class="summary-item failure">
+                        失败条数
+                        <strong><c:out value="${importResult.failureCount}"/></strong>
+                    </div>
+                </div>
+                <c:if test="${importResult.failureCount eq 0}">
+                    <div class="notice">全部记录导入成功。</div>
+                </c:if>
+                <c:if test="${importResult.failureCount gt 0}">
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th class="num">Excel 行号</th>
+                                <th>姓名</th>
+                                <th>证件号码</th>
+                                <th>失败原因</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <c:forEach var="failure" items="${importResult.failures}">
+                                <tr>
+                                    <td class="num"><c:out value="${failure.rowNumber}"/></td>
+                                    <td><c:out value="${failure.perName}"/></td>
+                                    <td><c:out value="${failure.idCard}"/></td>
+                                    <td class="reason"><c:out value="${failure.message}"/></td>
+                                </tr>
+                            </c:forEach>
+                            </tbody>
+                        </table>
+                    </div>
+                </c:if>
             </div>
-            <c:if test="${importResult.failureCount gt 0}">
-                <table>
-                    <thead>
-                    <tr>
-                        <th>Excel 行号</th>
-                        <th>姓名</th>
-                        <th>证件号码</th>
-                        <th>失败原因</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    <c:forEach var="failure" items="${importResult.failures}">
-                        <tr>
-                            <td><c:out value="${failure.rowNumber}"/></td>
-                            <td><c:out value="${failure.perName}"/></td>
-                            <td><c:out value="${failure.idCard}"/></td>
-                            <td><c:out value="${failure.message}"/></td>
-                        </tr>
-                    </c:forEach>
-                    </tbody>
-                </table>
-            </c:if>
         </c:if>
 
         <form method="get" action="${pageContext.request.contextPath}/persons/open/unit"
@@ -235,7 +103,9 @@
 
             <form method="post" action="${pageContext.request.contextPath}/persons/open"
                   onsubmit="return validatePersonOpenForm(this);">
-                <div class="grid">
+                <div class="form-section">
+                    <h2>缴存单位信息</h2>
+                    <div class="grid">
                     <div class="field">
                         <label for="unitAccNum">单位公积金账号</label>
                         <input id="unitAccNum" name="unitAccNum" type="text" readonly
@@ -247,19 +117,12 @@
                         <input id="unitName" name="unitName" type="text" readonly
                                value="${fn:escapeXml(personOpenForm.unitName)}">
                     </div>
-
-                    <div class="field">
-                        <label for="unitRatio">单位比例</label>
-                        <input id="unitRatio" name="unitRatio" type="text" readonly
-                               value="${fn:escapeXml(personOpenForm.unitRatio)}">
                     </div>
+                </div>
 
-                    <div class="field">
-                        <label for="perRatio">个人比例</label>
-                        <input id="perRatio" name="perRatio" type="text" readonly
-                               value="${fn:escapeXml(personOpenForm.perRatio)}">
-                    </div>
-
+                <div class="form-section">
+                    <h2>个人基本信息</h2>
+                    <div class="grid">
                     <div class="field">
                         <label for="perName">姓名</label>
                         <input id="perName" name="perName" type="text" required maxlength="12"
@@ -280,12 +143,30 @@
                                pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personOpenForm.idCard)}">
                         <div class="tip">当前仅支持 18 位居民身份证号码。</div>
                     </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>缴存信息</h2>
+                    <div class="grid">
+                    <div class="field">
+                        <label for="unitRatio">单位比例</label>
+                        <input id="unitRatio" name="unitRatio" type="text" readonly
+                               value="${fn:escapeXml(personOpenForm.unitRatio)}">
+                    </div>
+
+                    <div class="field">
+                        <label for="perRatio">个人比例</label>
+                        <input id="perRatio" name="perRatio" type="text" readonly
+                               value="${fn:escapeXml(personOpenForm.perRatio)}">
+                    </div>
 
                     <div class="field">
                         <label for="baseNum">缴存基数</label>
                         <input id="baseNum" name="baseNum" type="text" required maxlength="12"
                                pattern="[0-9]+(\.[0-9]{1,2})?" value="${fn:escapeXml(personOpenForm.baseNum)}">
                         <div class="tip">必须大于 0，最多保留 2 位小数。</div>
+                    </div>
                     </div>
                 </div>
 
@@ -296,6 +177,6 @@
             </form>
         </section>
     </c:if>
-</main>
+<jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>
 </body>
 </html>

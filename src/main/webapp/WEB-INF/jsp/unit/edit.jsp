@@ -7,134 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>单位资料修改</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 920px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .panel {
-            padding: 24px 28px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-
-        .panel + .panel {
-            margin-top: 18px;
-        }
-
-        h1,
-        h2 {
-            margin: 0 0 20px;
-            font-weight: 600;
-        }
-
-        h1 {
-            font-size: 24px;
-        }
-
-        h2 {
-            font-size: 18px;
-        }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            color: #991b1b;
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            font-size: 14px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px 11px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 14px;
-            background: #ffffff;
-        }
-
-        input[readonly] {
-            color: #4b5563;
-            background: #f9fafb;
-        }
-
-        textarea {
-            min-height: 84px;
-            resize: vertical;
-        }
-
-        .tip {
-            margin-top: 5px;
-            color: #6b7280;
-            font-size: 12px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            border: 1px solid #0f766e;
-            border-radius: 4px;
-            color: #ffffff;
-            background: #0f766e;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .button.secondary {
-            color: #0f766e;
-            background: #ffffff;
-        }
-
-        @media (max-width: 720px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
     <script src="${pageContext.request.contextPath}/static/js/validate.js"></script>
 </head>
 <body>
-<main class="page">
+<jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>单位资料修改</h1>
 
@@ -177,7 +54,9 @@
                 <input type="hidden" name="originalAgentIdCard" value="${fn:escapeXml(unitEditForm.agentIdCard)}">
                 <input type="hidden" name="originalRemark" value="${fn:escapeXml(unitEditForm.remark)}">
 
-                <div class="grid">
+                <div class="form-section">
+                    <h2>单位基本信息</h2>
+                    <div class="grid">
                     <div class="field">
                         <label for="editUnitAccNum">单位公积金账号</label>
                         <input id="editUnitAccNum" name="unitAccNum" type="text" readonly
@@ -240,7 +119,12 @@
                                value="${fn:escapeXml(unitEditForm.salaryDate)}">
                         <div class="tip">请输入 01 到 31。</div>
                     </div>
+                    </div>
+                </div>
 
+                <div class="form-section">
+                    <h2>经办人信息</h2>
+                    <div class="grid">
                     <div class="field">
                         <label for="phone">联系电话</label>
                         <input id="phone" name="phone" type="text" required maxlength="30"
@@ -258,10 +142,16 @@
                         <input id="agentIdCard" name="agentIdCard" type="text" required maxlength="18"
                                pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(unitEditForm.agentIdCard)}">
                     </div>
+                    </div>
+                </div>
 
+                <div class="form-section">
+                    <h2>备注信息</h2>
+                    <div class="grid">
                     <div class="field full">
                         <label for="remark">备注</label>
                         <textarea id="remark" name="remark" maxlength="200"><c:out value="${unitEditForm.remark}"/></textarea>
+                    </div>
                     </div>
                 </div>
 
@@ -272,6 +162,6 @@
             </form>
         </section>
     </c:if>
-</main>
+<jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>
 </body>
 </html>

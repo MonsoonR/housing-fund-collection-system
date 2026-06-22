@@ -5,89 +5,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人资料变更回单</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 760px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .panel {
-            padding: 24px 28px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-
-        h1 {
-            margin: 0 0 20px;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .receipt {
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 190px 1fr;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .row:last-child {
-            border-bottom: 0;
-        }
-
-        .label,
-        .value {
-            padding: 12px 14px;
-            font-size: 14px;
-        }
-
-        .label {
-            color: #374151;
-            background: #f9fafb;
-            font-weight: 600;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            border: 1px solid #0f766e;
-            border-radius: 4px;
-            color: #ffffff;
-            background: #0f766e;
-            font-size: 14px;
-            text-decoration: none;
-        }
-
-        .button.secondary {
-            color: #0f766e;
-            background: #ffffff;
-        }
-    </style>
+    <title>个人资料修改成功回单</title>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
 </head>
 <body>
-<main class="page">
+<jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
-        <h1>个人资料变更回单</h1>
+        <h1>个人资料修改成功回单</h1>
 
         <div class="receipt">
             <div class="row">
@@ -147,6 +71,6 @@
             <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
         </div>
     </section>
-</main>
+<jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>
 </body>
 </html>

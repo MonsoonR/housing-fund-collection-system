@@ -7,146 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人信息查询</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 900px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .panel {
-            padding: 24px 28px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-
-        h1 {
-            margin: 0 0 20px;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            color: #991b1b;
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            font-size: 14px;
-        }
-
-        .empty {
-            padding: 12px 14px;
-            margin-top: 18px;
-            border-radius: 4px;
-            color: #374151;
-            background: #f9fafb;
-            border: 1px solid #e5e7eb;
-            font-size: 14px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        input {
-            width: 100%;
-            padding: 10px 11px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 14px;
-            background: #ffffff;
-        }
-
-        .tip {
-            margin-top: 5px;
-            color: #6b7280;
-            font-size: 12px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            border: 1px solid #0f766e;
-            border-radius: 4px;
-            color: #ffffff;
-            background: #0f766e;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .button.secondary {
-            color: #0f766e;
-            background: #ffffff;
-        }
-
-        .receipt {
-            margin-top: 22px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 190px 1fr;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .row:last-child {
-            border-bottom: 0;
-        }
-
-        .label,
-        .value {
-            padding: 12px 14px;
-            font-size: 14px;
-        }
-
-        .label {
-            color: #374151;
-            background: #f9fafb;
-            font-weight: 600;
-        }
-
-        @media (max-width: 720px) {
-            .grid,
-            .row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
     <script src="${pageContext.request.contextPath}/static/js/validate.js"></script>
 </head>
 <body>
-<main class="page">
+<jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>个人信息查询</h1>
 
@@ -179,7 +44,7 @@
         </form>
 
         <c:if test="${searched and empty queryResult}">
-            <div class="empty">未查询到个人信息</div>
+            <div class="empty">未查询到数据</div>
         </c:if>
 
         <c:if test="${not empty queryResult}">
@@ -206,7 +71,7 @@
                 </div>
                 <div class="row">
                     <div class="label">余额</div>
-                    <div class="value"><c:out value="${queryResult.perBalance}"/></div>
+                    <div class="value num"><c:out value="${queryResult.perBalance}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">开户日期</div>
@@ -218,35 +83,35 @@
                 </div>
                 <div class="row">
                     <div class="label">单位比例</div>
-                    <div class="value"><c:out value="${queryResult.unitRatio}"/></div>
+                    <div class="value num"><c:out value="${queryResult.unitRatio}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">个人比例</div>
-                    <div class="value"><c:out value="${queryResult.perRatio}"/></div>
+                    <div class="value num"><c:out value="${queryResult.perRatio}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">合计比例</div>
-                    <div class="value"><c:out value="${queryResult.totalRatio}"/></div>
+                    <div class="value num"><c:out value="${queryResult.totalRatio}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">单位月缴额</div>
-                    <div class="value"><c:out value="${queryResult.unitMonthPay}"/></div>
+                    <div class="value num"><c:out value="${queryResult.unitMonthPay}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">个人月缴额</div>
-                    <div class="value"><c:out value="${queryResult.perMonthPay}"/></div>
+                    <div class="value num"><c:out value="${queryResult.perMonthPay}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">合计月缴额</div>
-                    <div class="value"><c:out value="${queryResult.totalMonthPay}"/></div>
+                    <div class="value num"><c:out value="${queryResult.totalMonthPay}"/></div>
                 </div>
                 <div class="row">
                     <div class="label">个人账户状态</div>
-                    <div class="value"><c:out value="${queryResult.statusText}"/></div>
+                    <div class="value"><span class="status-label"><c:out value="${queryResult.statusText}"/></span></div>
                 </div>
             </div>
         </c:if>
     </section>
-</main>
+<jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>
 </body>
 </html>

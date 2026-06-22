@@ -7,117 +7,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>单位开户</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 860px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .panel {
-            padding: 24px 28px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-
-        h1 {
-            margin: 0 0 20px;
-            font-size: 24px;
-            font-weight: 600;
-        }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            color: #991b1b;
-            background: #fee2e2;
-            border: 1px solid #fecaca;
-            font-size: 14px;
-        }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 16px;
-        }
-
-        .field.full {
-            grid-column: 1 / -1;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-            font-size: 14px;
-        }
-
-        input,
-        select,
-        textarea {
-            width: 100%;
-            padding: 10px 11px;
-            border: 1px solid #d1d5db;
-            border-radius: 4px;
-            box-sizing: border-box;
-            font-family: inherit;
-            font-size: 14px;
-            background: #ffffff;
-        }
-
-        textarea {
-            min-height: 84px;
-            resize: vertical;
-        }
-
-        .tip {
-            margin-top: 5px;
-            color: #6b7280;
-            font-size: 12px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            border: 1px solid #0f766e;
-            border-radius: 4px;
-            color: #ffffff;
-            background: #0f766e;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .button.secondary {
-            color: #0f766e;
-            background: #ffffff;
-        }
-
-        @media (max-width: 720px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
     <script src="${pageContext.request.contextPath}/static/js/validate.js"></script>
 </head>
 <body>
-<main class="page">
+<jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel">
         <h1>单位开户</h1>
 
@@ -127,7 +21,9 @@
 
         <form method="post" action="${pageContext.request.contextPath}/units/open"
               onsubmit="return validateUnitOpenForm(this);">
-            <div class="grid">
+            <div class="form-section">
+                <h2>单位基本信息</h2>
+                <div class="grid">
                 <div class="field full">
                     <label for="unitName">单位名称</label>
                     <input id="unitName" name="unitName" type="text" required maxlength="50"
@@ -183,7 +79,12 @@
                         <option value="900" ${unitOpenForm.unitType eq '900' ? 'selected' : ''}>其他</option>
                     </select>
                 </div>
+                </div>
+            </div>
 
+            <div class="form-section">
+                <h2>经办人信息</h2>
+                <div class="grid">
                 <div class="field">
                     <label for="phone">联系电话</label>
                     <input id="phone" name="phone" type="text" required maxlength="30"
@@ -201,7 +102,12 @@
                     <input id="agentIdCard" name="agentIdCard" type="text" required maxlength="18"
                            pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(unitOpenForm.agentIdCard)}">
                 </div>
+                </div>
+            </div>
 
+            <div class="form-section">
+                <h2>缴存比例</h2>
+                <div class="grid">
                 <div class="field">
                     <label for="unitRatio">单位比例</label>
                     <input id="unitRatio" name="unitRatio" type="text" required maxlength="5"
@@ -215,10 +121,16 @@
                            pattern="0\.(0[5-9][0-9]|1[01][0-9]|120)" value="${fn:escapeXml(unitOpenForm.perRatio)}">
                     <div class="tip">范围 0.050 到 0.120。</div>
                 </div>
+                </div>
+            </div>
 
+            <div class="form-section">
+                <h2>备注信息</h2>
+                <div class="grid">
                 <div class="field full">
                     <label for="remark">备注</label>
                     <textarea id="remark" name="remark" maxlength="200"><c:out value="${unitOpenForm.remark}"/></textarea>
+                </div>
                 </div>
             </div>
 
@@ -228,6 +140,6 @@
             </div>
         </form>
     </section>
-</main>
+<jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>
 </body>
 </html>
