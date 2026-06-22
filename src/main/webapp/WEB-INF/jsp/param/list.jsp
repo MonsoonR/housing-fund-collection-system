@@ -10,18 +10,21 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
 </head>
 <body>
-<main class="page">
-    <section class="header">
-        <h1>系统参数维护</h1>
-        <a href="${pageContext.request.contextPath}/index">返回首页</a>
-    </section>
+<div class="app-layout">
+    <jsp:include page="/WEB-INF/jsp/common/sidebar.jsp" />
+    <div class="app-container">
+        <jsp:include page="/WEB-INF/jsp/common/topbar.jsp" />
+        <main class="main-content">
+            <div class="page-header">
+                <h1>系统参数维护</h1>
+            </div>
 
-    <c:if test="${not empty success}">
-        <div class="alert success"><c:out value="${success}"/></div>
-    </c:if>
-    <c:if test="${not empty error}">
-        <div class="alert error"><c:out value="${error}"/></div>
-    </c:if>
+            <c:if test="${not empty success}">
+                <div class="alert success"><c:out value="${success}"/></div>
+            </c:if>
+            <c:if test="${not empty error}">
+                <div class="alert error"><c:out value="${error}"/></div>
+            </c:if>
 
     <section class="toolbar">
         <form class="search" method="get" action="${pageContext.request.contextPath}/params">
@@ -75,6 +78,8 @@
             </tbody>
         </table>
     </section>
-</main>
+        </main>
+    </div>
+</div>
 </body>
 </html>

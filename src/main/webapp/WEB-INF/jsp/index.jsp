@@ -9,71 +9,75 @@
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
 </head>
 <body>
-<main class="page">
-    <section class="header">
-        <h1>住房公积金归集业务系统</h1>
-        <p>面向课程设计验收的归集业务子系统，集中提供系统参数维护、账户开户、资料变更与信息查询服务。</p>
-    </section>
-
-    <section class="modules" aria-label="功能模块">
-        <section class="module-group">
-            <h2>参数维护</h2>
-            <div class="module-list">
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/params">系统参数维护</a></strong>
-                    <span>维护 TB001 系统参数，管理单位与个人账号序号。</span>
-                </article>
+<div class="app-layout">
+    <jsp:include page="/WEB-INF/jsp/common/sidebar.jsp" />
+    <div class="app-container">
+        <jsp:include page="/WEB-INF/jsp/common/topbar.jsp" />
+        <main class="main-content">
+            <div class="worktable-summary">
+                <h1>欢迎使用 ${systemName}</h1>
+                <p>面向住房公积金筹集业务，提供高效、规范的柜面业务办理与配置管理服务。</p>
             </div>
-        </section>
 
-        <section class="module-group">
-            <h2>开户业务</h2>
-            <div class="module-list">
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/units/open">单位开户</a></strong>
-                    <span>录入缴存单位资料，生成 12 位单位公积金账号。</span>
-                </article>
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/persons/open">个人开户</a></strong>
-                    <span>查询单位后录入个人资料，生成个人公积金账号。</span>
-                </article>
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/persons/open#import">Excel 批量开户</a></strong>
-                    <span>按固定列顺序导入个人开户数据并显示成功、失败结果。</span>
-                </article>
-            </div>
-        </section>
+            <section class="menu-group">
+                <div class="menu-group-title">系统配置</div>
+                <div class="menu-items">
+                    <a href="${pageContext.request.contextPath}/params" class="menu-item-card">
+                        <span class="menu-item-title">⚙️ 系统参数维护</span>
+                        <span class="menu-item-desc">维护 TB001 系统参数，控制账号序号生成上限及各业务开关。</span>
+                    </a>
+                </div>
+            </section>
 
-        <section class="module-group">
-            <h2>资料修改</h2>
-            <div class="module-list">
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/units/edit">单位资料修改</a></strong>
-                    <span>按单位公积金账号查询后维护单位基本资料。</span>
-                </article>
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/persons/edit">个人资料修改</a></strong>
-                    <span>按个人公积金账号查询后维护姓名和证件信息。</span>
-                </article>
-            </div>
-        </section>
+            <section class="menu-group">
+                <div class="menu-group-title">账户开户</div>
+                <div class="menu-items">
+                    <a href="${pageContext.request.contextPath}/units/open" class="menu-item-card">
+                        <span class="menu-item-title">🏢 单位开户</span>
+                        <span class="menu-item-desc">新增公积金缴存单位，维护缴存比例等，生成 12 位唯一单位公积金账号。</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/persons/open" class="menu-item-card">
+                        <span class="menu-item-title">👤 个人开户</span>
+                        <span class="menu-item-desc">新增公积金个人账户，关联对应单位基本资料，生成 12 位个人账号。</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/persons/open#import" class="menu-item-card">
+                        <span class="menu-item-title">📊 Excel 批量开户</span>
+                        <span class="menu-item-desc">通过 Excel 模版批量录入个人开户数据并进行导入，查看导入结果明细。</span>
+                    </a>
+                </div>
+            </section>
 
-        <section class="module-group">
-            <h2>信息查询</h2>
-            <div class="module-list">
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/units/query">单位信息查询</a></strong>
-                    <span>按单位账号或单位名称查询缴存单位账户情况。</span>
-                </article>
-                <article class="module">
-                    <strong><a href="${pageContext.request.contextPath}/persons/query">个人信息查询</a></strong>
-                    <span>按个人账号或证件号码查询个人账户明细。</span>
-                </article>
-            </div>
-        </section>
-    </section>
+            <section class="menu-group">
+                <div class="menu-group-title">资料修改</div>
+                <div class="menu-items">
+                    <a href="${pageContext.request.contextPath}/units/edit" class="menu-item-card">
+                        <span class="menu-item-title">📝 单位资料修改</span>
+                        <span class="menu-item-desc">按单位公积金账号查询后修改联系电话、地址、发薪日、经办人等关键资料。</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/persons/edit" class="menu-item-card">
+                        <span class="menu-item-title">✍️ 个人资料修改</span>
+                        <span class="menu-item-desc">按个人账号查询并变更个人基本资料，支持身份证占用强制冲突确认。</span>
+                    </a>
+                </div>
+            </section>
 
-    <p class="footer">运行环境建议：JDK 25 构建，Java 17 兼容字节码，Tomcat 9，MySQL 9.5。</p>
-</main>
+            <section class="menu-group">
+                <div class="menu-group-title">信息查询</div>
+                <div class="menu-items">
+                    <a href="${pageContext.request.contextPath}/units/query" class="menu-item-card">
+                        <span class="menu-item-title">🔍 单位信息查询</span>
+                        <span class="menu-item-desc">按单位公积金账号或名称模糊查询，多维度展示单位及缴存概览。</span>
+                    </a>
+                    <a href="${pageContext.request.contextPath}/persons/query" class="menu-item-card">
+                        <span class="menu-item-title">🔎 个人信息查询</span>
+                        <span class="menu-item-desc">按个人账号或证件号码精确查询个人信息，展示账户明细。</span>
+                    </a>
+                </div>
+            </section>
+
+            <p class="footer">系统运行环境建议：JDK 17/25，Tomcat 9，MySQL 9.5，集成 Java EE Web 标准。</p>
+        </main>
+    </div>
+</div>
 </body>
 </html>

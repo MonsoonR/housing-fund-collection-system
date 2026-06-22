@@ -11,9 +11,17 @@
     <script src="${pageContext.request.contextPath}/static/js/validate.js"></script>
 </head>
 <body>
-<main class="page">
-    <section class="panel">
-        <h1><c:out value="${mode eq 'create' ? '新增系统参数' : '修改系统参数'}"/></h1>
+<div class="app-layout">
+    <jsp:include page="/WEB-INF/jsp/common/sidebar.jsp" />
+    <div class="app-container">
+        <jsp:include page="/WEB-INF/jsp/common/topbar.jsp" />
+        <main class="main-content">
+            <div class="page-header">
+                <h1>系统参数维护</h1>
+            </div>
+
+            <section class="panel">
+                <h2><c:out value="${mode eq 'create' ? '新增系统参数' : '修改系统参数'}"/></h2>
 
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
@@ -76,7 +84,9 @@
                 <a class="button secondary" href="${pageContext.request.contextPath}/params">返回列表</a>
             </div>
         </form>
-    </section>
-</main>
+            </section>
+        </main>
+    </div>
+</div>
 </body>
 </html>
