@@ -7,123 +7,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人资料修改冲突确认</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 900px;
-            margin: 36px auto;
-            padding: 0 24px;
-        }
-
-        .panel {
-            padding: 24px 28px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-        }
-
-        h1,
-        h2 {
-            margin: 0 0 18px;
-            font-weight: 600;
-        }
-
-        h1 {
-            font-size: 24px;
-        }
-
-        h2 {
-            font-size: 18px;
-        }
-
-        .alert {
-            padding: 12px 14px;
-            margin-bottom: 16px;
-            border-radius: 4px;
-            color: #92400e;
-            background: #fef3c7;
-            border: 1px solid #fde68a;
-            font-size: 14px;
-        }
-
-        .receipt {
-            margin-bottom: 20px;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            overflow: hidden;
-        }
-
-        .row {
-            display: grid;
-            grid-template-columns: 190px 1fr;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .row:last-child {
-            border-bottom: 0;
-        }
-
-        .label,
-        .value {
-            padding: 12px 14px;
-            font-size: 14px;
-        }
-
-        .label {
-            color: #374151;
-            background: #f9fafb;
-            font-weight: 600;
-        }
-
-        .note {
-            margin: 0 0 20px;
-            line-height: 1.7;
-            color: #4b5563;
-            font-size: 14px;
-        }
-
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 22px;
-        }
-
-        .button {
-            display: inline-block;
-            padding: 10px 16px;
-            border: 1px solid #0f766e;
-            border-radius: 4px;
-            color: #ffffff;
-            background: #0f766e;
-            font-size: 14px;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .button.secondary {
-            color: #0f766e;
-            background: #ffffff;
-        }
-
-        @media (max-width: 720px) {
-            .row {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
 </head>
 <body>
 <main class="page">
     <section class="panel">
         <h1>证件号码占用确认</h1>
 
-        <div class="alert">该证件号码已被其他个人账户占用，是否强制变更？</div>
+        <div class="alert warning">该证件号码已被其他个人账户占用，是否强制变更？</div>
 
         <h2>当前修改信息</h2>
         <div class="receipt">

@@ -6,76 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>${systemName}</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, "Microsoft YaHei", sans-serif;
-            color: #1f2937;
-            background: #f3f4f6;
-        }
-
-        .page {
-            max-width: 960px;
-            margin: 48px auto;
-            padding: 0 24px;
-        }
-
-        .header {
-            padding: 28px 32px;
-            color: #ffffff;
-            background: #0f766e;
-            border-radius: 6px;
-        }
-
-        .header h1 {
-            margin: 0 0 10px;
-            font-size: 28px;
-            font-weight: 600;
-        }
-
-        .header p {
-            margin: 0;
-            line-height: 1.7;
-        }
-
-        .modules {
-            margin-top: 24px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-            gap: 14px;
-        }
-
-        .module {
-            min-height: 82px;
-            padding: 18px 20px;
-            background: #ffffff;
-            border: 1px solid #e5e7eb;
-            border-radius: 6px;
-            box-sizing: border-box;
-        }
-
-        .module strong {
-            display: block;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .module span {
-            color: #6b7280;
-            font-size: 13px;
-        }
-
-        .module a {
-            color: #0f766e;
-            text-decoration: none;
-        }
-
-        .footer {
-            margin-top: 24px;
-            color: #6b7280;
-            font-size: 13px;
-        }
-    </style>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
 </head>
 <body>
 <main class="page">
