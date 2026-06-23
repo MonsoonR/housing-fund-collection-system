@@ -12,7 +12,7 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
+    <section class="panel wide-panel">
         <h1>个人信息查询</h1>
         <p class="page-desc">按个人公积金账号或证件号码查询个人账户信息。</p>
 

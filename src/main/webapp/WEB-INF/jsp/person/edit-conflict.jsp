@@ -11,62 +11,68 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
+    <section class="panel conflict-panel">
         <h1>个人资料修改冲突确认</h1>
         <p class="page-desc">目标证件号码已被其他账户占用，请核对后选择是否强制变更。</p>
 
-        <div class="alert">该证件号码已被其他个人账户占用，是否强制变更？</div>
+        <div class="warning-banner">该证件号码已被其他个人账户占用，请确认处理方式。</div>
 
-        <h2>当前修改信息</h2>
-        <div class="receipt">
-            <div class="row">
-                <div class="label">当前个人公积金账号</div>
-                <div class="value"><c:out value="${conflict.currentPerAccNum}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">当前姓名</div>
-                <div class="value"><c:out value="${conflict.currentPerName}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">修改后的姓名</div>
-                <div class="value"><c:out value="${conflict.newPerName}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">修改后的证件号码</div>
-                <div class="value"><c:out value="${conflict.newIdCard}"/></div>
+        <div class="conflict-section">
+            <h2>当前账户</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">当前个人公积金账号</div>
+                    <div class="detail-value strong"><c:out value="${conflict.currentPerAccNum}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">当前姓名</div>
+                    <div class="detail-value"><c:out value="${conflict.currentPerName}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">修改后的姓名</div>
+                    <div class="detail-value"><c:out value="${conflict.newPerName}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">修改后的证件号码</div>
+                    <div class="detail-value strong"><c:out value="${conflict.newIdCard}"/></div>
+                </div>
             </div>
         </div>
 
-        <h2>占用账户信息</h2>
-        <div class="receipt">
-            <div class="row">
-                <div class="label">占用个人公积金账号</div>
-                <div class="value"><c:out value="${conflict.occupiedPerAccNum}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">占用证件号码</div>
-                <div class="value"><c:out value="${conflict.occupiedIdCard}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">占用姓名</div>
-                <div class="value"><c:out value="${conflict.occupiedPerName}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">占用状态</div>
-                <div class="value"><c:out value="${conflict.occupiedStatusText}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">占用单位公积金账号</div>
-                <div class="value"><c:out value="${conflict.occupiedUnitAccNum}"/></div>
-            </div>
-            <div class="row">
-                <div class="label">占用单位名称</div>
-                <div class="value"><c:out value="${conflict.occupiedUnitName}"/></div>
+        <div class="conflict-section">
+            <h2>占用账户</h2>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">占用个人公积金账号</div>
+                    <div class="detail-value strong"><c:out value="${conflict.occupiedPerAccNum}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">占用证件号码</div>
+                    <div class="detail-value"><c:out value="${conflict.occupiedIdCard}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">占用姓名</div>
+                    <div class="detail-value"><c:out value="${conflict.occupiedPerName}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">占用状态</div>
+                    <div class="detail-value"><c:out value="${conflict.occupiedStatusText}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">占用单位公积金账号</div>
+                    <div class="detail-value"><c:out value="${conflict.occupiedUnitAccNum}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">占用单位名称</div>
+                    <div class="detail-value"><c:out value="${conflict.occupiedUnitName}"/></div>
+                </div>
             </div>
         </div>
 
-        <h2>强制变更后的处理结果</h2>
-        <p class="note">确认后，系统会新建错误账户保存占用账户原信息，错误账户证件号码首位为 9；原占用账户证件号码首位释放为 8。</p>
+        <div class="conflict-section">
+            <h2>处理结果</h2>
+            <p class="note">确认后，系统会新建错误账户保存占用账户原信息，错误账户证件号码首位为 9；原占用账户证件号码首位释放为 8。</p>
+        </div>
 
         <div class="actions">
             <form method="post" action="${pageContext.request.contextPath}/persons/edit/force">

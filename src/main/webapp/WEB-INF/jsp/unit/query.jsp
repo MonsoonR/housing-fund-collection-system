@@ -12,7 +12,7 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
+    <section class="panel wide-panel">
         <h1>单位信息查询</h1>
         <p class="page-desc">按单位公积金账号精确查询，或按单位名称模糊查询。</p>
 
