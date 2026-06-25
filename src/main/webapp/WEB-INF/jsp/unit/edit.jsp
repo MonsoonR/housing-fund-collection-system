@@ -12,35 +12,39 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
-        <h1>单位资料修改</h1>
-        <p class="page-desc">按单位公积金账号查询后，修改允许变更的单位基础资料。</p>
+    <section class="page-heading">
+        <div class="page-heading-main">
+            <h1>单位资料修改</h1>
+            <p>按单位公积金账号查询后，修改允许变更的单位基础资料。</p>
+        </div>
+        <div class="page-heading-actions">
+            <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+        </div>
+    </section>
 
-        <c:if test="${not empty error}">
-            <div class="alert"><c:out value="${error}"/></div>
-        </c:if>
+    <c:if test="${not empty error}">
+        <div class="alert"><c:out value="${error}"/></div>
+    </c:if>
 
+    <section class="list-toolbar">
         <form method="get" action="${pageContext.request.contextPath}/units/edit/form"
-              onsubmit="return validateUnitEditSearchForm(this);">
-            <div class="grid">
-                <div class="field">
-                    <label for="searchUnitAccNum">单位公积金账号<span class="required">*</span></label>
-                    <input id="searchUnitAccNum" name="unitAccNum" type="text" required maxlength="12"
-                           pattern="[0-9]{12}" value="${fn:escapeXml(unitEditForm.unitAccNum)}">
-                    <div class="tip">请输入 12 位单位公积金账号。</div>
-                </div>
-            </div>
-
-            <div class="actions">
+              class="search" onsubmit="return validateUnitEditSearchForm(this);">
+            <label for="searchUnitAccNum">单位公积金账号<span class="required">*</span></label>
+            <input id="searchUnitAccNum" name="unitAccNum" type="text" required maxlength="12"
+                   pattern="[0-9]{12}" value="${fn:escapeXml(unitEditForm.unitAccNum)}"
+                   placeholder="请输入 12 位账号">
+            <div class="toolbar-left">
                 <button class="button" type="submit">查询单位</button>
-                <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
             </div>
         </form>
     </section>
 
     <c:if test="${unitLoaded}">
-        <section class="panel">
-            <h2>修改资料</h2>
+        <section class="panel form-panel">
+            <div class="panel-heading">
+                <h2>修改资料</h2>
+                <p class="page-desc">仅修改允许变更的单位基础资料，账号、缴存比例和汇总字段不变。</p>
+            </div>
 
             <form method="post" action="${pageContext.request.contextPath}/units/edit"
                   onsubmit="return validateUnitEditForm(this);">
@@ -156,7 +160,7 @@
                     </div>
                 </div>
 
-                <div class="actions">
+                <div class="form-action-bar">
                     <button class="button" type="submit">提交修改</button>
                     <a class="button secondary" href="${pageContext.request.contextPath}/units/edit">重新查询</a>
                 </div>

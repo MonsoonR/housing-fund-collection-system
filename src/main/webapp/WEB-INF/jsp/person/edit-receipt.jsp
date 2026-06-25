@@ -11,10 +11,12 @@
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel receipt-panel">
+        <div class="receipt-status">
+            <div class="receipt-status-label">办理结果</div>
+            <h1>个人资料修改办理成功</h1>
+        </div>
+
         <div class="receipt-header">
-            <div class="success-banner">办理成功</div>
-            <h1>个人资料修改成功回单</h1>
-            <p class="page-desc">个人资料修改已完成，请核对回单信息。</p>
             <div class="key-account">
                 <div class="key-account-label">个人公积金账号</div>
                 <div class="key-account-value"><c:out value="${receipt.perAccNum}"/></div>
@@ -22,6 +24,7 @@
         </div>
 
         <div class="receipt-body">
+            <h2 class="receipt-section-title">修改信息</h2>
             <div class="detail-grid">
                 <div class="detail-item">
                     <div class="detail-label">姓名</div>

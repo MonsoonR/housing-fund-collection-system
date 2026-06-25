@@ -12,107 +12,112 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel wide-panel">
-        <h1>个人信息查询</h1>
-        <p class="page-desc">按个人公积金账号或证件号码查询个人账户信息。</p>
-
-        <c:if test="${not empty error}">
-            <div class="alert"><c:out value="${error}"/></div>
-        </c:if>
-
-        <form class="filter-form" method="post" action="${pageContext.request.contextPath}/persons/query"
-              onsubmit="return validatePersonQueryForm(this);">
-            <div class="grid">
-                <div class="field">
-                    <label for="perAccNum">个人公积金账号</label>
-                    <input id="perAccNum" name="perAccNum" type="text" maxlength="12"
-                           pattern="[0-9]{12}" value="${fn:escapeXml(personQueryForm.perAccNum)}">
-                    <div class="tip">输入个人公积金账号时优先精确查询。</div>
-                </div>
-
-                <div class="field">
-                    <label for="idCard">证件号码</label>
-                    <input id="idCard" name="idCard" type="text" maxlength="18"
-                           pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personQueryForm.idCard)}">
-                    <div class="tip">未输入个人公积金账号时按证件号码查询。</div>
-                </div>
-            </div>
-
-            <div class="actions">
-                <button class="button" type="submit">查询</button>
-                <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
-            </div>
-        </form>
-
-        <c:if test="${searched and empty queryResult}">
-            <div class="empty">未查询到数据</div>
-        </c:if>
-
-        <c:if test="${not empty queryResult}">
-            <div class="receipt">
-                <div class="row">
-                    <div class="label">缴存单位全称</div>
-                    <div class="value"><c:out value="${queryResult.unitName}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">缴存单位公积金账号</div>
-                    <div class="value"><c:out value="${queryResult.unitAccNum}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">姓名</div>
-                    <div class="value"><c:out value="${queryResult.perName}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">个人公积金账号</div>
-                    <div class="value"><c:out value="${queryResult.perAccNum}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">证件号码</div>
-                    <div class="value"><c:out value="${queryResult.idCard}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">余额</div>
-                    <div class="value num"><c:out value="${queryResult.perBalance}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">开户日期</div>
-                    <div class="value"><c:out value="${queryResult.createTime}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">最后汇缴月</div>
-                    <div class="value"><c:out value="${queryResult.lastPayMonth}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">单位比例</div>
-                    <div class="value num"><c:out value="${queryResult.unitRatio}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">个人比例</div>
-                    <div class="value num"><c:out value="${queryResult.perRatio}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">合计比例</div>
-                    <div class="value num"><c:out value="${queryResult.totalRatio}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">单位月缴额</div>
-                    <div class="value num"><c:out value="${queryResult.unitMonthPay}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">个人月缴额</div>
-                    <div class="value num"><c:out value="${queryResult.perMonthPay}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">合计月缴额</div>
-                    <div class="value num"><c:out value="${queryResult.totalMonthPay}"/></div>
-                </div>
-                <div class="row">
-                    <div class="label">个人账户状态</div>
-                    <div class="value"><span class="status-label"><c:out value="${queryResult.statusText}"/></span></div>
-                </div>
-            </div>
-        </c:if>
+    <section class="page-heading">
+        <div class="page-heading-main">
+            <h1>个人信息查询</h1>
+            <p class="page-desc">按个人公积金账号或证件号码查询个人账户信息。</p>
+        </div>
+        <div class="page-heading-actions">
+            <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+        </div>
     </section>
+
+    <c:if test="${not empty error}">
+        <div class="alert wide-panel"><c:out value="${error}"/></div>
+    </c:if>
+
+    <form class="list-toolbar" method="post" action="${pageContext.request.contextPath}/persons/query"
+          onsubmit="return validatePersonQueryForm(this);">
+        <div class="toolbar-left search">
+            <label for="perAccNum">个人公积金账号</label>
+            <input id="perAccNum" name="perAccNum" type="text" maxlength="12"
+                   pattern="[0-9]{12}" value="${fn:escapeXml(personQueryForm.perAccNum)}">
+
+            <label for="idCard">证件号码</label>
+            <input id="idCard" name="idCard" type="text" maxlength="18"
+                   pattern="[0-9]{17}[0-9Xx]" value="${fn:escapeXml(personQueryForm.idCard)}">
+
+            <button class="button" type="submit">查询</button>
+        </div>
+        <div class="toolbar-right">
+            <span class="section-note">账号优先精确查询，未输入账号时按证件号码查询。</span>
+        </div>
+    </form>
+
+    <c:if test="${searched and empty queryResult}">
+        <div class="empty wide-panel">未查询到数据</div>
+    </c:if>
+
+    <c:if test="${not empty queryResult}">
+        <section class="result-card">
+            <div class="panel-heading">
+                <h2>查询结果</h2>
+                <p class="page-desc">个人账户与缴存信息。</p>
+            </div>
+            <div class="detail-grid">
+                <div class="detail-item">
+                    <div class="detail-label">缴存单位全称</div>
+                    <div class="detail-value"><c:out value="${queryResult.unitName}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">缴存单位公积金账号</div>
+                    <div class="detail-value"><c:out value="${queryResult.unitAccNum}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">姓名</div>
+                    <div class="detail-value strong"><c:out value="${queryResult.perName}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">个人公积金账号</div>
+                    <div class="detail-value strong"><c:out value="${queryResult.perAccNum}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">证件号码</div>
+                    <div class="detail-value"><c:out value="${queryResult.idCard}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">余额</div>
+                    <div class="detail-value num"><c:out value="${queryResult.perBalance}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">开户日期</div>
+                    <div class="detail-value"><c:out value="${queryResult.createTime}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">最后汇缴月</div>
+                    <div class="detail-value"><c:out value="${queryResult.lastPayMonth}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">单位比例</div>
+                    <div class="detail-value num"><c:out value="${queryResult.unitRatio}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">个人比例</div>
+                    <div class="detail-value num"><c:out value="${queryResult.perRatio}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">合计比例</div>
+                    <div class="detail-value num"><c:out value="${queryResult.totalRatio}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">单位月缴额</div>
+                    <div class="detail-value num"><c:out value="${queryResult.unitMonthPay}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">个人月缴额</div>
+                    <div class="detail-value num"><c:out value="${queryResult.perMonthPay}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">合计月缴额</div>
+                    <div class="detail-value num"><c:out value="${queryResult.totalMonthPay}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">个人账户状态</div>
+                    <div class="detail-value"><span class="status-label"><c:out value="${queryResult.statusText}"/></span></div>
+                </div>
+            </div>
+        </section>
+    </c:if>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>
 </body>
 </html>

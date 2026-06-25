@@ -12,9 +12,14 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="page-title">
-        <h1>个人开户</h1>
-        <p>先校验缴存单位，再办理个人手工开户；也可通过 Excel 批量开户。</p>
+    <section class="page-heading">
+        <div class="page-heading-main">
+            <h1>个人开户</h1>
+            <p>先校验缴存单位，再办理个人手工开户；也可通过 Excel 批量开户。</p>
+        </div>
+        <div class="page-heading-actions">
+            <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+        </div>
     </section>
 
     <c:if test="${not empty error}">
@@ -23,7 +28,9 @@
 
     <c:if test="${not empty importResult}">
         <div class="import-result">
-            <h2>Excel 批量导入结果</h2>
+            <div class="panel-heading">
+                <h2>Excel 批量导入结果</h2>
+            </div>
             <div class="import-summary">
                 <div class="summary-item success">
                     成功条数
@@ -38,7 +45,7 @@
                 <div class="notice">全部记录导入成功。</div>
             </c:if>
             <c:if test="${importResult.failureCount gt 0}">
-                <div class="table-scroll">
+                <div class="table-panel">
                     <table class="data-table">
                         <thead>
                         <tr>
@@ -66,7 +73,10 @@
 
     <div class="split-panels">
         <section class="content-panel compact-panel">
-            <h2>单位查询</h2>
+            <div class="panel-heading">
+                <h2>单位查询</h2>
+                <p class="page-desc">输入正常状态的单位账号后，继续录入个人开户信息。</p>
+            </div>
             <form method="get" action="${pageContext.request.contextPath}/persons/open/unit"
                   onsubmit="return validatePersonOpenUnitForm(this);">
                 <div class="form-grid">
@@ -80,13 +90,15 @@
 
                 <div class="actions">
                     <button class="button" type="submit">查询单位</button>
-                    <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
                 </div>
             </form>
         </section>
 
         <section class="content-panel compact-panel">
-            <h2>Excel 批量导入个人开户</h2>
+            <div class="panel-heading">
+                <h2>Excel 批量导入个人开户</h2>
+                <p class="page-desc">用于同一批次导入个人开户信息。</p>
+            </div>
             <form method="post" action="${pageContext.request.contextPath}/persons/open/import"
                   enctype="multipart/form-data">
                 <div class="form-grid">
@@ -104,8 +116,11 @@
     </div>
 
     <c:if test="${unitLoaded}">
-        <section class="content-panel">
-            <h2>个人开户信息录入</h2>
+        <section class="content-panel form-panel">
+            <div class="panel-heading">
+                <h2>个人开户信息录入</h2>
+                <p class="page-desc">核对缴存单位后，录入个人身份信息和缴存基数。</p>
+            </div>
 
             <form method="post" action="${pageContext.request.contextPath}/persons/open"
                   onsubmit="return validatePersonOpenForm(this);">
@@ -176,7 +191,7 @@
                     </div>
                 </div>
 
-                <div class="actions">
+                <div class="form-action-bar">
                     <button class="button" type="submit">提交开户</button>
                     <a class="button secondary" href="${pageContext.request.contextPath}/persons/open">重新查询单位</a>
                 </div>

@@ -12,35 +12,39 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
-        <h1>个人资料修改</h1>
-        <p class="page-desc">按个人公积金账号查询后，修改姓名、证件类型和证件号码。</p>
+    <section class="page-heading">
+        <div class="page-heading-main">
+            <h1>个人资料修改</h1>
+            <p>按个人公积金账号查询后，修改姓名、证件类型和证件号码。</p>
+        </div>
+        <div class="page-heading-actions">
+            <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+        </div>
+    </section>
 
-        <c:if test="${not empty error}">
-            <div class="alert"><c:out value="${error}"/></div>
-        </c:if>
+    <c:if test="${not empty error}">
+        <div class="alert"><c:out value="${error}"/></div>
+    </c:if>
 
+    <section class="list-toolbar">
         <form method="get" action="${pageContext.request.contextPath}/persons/edit/form"
-              onsubmit="return validatePersonEditSearchForm(this);">
-            <div class="grid">
-                <div class="field">
-                    <label for="searchPerAccNum">个人公积金账号<span class="required">*</span></label>
-                    <input id="searchPerAccNum" name="perAccNum" type="text" required maxlength="12"
-                           pattern="[0-9]{12}" value="${fn:escapeXml(personEditForm.perAccNum)}">
-                    <div class="tip">请输入 12 位个人公积金账号。</div>
-                </div>
-            </div>
-
-            <div class="actions">
+              class="search" onsubmit="return validatePersonEditSearchForm(this);">
+            <label for="searchPerAccNum">个人公积金账号<span class="required">*</span></label>
+            <input id="searchPerAccNum" name="perAccNum" type="text" required maxlength="12"
+                   pattern="[0-9]{12}" value="${fn:escapeXml(personEditForm.perAccNum)}"
+                   placeholder="请输入 12 位账号">
+            <div class="toolbar-left">
                 <button class="button" type="submit">查询个人账户</button>
-                <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
             </div>
         </form>
     </section>
 
     <c:if test="${personLoaded}">
-        <section class="panel">
-            <h2>修改资料</h2>
+        <section class="panel form-panel">
+            <div class="panel-heading">
+                <h2>修改资料</h2>
+                <p class="page-desc">核对账户归属后，维护个人姓名、证件类型和证件号码。</p>
+            </div>
 
             <form method="post" action="${pageContext.request.contextPath}/persons/edit"
                   onsubmit="return validatePersonEditForm(this);">
@@ -95,7 +99,7 @@
                     </div>
                 </div>
 
-                <div class="actions">
+                <div class="form-action-bar">
                     <button class="button" type="submit">提交修改</button>
                     <a class="button secondary" href="${pageContext.request.contextPath}/persons/edit">重新查询</a>
                 </div>

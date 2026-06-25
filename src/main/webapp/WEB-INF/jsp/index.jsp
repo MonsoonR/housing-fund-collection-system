@@ -43,7 +43,7 @@
                 </div>
                 <div class="module-item">
                     <div class="module-name">个人开户</div>
-                    <div class="module-desc">建立个人公积金账户，关联所属缴存单位。</div>
+                    <div class="module-desc">包含手工开户与 Excel 批量开户。</div>
                     <div class="object-tag">TB003</div>
                     <div class="module-action"><a class="button small secondary" href="${pageContext.request.contextPath}/persons/open">进入</a></div>
                 </div>

@@ -11,10 +11,12 @@
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
     <section class="panel receipt-panel">
+        <div class="receipt-status">
+            <div class="receipt-status-label">办理结果</div>
+            <h1>单位开户办理成功</h1>
+        </div>
+
         <div class="receipt-header">
-            <div class="success-banner">办理成功</div>
-            <h1>单位开户成功回单</h1>
-            <p class="page-desc">办理结果已生成，请核对单位账号和开户信息。</p>
             <div class="key-account">
                 <div class="key-account-label">单位公积金账号</div>
                 <div class="key-account-value"><c:out value="${receipt.unitAccNum}"/></div>
@@ -22,6 +24,7 @@
         </div>
 
         <div class="receipt-body">
+            <h2 class="receipt-section-title">开户信息</h2>
             <div class="detail-grid">
                 <div class="detail-item full">
                     <div class="detail-label">单位名称</div>

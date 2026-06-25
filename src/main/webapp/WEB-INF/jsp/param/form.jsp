@@ -12,10 +12,14 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
-        <h1><c:out value="${mode eq 'create' ? '新增系统参数' : '修改系统参数'}"/></h1>
-        <p class="page-desc">维护系统参数键值、当前序号、最大序号和参数说明。</p>
+    <section class="page-heading form-page-heading">
+        <div class="page-heading-main">
+            <h1><c:out value="${mode eq 'create' ? '新增系统参数' : '修改系统参数'}"/></h1>
+            <p>维护系统参数键值、当前序号、最大序号和参数说明。</p>
+        </div>
+    </section>
 
+    <section class="panel form-panel">
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
         </c:if>
@@ -72,7 +76,7 @@
                 </div>
             </div>
 
-            <div class="actions">
+            <div class="form-action-bar">
                 <button class="button" type="submit">保存</button>
                 <a class="button secondary" href="${pageContext.request.contextPath}/params">返回列表</a>
             </div>
