@@ -111,7 +111,7 @@
                     <div class="field full">
                         <label for="excelFile">Excel 文件<span class="required">*</span></label>
                         <input id="excelFile" name="excelFile" type="file" required accept=".xls,.xlsx">
-                        <div class="tip">首行表头，列顺序为：序号、个人姓名、证件类型、证件号码、缴存基数。</div>
+                        <div class="tip">首行表头，5 列顺序为：序号、个人姓名、证件类型、证件号码、缴存基数。</div>
                     </div>
                 </div>
                 <div class="actions">

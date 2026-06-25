@@ -13,7 +13,7 @@
 | 5 | `05-unit-open-form.png` | 第3章 系统实现 | 单位开户表单 | 证明单位开户交易要素页面存在 | 是 | 已在 `docs/acceptance-screenshots/`。 |
 | 6 | `unit-open-receipt.png` | 第4章 系统测试 | 单位开户成功回单，显示单位账号、状态、开户日期 | 证明单位开户完整跑通 | 否 | 访问 `/units/open`，提交合法单位资料，截取回单页。 |
 | 7 | `06-person-open-and-excel-import.png` | 第3章 系统实现 | 个人开户页，包含手工开户和 Excel 导入入口 | 证明个人开户模块包含批量导入 | 是 | 已在 `docs/acceptance-screenshots/`。 |
-| 8 | `person-open-receipt.png` | 第4章 系统测试 | 个人开户成功回单，显示个人账号、姓名、证件号、基数、月缴额 | 证明个人手工开户完整跑通 | 否 | 访问 `/persons/open`，输入正常单位账号并提交合法个人资料，截取回单页。 |
+| 8 | `person-open-receipt.png` | 第4章 系统测试 | 个人开户成功回单，显示个人账号、姓名、证件号、基数、月汇缴金额 | 证明个人手工开户完整跑通 | 否 | 访问 `/persons/open`，输入正常单位账号并提交合法个人资料，截取回单页。 |
 | 9 | `person-excel-import-result.png` | 第4章 系统测试 | Excel 导入结果页，显示成功数量、失败数量、失败原因 | 证明批量导入和错误反馈可验收 | 否 | 在 `/persons/open` 上传测试 Excel，分别截失败批次和成功批次结果。 |
 | 10 | `07-unit-edit-search.png` | 第3章 系统实现 | 单位资料修改查询页 | 证明单位资料修改入口存在 | 是 | 已在 `docs/acceptance-screenshots/`。 |
 | 11 | `unit-edit-receipt.png` | 第4章 系统测试 | 单位资料修改成功回单 | 证明允许字段可修改、禁止字段未误改 | 否 | 查询正常单位账号，修改允许字段并提交，截取回单页。 |

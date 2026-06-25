@@ -59,11 +59,11 @@
                     <div class="detail-value"><c:out value="${receipt.perRatio}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">单位月缴额</div>
+                    <div class="detail-label">单位月汇缴金额</div>
                     <div class="detail-value"><c:out value="${receipt.unitMonthPay}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">个人月缴额</div>
+                    <div class="detail-label">个人月汇缴金额</div>
                     <div class="detail-value"><c:out value="${receipt.perMonthPay}"/></div>
                 </div>
                 <div class="detail-item">
