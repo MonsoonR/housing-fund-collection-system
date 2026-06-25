@@ -25,7 +25,7 @@
 | 17 | `unit-query-result.png` | 第4章 系统测试 | 单位账号精确查询和名称模糊查询结果 | 证明单位查询输出字段符合要求 | 否 | 访问 `/units/query`，分别按账号和名称查询，截取结果页。 |
 | 18 | `10-person-query-form.png` | 第3章 系统实现 | 个人信息查询入口 | 证明支持个人账号和证件号码查询入口 | 是 | 已在 `docs/acceptance-screenshots/`。 |
 | 19 | `person-query-result.png` | 第4章 系统测试 | 个人账号或证件号码查询结果 | 证明个人查询输出核心字段 | 否 | 访问 `/persons/query`，按个人账号或证件号查询，截取结果页。 |
-| 20 | `maven-build-success.png` | 第4章 系统测试 | Maven 构建成功日志 | 证明编译、测试和打包通过 | 否 | 终端执行 `mvn clean package`，截取 `Tests run: 78...` 和 `BUILD SUCCESS`。 |
+| 20 | `maven-build-success.png` | 第4章 系统测试 | Maven 构建成功日志 | 证明编译、测试和打包通过 | 否 | 终端执行 `mvn clean package`，截取 `Tests run: 82...` 和 `BUILD SUCCESS`。 |
 | 21 | `tomcat-start-success.png` | 第4章 系统测试 | Tomcat 启动成功日志或浏览器首页 HTTP 200 | 证明 WAR 部署成功 | 否 | 启动 Tomcat 后截取控制台成功日志或首页访问结果。 |
 | 22 | `database-check-result.png` | 第4章 系统测试 / 第2章 数据设计 | `TB001/TB002/TB003` 查询结果和字段类型检查 | 证明数据库初始化和字段对齐 | 否 | 执行关键 SQL 查询，截取表数据和字段类型结果。 |
 

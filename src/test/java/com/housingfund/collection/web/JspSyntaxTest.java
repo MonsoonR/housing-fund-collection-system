@@ -44,8 +44,30 @@ public class JspSyntaxTest {
 
         assertTrue(content.contains("/persons/open/import"));
         assertTrue(content.contains("enctype=\"multipart/form-data\""));
-        assertTrue(content.contains("单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例"));
+        assertTrue(content.contains("name=\"batchUnitAccNum\""));
+        assertTrue(content.contains("序号、个人姓名、证件类型、证件号码、缴存基数"));
+        assertTrue(!content.contains("单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例"));
         assertTrue(content.contains("importResult.failures"));
+    }
+
+    @Test
+    public void receiptTitlesUseCourseGuideWording() throws IOException {
+        assertPageContains("unit", "receipt.jsp", "公积金开户回单");
+        assertPageContains("person", "receipt.jsp", "个人住房公积金开户回单");
+        assertPageContains("unit", "edit-receipt.jsp", "住房公积金账户资料变更回单");
+        assertPageContains("person", "edit-receipt.jsp", "住房公积金个人变更回单");
+    }
+
+    @Test
+    public void forceChangePagesDoNotPresentEightPrefixAsBusinessRule() throws IOException {
+        String conflict = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "edit-conflict.jsp"),
+                StandardCharsets.UTF_8);
+        String receipt = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "person", "edit-receipt.jsp"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(conflict.contains("错误账户证件号码为 9"));
+        assertTrue(!conflict.contains("首位释放为 8"));
+        assertTrue(!receipt.contains("释放为 8"));
     }
 
     @Test
@@ -109,5 +131,11 @@ public class JspSyntaxTest {
         } catch (IOException ex) {
             throw new IllegalStateException("Failed to read JSP file: " + path, ex);
         }
+    }
+
+    private static void assertPageContains(String folder, String fileName, String expected) throws IOException {
+        String content = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", folder, fileName),
+                StandardCharsets.UTF_8);
+        assertTrue(folder + "/" + fileName + " should contain " + expected, content.contains(expected));
     }
 }

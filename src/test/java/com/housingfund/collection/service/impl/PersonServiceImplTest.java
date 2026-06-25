@@ -273,7 +273,7 @@ public class PersonServiceImplTest {
     }
 
     @Test
-    public void importPersonsOpensAllValidExcelRowsAndSkipsBlankRows() throws Exception {
+    public void importPersonsOpensAllValidFiveColumnExcelRowsAndSkipsBlankRows() throws Exception {
         FakeParamMapper paramMapper = mapperWithSeq(1L, 999999999999L);
         FakeUnitMapper unitMapper = new FakeUnitMapper();
         unitMapper.insert(buildUnit("000000000010"));
@@ -281,10 +281,10 @@ public class PersonServiceImplTest {
         PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
 
         PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
-                row("000000000010", "李四", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080"),
-                row("", "", "", "", "", "", ""),
-                row("000000000010", "王五", "01身份证", "110105195001010012", "6000.00", "0.080", "0.080")
-        )), "persons.xlsx");
+                row("1", "李四", "01身份证", "11010519491231002X", "5000.00"),
+                row("", "", "", "", ""),
+                row("2", "王五", "01身份证", "110105195001010012", "6000.00")
+        )), "persons.xlsx", "000000000010");
 
         assertEquals(2, result.getSuccessCount());
         assertEquals(0, result.getFailureCount());
@@ -304,9 +304,9 @@ public class PersonServiceImplTest {
         PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
 
         PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
-                row("000000000010", "李四", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080"),
-                row("000000000010", "李四重复", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080")
-        )), "persons.xlsx");
+                row("1", "李四", "01身份证", "11010519491231002X", "5000.00"),
+                row("2", "李四重复", "01身份证", "11010519491231002X", "5000.00")
+        )), "persons.xlsx", "000000000010");
 
         assertEquals(0, result.getSuccessCount());
         assertEquals(1, result.getFailureCount());
@@ -324,8 +324,8 @@ public class PersonServiceImplTest {
         PersonServiceImpl service = new PersonServiceImpl(personMapper, new FakeUnitMapper(), paramMapper);
 
         PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
-                row("000000000010", "李四", "01身份证", "11010519491231002X", "5000.00", "0.080", "0.080")
-        )), "persons.xlsx");
+                row("1", "李四", "01身份证", "11010519491231002X", "5000.00")
+        )), "persons.xlsx", "000000000010");
 
         assertEquals(0, result.getSuccessCount());
         assertEquals(1, result.getFailureCount());
@@ -333,6 +333,52 @@ public class PersonServiceImplTest {
         assertEquals("单位账号不存在或状态非正常", result.getFailures().get(0).getMessage());
         assertNull(personMapper.selectByIdCard("11010519491231002X"));
         assertEquals(Long.valueOf(1L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
+    }
+
+    @Test
+    public void importPersonsReportsBlankAndInvalidBaseNumAndRollsBackWholeBatch() throws Exception {
+        FakeParamMapper paramMapper = mapperWithSeq(1L, 999999999999L);
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
+
+        PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
+                row("1", "李四", "01身份证", "11010519491231002X", "5000.00"),
+                row("2", "王五", "01身份证", "110105195001010012", ""),
+                row("3", "赵六", "01身份证", "110105195103030013", "abc")
+        )), "persons.xlsx", "000000000010");
+
+        assertEquals(0, result.getSuccessCount());
+        assertEquals(2, result.getFailureCount());
+        assertEquals("缴存基数不能为空", result.getFailures().get(0).getMessage());
+        assertEquals("缴存基数格式错误", result.getFailures().get(1).getMessage());
+        assertNull(personMapper.selectByIdCard("11010519491231002X"));
+        assertNull(personMapper.selectByIdCard("110105195001010012"));
+        assertNull(personMapper.selectByIdCard("110105195103030013"));
+        assertEquals(Long.valueOf(1L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
+        assertEquals(Integer.valueOf(0), unitMapper.selectByUnitAccNum("000000000010").getPersNum());
+    }
+
+    @Test
+    public void importPersonsReactivatesClosedAccountFromFiveColumnExcelWithoutConsumingSequence() throws Exception {
+        FakeParamMapper paramMapper = mapperWithSeq(11L, 999999999999L);
+        FakeUnitMapper unitMapper = new FakeUnitMapper();
+        unitMapper.insert(buildUnit("000000000010"));
+        FakePersonMapper personMapper = new FakePersonMapper();
+        personMapper.insert(buildClosedPerson("000000000088"));
+        PersonServiceImpl service = new PersonServiceImpl(personMapper, unitMapper, paramMapper);
+
+        PersonBatchImportResult result = service.importPersons(new ByteArrayInputStream(excelBytes(
+                row("1", "李四重启", "01身份证", "11010519491231002X", "5000.00")
+        )), "persons.xlsx", "000000000010");
+
+        assertEquals(1, result.getSuccessCount());
+        assertEquals(0, result.getFailureCount());
+        assertEquals(Long.valueOf(11L), paramMapper.selectBySeqname("PERACCNUM").getSeq());
+        assertEquals("0", personMapper.selectByPerAccNum("000000000088").getStatus());
+        assertEquals("李四重启", personMapper.selectByPerAccNum("000000000088").getPerName());
+        assertEquals("000000000010", personMapper.selectByPerAccNum("000000000088").getUnitAccNum());
     }
 
     @Test
@@ -777,9 +823,9 @@ public class PersonServiceImplTest {
         return form;
     }
 
-    private static String[] row(String unitAccNum, String perName, String idType, String idCard,
-                                String baseNum, String unitRatio, String perRatio) {
-        return new String[]{unitAccNum, perName, idType, idCard, baseNum, unitRatio, perRatio};
+    private static String[] row(String serialNo, String perName, String idType, String idCard,
+                                String baseNum) {
+        return new String[]{serialNo, perName, idType, idCard, baseNum};
     }
 
     private static byte[] excelBytes(String[]... rows) throws Exception {
@@ -787,7 +833,7 @@ public class PersonServiceImplTest {
              ByteArrayOutputStream output = new ByteArrayOutputStream()) {
             var sheet = workbook.createSheet("persons");
             Row header = sheet.createRow(0);
-            String[] headers = {"单位账号", "姓名", "证件类型", "证件号码", "缴存基数", "单位比例", "个人比例"};
+            String[] headers = {"序号", "个人姓名", "证件类型", "证件号码", "缴存基数"};
             for (int i = 0; i < headers.length; i++) {
                 header.createCell(i).setCellValue(headers[i]);
             }

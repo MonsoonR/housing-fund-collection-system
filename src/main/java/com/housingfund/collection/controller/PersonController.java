@@ -87,16 +87,18 @@ public class PersonController {
 
     @PostMapping("/open/import")
     public String importPersons(@RequestParam("excelFile") MultipartFile excelFile,
+                                @RequestParam("batchUnitAccNum") String batchUnitAccNum,
                                 Model model) {
         PersonOpenForm form = new PersonOpenForm();
         form.setIdType(ID_TYPE_RESIDENT);
+        form.setUnitAccNum(batchUnitAccNum);
         model.addAttribute("personOpenForm", form);
         try {
             if (excelFile == null || excelFile.isEmpty()) {
                 throw new BusinessException("请上传Excel文件");
             }
             PersonBatchImportResult result = personService.importPersons(
-                    excelFile.getInputStream(), excelFile.getOriginalFilename());
+                    excelFile.getInputStream(), excelFile.getOriginalFilename(), batchUnitAccNum);
             model.addAttribute("importResult", result);
             return "person/open";
         } catch (BusinessException ex) {

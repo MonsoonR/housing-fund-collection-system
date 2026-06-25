@@ -7,6 +7,7 @@ public class PersonEditResult implements Serializable {
 
     private String perAccNum;
     private String perName;
+    private String idType;
     private String idCard;
     private String unitAccNum;
     private String unitName;
@@ -33,6 +34,14 @@ public class PersonEditResult implements Serializable {
 
     public void setPerName(String perName) {
         this.perName = perName;
+    }
+
+    public String getIdType() {
+        return idType;
+    }
+
+    public void setIdType(String idType) {
+        this.idType = idType;
     }
 
     public String getIdCard() {

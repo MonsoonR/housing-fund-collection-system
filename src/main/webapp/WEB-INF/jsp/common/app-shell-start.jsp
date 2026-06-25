@@ -3,7 +3,7 @@
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
 <div class="app-shell">
     <header class="app-header">
-        <a class="app-brand" href="${pageContext.request.contextPath}/index">住房公积金归集业务系统</a>
+        <a class="app-brand" href="${pageContext.request.contextPath}/index">住房公积金管理系统——筹集子系统</a>
     </header>
     <c:set var="currentPath" value="${pageContext.request.requestURI}${pageContext.request.servletPath}"/>
     <div class="app-layout">

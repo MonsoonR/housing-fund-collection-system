@@ -58,16 +58,16 @@
 - 关键文件：
   - `PersonController#importPersons`
   - `PersonServiceImpl#importPersons`
-  - `PersonServiceImpl#parseImportRows`
+  - `PersonServiceImpl#parseAndValidateImportRows`
   - `PersonServiceImpl#validateOpenCandidate`
   - `PersonBatchImportResult.java`
   - `PersonBatchImportFailure.java`
   - `person/open.jsp`
 - 关键方法：
-  - `importPersons(InputStream inputStream, String originalFilename)`：批量导入总入口。
+  - `importPersons(InputStream inputStream, String originalFilename, String unitAccNum)`：批量导入总入口，使用页面提交的单位公积金账号。
   - `validateOpenCandidate(PersonOpenForm form)`：复用手工开户校验。
   - `openPerson(PersonOpenForm form)`：逐条执行开户。
-- 业务规则：支持 `.xls/.xlsx`；首行为表头；固定列为单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例；跳过空行；检查 Excel 内重复证件号；单位不存在、单位销户、证件号重复、基数或比例格式错误均记录失败原因。
+- 业务规则：支持 `.xls/.xlsx`；首行为表头；批量区域单独提交单位公积金账号；Excel 固定 5 列为序号、个人姓名、证件类型、证件号码、缴存基数；跳过空行；检查 Excel 内重复证件号；单位不存在、单位销户、证件号重复、缴存基数为空或格式错误均记录失败原因；单位比例和个人比例从单位信息表读取并校验。
 - 事务策略：全部成功才提交。任一非空行失败时，本批次不新增 `TB003`，不更新 `TB002`，不递增 `TB001.PERACCNUM`。
 - 数据库操作：成功批次逐条复用手工开户数据库操作；失败批次整体回滚。
 - 验收点：页面显示成功数量、失败数量和逐行失败原因；失败批次数据库无新增记录；成功批次导入 2 条数据。
@@ -106,7 +106,7 @@
 - 关键方法：
   - `forceUpdatePerson`：强制变更事务入口。
   - `insertWrongAccountCopy`：使用 `TB001.PERACCNUM` 生成新账号，复制占用账户原信息，写入错误账户。
-- 业务规则：个人账号必须存在且正常；只允许改姓名、证件类型、证件号码；证件号被其他账户占用时先提示冲突；强制变更新建错误账户保存占用账户原信息，原占用账户证件号改为 `8` 开头，新错误账户证件号为 `9` 开头，目标账户使用正确证件号。
+- 业务规则：个人账号必须存在且正常；只允许改姓名、证件类型、证件号码；证件号被其他账户占用时先提示冲突，回显占用账户账号、证件号、姓名、状态、单位名称、单位账号；强制变更新建错误账户保存占用账户原信息，新错误账户证件号为 `9` + 原证件号码后 17 位，目标账户使用正确证件号。代码内部如需释放占用证件号，仅用于满足 `TB003.IDCARD` 唯一约束，不作为任务书业务规则展示。
 - 数据库操作：查询 `TB003`、插入错误账户、更新占用账户证件号、更新目标账户资料、递增 `PERACCNUM`。
 - 验收点：冲突不强制时提示占用账户；强制后新错误账户存在、目标账户拿到正确证件号、原占用账户信息保留。
 
@@ -121,7 +121,7 @@
   - `UnitMapper#selectByUnitNameLike`
   - `unit/query.jsp`
 - 业务规则：输入单位账号时优先精确查询；未输入单位账号时按单位名称模糊查询；至少输入一个查询条件。
-- 数据库操作：查询 `TB002`，并在 Service 层计算合计比例、合计月缴额等展示字段。
+- 数据库操作：查询 `TB002`，并在 Service 层计算缴存比例合计、合计月汇缴金额等展示字段。
 - 验收点：账号精确查询、名称模糊查询、详情显示字段符合指导书输出要求。
 
 ## 8. 个人信息查询
@@ -136,4 +136,4 @@
   - `person/query.jsp`
 - 业务规则：输入个人账号时优先按账号查询；未输入个人账号时按证件号码查询；证件号码需要合法。
 - 数据库操作：联查 `TB003` 和 `TB002`，返回个人账户、单位名称、缴存比例、月缴额、余额和状态。
-- 验收点：按账号和证件号码均能查到姓名、证件类型/号码、缴存基数、比例、月缴额、余额、状态等核心字段。
+- 验收点：按账号和证件号码均能查到缴存单位全称、缴存单位账号、姓名、个人账号、余额、开户日期、最后汇缴月、缴存比例和月汇缴金额等核心字段。

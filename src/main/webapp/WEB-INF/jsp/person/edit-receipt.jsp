@@ -5,7 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>个人资料修改成功回单</title>
+    <title>住房公积金个人变更回单</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/static/css/global.css">
 </head>
 <body>
@@ -13,7 +13,7 @@
     <section class="panel receipt-panel">
         <div class="receipt-status">
             <div class="receipt-status-label">办理结果</div>
-            <h1>个人资料修改办理成功</h1>
+            <h1>住房公积金个人变更回单</h1>
         </div>
 
         <div class="receipt-header">
@@ -29,6 +29,10 @@
                 <div class="detail-item">
                     <div class="detail-label">姓名</div>
                     <div class="detail-value strong"><c:out value="${receipt.perName}"/></div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">证件类型</div>
+                    <div class="detail-value"><c:out value="${receipt.idType}"/></div>
                 </div>
                 <div class="detail-item">
                     <div class="detail-label">证件号码</div>

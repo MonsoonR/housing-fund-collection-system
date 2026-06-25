@@ -17,7 +17,7 @@ public interface PersonService {
 
     PersonOpenResult openPerson(PersonOpenForm form);
 
-    PersonBatchImportResult importPersons(InputStream inputStream, String originalFilename);
+    PersonBatchImportResult importPersons(InputStream inputStream, String originalFilename, String unitAccNum);
 
     PersonQueryResult queryPerson(PersonQueryForm form);
 

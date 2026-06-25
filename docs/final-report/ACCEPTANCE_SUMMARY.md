@@ -1,4 +1,6 @@
-# 验收前实机验证总结
+# 验收前验证总结
+
+本文件保留历史实机验收记录，并补充本轮任务书对齐后的验证状态。本轮已重新执行 `mvn clean package` 和 MySQL 脚本导入检查；当前环境未检测到 Tomcat 端口监听，页面访问、截图和强制变更浏览器流程需要人工重新复验。
 
 ## 1. 最终 Git 状态
 
@@ -59,14 +61,14 @@ http://localhost:8090/housingfund_collection_war/
 
 报告中建议以标准 WAR 名称 `housingfund-collection.war` 和标准上下文 `/housingfund-collection/` 作为正式部署说明。
 
-## 4. 8 个验收入口验证结果
+## 4. 8 个验收入口历史验证结果
 
 | 入口 | 路径 | 验证结果 |
 | --- | --- | --- |
 | 系统参数维护 | `/params` | 查询、新增、修改、删除普通参数、保护账号序列参数均通过。 |
 | 单位开户 | `/units/open` | 生成单位账号 `000000900100`，`UNITACCNUM.SEQ` 递增，`TB002` 写入。 |
 | 个人开户 | `/persons/open` | 手工开户生成个人账号 `000000900100`，`TB003` 写入并更新单位汇总。 |
-| 个人 Excel 批量开户 | `/persons/open/import` | 失败批次整体回滚，成功批次导入 2 条。 |
+| 个人 Excel 批量开户 | `/persons/open/import` | 5 列 Excel 成功导入，失败批次整体回滚。 |
 | 单位资料修改 | `/units/edit` | 正常单位允许字段修改成功，销户单位拒绝修改。 |
 | 个人资料修改 | `/persons/edit` | 普通修改成功，冲突不强制提示成功，强制变更新建错误账户成功。 |
 | 单位信息查询 | `/units/query` | 单位账号精确查询和单位名称模糊查询通过。 |
@@ -78,6 +80,7 @@ http://localhost:8090/housingfund_collection_war/
 
 - 包含 Excel 内重复证件号。
 - 包含不存在单位账号。
+- 包含缴存基数为空或格式错误。
 - 页面显示成功 0 条和逐行失败原因。
 - 数据库未新增失败批次记录。
 - `TB001.PERACCNUM.SEQ` 未递增。
@@ -99,14 +102,12 @@ http://localhost:8090/housingfund_collection_war/
 
 ```text
 000000900001 演示张三强制 110105199303030033
-000000900003 演示王五     810105199303030033
 000000900103 演示王五     910105199303030033
 ```
 
 验证结论：
 
 - 目标账户获得正确证件号码。
-- 原占用账户证件号码释放为 `8` 开头。
 - 新建错误账户存在，证件号码为 `9` 开头。
 - 新错误账户保留原占用账户姓名、单位、余额、缴存基数、比例、月缴额等信息。
 - `TB001.PERACCNUM.SEQ` 正确递增。
@@ -115,9 +116,16 @@ http://localhost:8090/housingfund_collection_war/
 
 ```text
 mvn clean package
-Tests run: 78, Failures: 0, Errors: 0, Skipped: 0
+Tests run: 82, Failures: 0, Errors: 0, Skipped: 0
 BUILD SUCCESS
 WAR: target/housingfund-collection.war
+```
+
+## 7.1 本轮数据库脚本导入结果
+
+```text
+db/schema.sql -> db/data.sql -> db/demo-data.sql
+DB_IMPORT_OK TB001=2 TB002=3 TB003=4
 ```
 
 ## 8. 剩余非阻塞事项
@@ -126,8 +134,8 @@ WAR: target/housingfund-collection.war
 2. 需要将 `REPORT_DRAFT.md` 内容迁移到 Word 报告模板。
 3. Word 报告中需补充姓名、学号、班级、指导教师等个人信息。
 4. Mermaid 图需要渲染为图片后插入 Word。
-5. 最终提交前应再次执行数据库初始化、Tomcat 访问和 Maven 构建验证。
+5. 本轮未启动 Tomcat，需人工重新访问 7 个核心入口并补齐最新截图。
 
 ## 9. 是否建议提交验收
 
-建议提交验收。当前功能、数据库字段、配置安全、批量导入、强制变更、构建测试和实机路径验证均已达到课程设计验收要求。剩余事项主要是报告排版和截图插入，不属于代码阻塞问题。
+代码和数据库脚本已通过本轮自动化验证；正式提交验收前仍需人工完成 Tomcat 页面访问、截图补齐和 Word 报告排版。

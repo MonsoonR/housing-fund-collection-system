@@ -110,7 +110,7 @@ public class PersonServiceImpl implements PersonService {
 
     @Override
     @Transactional
-    public PersonBatchImportResult importPersons(InputStream inputStream, String originalFilename) {
+    public PersonBatchImportResult importPersons(InputStream inputStream, String originalFilename, String unitAccNum) {
         if (inputStream == null) {
             throw new BusinessException("请上传Excel文件");
         }
@@ -118,9 +118,10 @@ public class PersonServiceImpl implements PersonService {
                 || !(originalFilename.toLowerCase().endsWith(".xlsx") || originalFilename.toLowerCase().endsWith(".xls"))) {
             throw new BusinessException("仅支持xls或xlsx格式的Excel文件");
         }
+        String normalizedUnitAccNum = validateUnitAccNum(unitAccNum);
 
         PersonBatchImportResult result = new PersonBatchImportResult();
-        List<PersonOpenForm> validRows = parseAndValidateImportRows(inputStream, result);
+        List<PersonOpenForm> validRows = parseAndValidateImportRows(inputStream, normalizedUnitAccNum, result);
         if (result.hasFailures()) {
             result.setSuccessCount(0);
             return result;
@@ -216,6 +217,8 @@ public class PersonServiceImpl implements PersonService {
         }
 
         String wrongIdCard = conflict.getGeneratedWrongIdCard();
+        // Internal release value only avoids the TB003.IDCARD unique key.
+        // The task business receipt uses the 9-prefix wrong account.
         String releaseIdCard = generateReleaseIdCard(conflict.getOccupiedIdCard());
         if (personMapper.selectByIdCard(wrongIdCard) != null) {
             throw new BusinessException("强制变更生成的错误身份证号已存在");
@@ -381,6 +384,7 @@ public class PersonServiceImpl implements PersonService {
         PersonEditResult result = new PersonEditResult();
         result.setPerAccNum(form.getPerAccNum());
         result.setPerName(form.getPerName());
+        result.setIdType(form.getIdType());
         result.setIdCard(form.getIdCard());
         result.setUnitAccNum(existing.getUnitAccNum());
         result.setUnitName(findUnitName(existing.getUnitAccNum()));
@@ -466,6 +470,7 @@ public class PersonServiceImpl implements PersonService {
     }
 
     private List<PersonOpenForm> parseAndValidateImportRows(InputStream inputStream,
+                                                            String unitAccNum,
                                                             PersonBatchImportResult result) {
         List<PersonOpenForm> validRows = new ArrayList<>();
         Set<String> seenIdCards = new HashSet<>();
@@ -482,23 +487,15 @@ public class PersonServiceImpl implements PersonService {
                     continue;
                 }
                 PersonOpenForm form = new PersonOpenForm();
-                form.setUnitAccNum(cell(row, 0, formatter));
+                form.setUnitAccNum(unitAccNum);
                 form.setPerName(cell(row, 1, formatter));
                 form.setIdType(cell(row, 2, formatter));
                 form.setIdCard(cell(row, 3, formatter));
                 try {
                     form.setBaseNum(parseDecimal(cell(row, 4, formatter), "缴存基数不能为空", "缴存基数格式错误"));
-                    BigDecimal importUnitRatio = parseDecimal(cell(row, 5, formatter), "单位比例不能为空", "单位比例格式错误");
-                    BigDecimal importPerRatio = parseDecimal(cell(row, 6, formatter), "个人比例不能为空", "个人比例格式错误");
                     OpenCandidate candidate = validateOpenCandidate(form);
                     if (candidate.existing != null && !STATUS_CLOSED.equals(candidate.existing.getStatus())) {
                         throw new BusinessException("该人员已开户");
-                    }
-                    if (candidate.unit.getUnitRatio().compareTo(importUnitRatio) != 0) {
-                        throw new BusinessException("Excel单位比例与单位资料不一致");
-                    }
-                    if (candidate.unit.getPerRatio().compareTo(importPerRatio) != 0) {
-                        throw new BusinessException("Excel个人比例与单位资料不一致");
                     }
                     if (!seenIdCards.add(form.getIdCard())) {
                         throw new BusinessException("Excel中证件号码重复");
@@ -521,7 +518,7 @@ public class PersonServiceImpl implements PersonService {
         if (row == null) {
             return true;
         }
-        for (int i = 0; i <= 6; i++) {
+        for (int i = 0; i <= 4; i++) {
             if (trimToNull(cell(row, i, formatter)) != null) {
                 return false;
             }

@@ -103,9 +103,15 @@
                   enctype="multipart/form-data">
                 <div class="form-grid">
                     <div class="field full">
+                        <label for="batchUnitAccNum">单位公积金账号<span class="required">*</span></label>
+                        <input id="batchUnitAccNum" name="batchUnitAccNum" type="text" required maxlength="12"
+                               pattern="[0-9]{12}" value="${fn:escapeXml(personOpenForm.unitAccNum)}">
+                        <div class="tip">本批次所有个人使用该正常状态单位账号，单位名称和缴存比例由系统从单位资料读取。</div>
+                    </div>
+                    <div class="field full">
                         <label for="excelFile">Excel 文件<span class="required">*</span></label>
                         <input id="excelFile" name="excelFile" type="file" required accept=".xls,.xlsx">
-                        <div class="tip">首行表头，列顺序为：单位账号、姓名、证件类型、证件号码、缴存基数、单位比例、个人比例。</div>
+                        <div class="tip">首行表头，列顺序为：序号、个人姓名、证件类型、证件号码、缴存基数。</div>
                     </div>
                 </div>
                 <div class="actions">

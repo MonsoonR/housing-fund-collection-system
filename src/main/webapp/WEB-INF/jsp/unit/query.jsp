@@ -57,14 +57,14 @@
                     <th>经办人姓名</th>
                     <th>联系电话</th>
                     <th class="num">公积金余额</th>
-                    <th class="num">单位比例</th>
-                    <th class="num">个人比例</th>
-                    <th class="num">合计比例</th>
+                    <th class="num">缴存比例（单位）</th>
+                    <th class="num">缴存比例（个人）</th>
+                    <th class="num">缴存比例（合计）</th>
                     <th>最后汇缴月</th>
-                    <th class="num">单位月缴额</th>
-                    <th class="num">个人月缴额</th>
-                    <th class="num">合计月缴额</th>
-                    <th class="num">单位人数</th>
+                    <th class="num">单位月汇缴金额</th>
+                    <th class="num">个人月汇缴金额</th>
+                    <th class="num">合计月汇缴金额</th>
+                    <th class="num">人数</th>
                     <th>账户状态</th>
                 </tr>
                 </thead>

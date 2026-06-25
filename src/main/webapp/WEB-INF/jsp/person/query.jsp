@@ -60,7 +60,7 @@
                     <div class="detail-value"><c:out value="${queryResult.unitName}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">缴存单位公积金账号</div>
+                    <div class="detail-label">缴存单位账号</div>
                     <div class="detail-value"><c:out value="${queryResult.unitAccNum}"/></div>
                 </div>
                 <div class="detail-item">
@@ -68,7 +68,7 @@
                     <div class="detail-value strong"><c:out value="${queryResult.perName}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">个人公积金账号</div>
+                    <div class="detail-label">个人账号</div>
                     <div class="detail-value strong"><c:out value="${queryResult.perAccNum}"/></div>
                 </div>
                 <div class="detail-item">
@@ -88,27 +88,27 @@
                     <div class="detail-value"><c:out value="${queryResult.lastPayMonth}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">单位比例</div>
+                    <div class="detail-label">缴存比例（单位）</div>
                     <div class="detail-value num"><c:out value="${queryResult.unitRatio}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">个人比例</div>
+                    <div class="detail-label">缴存比例（个人）</div>
                     <div class="detail-value num"><c:out value="${queryResult.perRatio}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">合计比例</div>
+                    <div class="detail-label">缴存比例（合计）</div>
                     <div class="detail-value num"><c:out value="${queryResult.totalRatio}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">单位月缴额</div>
+                    <div class="detail-label">单位月汇缴金额</div>
                     <div class="detail-value num"><c:out value="${queryResult.unitMonthPay}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">个人月缴额</div>
+                    <div class="detail-label">个人月汇缴金额</div>
                     <div class="detail-value num"><c:out value="${queryResult.perMonthPay}"/></div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-label">合计月缴额</div>
+                    <div class="detail-label">合计月汇缴金额</div>
                     <div class="detail-value num"><c:out value="${queryResult.totalMonthPay}"/></div>
                 </div>
                 <div class="detail-item">

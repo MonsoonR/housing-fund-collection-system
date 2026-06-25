@@ -30,7 +30,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    root["住房公积金归集业务系统"]
+    root["住房公积金管理系统——筹集子系统"]
     root --> p["系统参数维护"]
     root --> uo["单位开户"]
     root --> po["个人开户"]
@@ -182,10 +182,10 @@ sequenceDiagram
     C->>S: forceUpdatePerson(form)
     S->>P: selectBySeqnameForUpdate(PERACCNUM)
     P->>DB: 锁定个人账号序号
-    S->>M: insertWrongAccountCopy(B, 9开头证件号)
+    S->>M: insertWrongAccountCopy(B, 9开头错误证件号)
     M->>DB: 新建错误账户 C
-    S->>M: updateIdCard(B, 8开头证件号)
-    M->>DB: 释放 B 原证件号
+    S->>M: updateIdCard(B, 内部释放证件号)
+    M->>DB: 满足唯一约束的内部处理
     S->>M: updateEditableFields(A)
     M->>DB: A 使用正确证件号
     S->>P: updateSeq(PERACCNUM)
@@ -197,10 +197,10 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    A["进入 /persons/open"] --> B["选择 Excel 文件"]
+    A["进入 /persons/open"] --> B["填写单位账号并选择 Excel 文件"]
     B --> C["POST /persons/open/import"]
     C --> D["Apache POI 读取工作簿"]
-    D --> E["跳过空行并按固定列取值"]
+    D --> E["跳过空行并按 5 列取值"]
     E --> F["逐行复用 validateOpenCandidate"]
     F --> G{"存在失败行？"}
     G -- 是 --> H["返回成功 0 条、失败数量和逐行原因"]
