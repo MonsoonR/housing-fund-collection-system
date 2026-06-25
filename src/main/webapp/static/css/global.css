@@ -636,6 +636,11 @@ td .actions {
     grid-template-columns: max-content minmax(220px, 320px) max-content minmax(220px, 320px) auto;
 }
 
+.list-toolbar > .toolbar-left > .search {
+    flex: 0 1 auto;
+    grid-template-columns: max-content minmax(220px, 320px) max-content max-content;
+}
+
 .search label {
     margin-bottom: 0;
 }
@@ -915,7 +920,7 @@ td.reason {
 }
 
 .receipt-status {
-    padding: 18px 28px;
+    padding: 14px 28px;
     background: var(--success-soft);
     border-bottom: 1px solid #bbf7d0;
 }
