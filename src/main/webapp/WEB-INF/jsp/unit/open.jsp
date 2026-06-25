@@ -12,10 +12,14 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="panel">
-        <h1>单位开户</h1>
-        <p class="page-desc">录入缴存单位基础资料、经办人信息和缴存比例，提交后生成单位公积金账号。</p>
+    <section class="page-heading form-page-heading">
+        <div class="page-heading-main">
+            <h1>单位开户</h1>
+            <p>录入缴存单位基础资料、经办人信息和缴存比例，提交后生成单位公积金账号。</p>
+        </div>
+    </section>
 
+    <section class="panel form-panel">
         <c:if test="${not empty error}">
             <div class="alert"><c:out value="${error}"/></div>
         </c:if>
@@ -135,7 +139,7 @@
                 </div>
             </div>
 
-            <div class="actions">
+            <div class="form-action-bar">
                 <button class="button" type="submit">提交开户</button>
                 <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
             </div>

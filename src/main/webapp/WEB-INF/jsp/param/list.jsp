@@ -11,9 +11,14 @@
 </head>
 <body>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-start.jsp"/>
-    <section class="header">
-        <h1>系统参数维护</h1>
-        <p>维护账号序号、参数说明和备用信息。</p>
+    <section class="page-heading">
+        <div class="page-heading-main">
+            <h1>系统参数维护</h1>
+            <p>维护账号序号、参数说明和备用信息。</p>
+        </div>
+        <div class="page-heading-actions">
+            <a class="button secondary" href="${pageContext.request.contextPath}/index">返回首页</a>
+        </div>
     </section>
 
     <c:if test="${not empty success}">
@@ -23,18 +28,22 @@
         <div class="alert error"><c:out value="${error}"/></div>
     </c:if>
 
-    <section class="toolbar">
-        <form class="search" method="get" action="${pageContext.request.contextPath}/params">
-            <label for="seqname">键值信息</label>
-            <input id="seqname" name="seqname" type="text" maxlength="32"
-                   value="${fn:escapeXml(querySeqname)}" placeholder="支持模糊查询">
-            <button class="button secondary" type="submit">查询</button>
-            <a class="button secondary" href="${pageContext.request.contextPath}/params">全部</a>
-        </form>
-        <a class="button" href="${pageContext.request.contextPath}/params/new">新增参数</a>
+    <section class="list-toolbar">
+        <div class="toolbar-left">
+            <form class="search" method="get" action="${pageContext.request.contextPath}/params">
+                <label for="seqname">键值信息</label>
+                <input id="seqname" name="seqname" type="text" maxlength="32"
+                       value="${fn:escapeXml(querySeqname)}" placeholder="支持模糊查询">
+                <button class="button secondary" type="submit">查询</button>
+                <a class="button secondary" href="${pageContext.request.contextPath}/params">全部</a>
+            </form>
+        </div>
+        <div class="toolbar-right">
+            <a class="button" href="${pageContext.request.contextPath}/params/new">新增参数</a>
+        </div>
     </section>
 
-    <section class="table-wrap">
+    <section class="table-panel">
         <table>
             <thead>
             <tr>

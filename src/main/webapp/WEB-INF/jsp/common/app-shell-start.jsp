@@ -4,7 +4,6 @@
 <div class="app-shell">
     <header class="app-header">
         <a class="app-brand" href="${pageContext.request.contextPath}/index">住房公积金归集业务系统</a>
-        <a class="app-home-link" href="${pageContext.request.contextPath}/index">返回首页</a>
     </header>
     <c:set var="currentPath" value="${pageContext.request.requestURI}${pageContext.request.servletPath}"/>
     <div class="app-layout">
