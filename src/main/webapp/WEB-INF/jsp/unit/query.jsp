@@ -46,56 +46,131 @@
         <div class="empty">未查询到数据</div>
     </c:if>
 
-    <c:if test="${not empty queryResults}">
-        <section class="table-panel">
-            <table>
-                <thead>
-                <tr>
-                    <th>单位名称</th>
-                    <th>单位公积金账号</th>
-                    <th>单位地址</th>
-                    <th>经办人姓名</th>
-                    <th>联系电话</th>
-                    <th class="num">公积金余额</th>
-                    <th class="num">缴存比例（单位）</th>
-                    <th class="num">缴存比例（个人）</th>
-                    <th class="num">缴存比例（合计）</th>
-                    <th>最后汇缴月</th>
-                    <th class="num">单位月汇缴金额</th>
-                    <th class="num">个人月汇缴金额</th>
-                    <th class="num">合计月汇缴金额</th>
-                    <th class="num">人数</th>
-                    <th>账户状态</th>
-                </tr>
-                </thead>
-                <tbody>
+    <c:if test="${not empty queryResults and not empty unitQueryForm.unitAccNum}">
+        <c:forEach var="unit" items="${queryResults}">
+            <section class="result-card">
+                <div class="panel-heading">
+                    <h2>查询结果</h2>
+                    <p class="page-desc">单位账户与缴存汇总信息。</p>
+                </div>
+
+                <h3 class="detail-section-title">基础信息</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">单位名称</div>
+                        <div class="detail-value strong"><c:out value="${unit.unitName}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">单位公积金账号</div>
+                        <div class="detail-value strong"><c:out value="${unit.unitAccNum}"/></div>
+                    </div>
+                    <div class="detail-item full">
+                        <div class="detail-label">单位地址</div>
+                        <div class="detail-value"><c:out value="${unit.unitAddr}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">经办人姓名</div>
+                        <div class="detail-value"><c:out value="${unit.agentName}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">联系电话</div>
+                        <div class="detail-value"><c:out value="${unit.phone}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">单位人数</div>
+                        <div class="detail-value num"><c:out value="${unit.persNum}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">账户状态</div>
+                        <div class="detail-value"><span class="status-label"><c:out value="${unit.accStateText}"/></span></div>
+                    </div>
+                </div>
+
+                <h3 class="detail-section-title">缴存比例</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">缴存比例（单位）</div>
+                        <div class="detail-value num"><c:out value="${unit.unitRatio}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">缴存比例（个人）</div>
+                        <div class="detail-value num"><c:out value="${unit.perRatio}"/></div>
+                    </div>
+                    <div class="detail-item full">
+                        <div class="detail-label">缴存比例（合计）</div>
+                        <div class="detail-value num"><c:out value="${unit.totalRatio}"/></div>
+                    </div>
+                </div>
+
+                <h3 class="detail-section-title">金额信息</h3>
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <div class="detail-label">公积金余额</div>
+                        <div class="detail-value num"><c:out value="${unit.balance}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">最后汇缴月</div>
+                        <div class="detail-value"><c:out value="${unit.lastPayMonth}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">月汇缴金额（单位）</div>
+                        <div class="detail-value num"><c:out value="${unit.unitMonthPay}"/></div>
+                    </div>
+                    <div class="detail-item">
+                        <div class="detail-label">月汇缴金额（个人）</div>
+                        <div class="detail-value num"><c:out value="${unit.perMonthPay}"/></div>
+                    </div>
+                    <div class="detail-item full">
+                        <div class="detail-label">月汇缴金额（合计）</div>
+                        <div class="detail-value num"><c:out value="${unit.totalMonthPay}"/></div>
+                    </div>
+                </div>
+            </section>
+        </c:forEach>
+    </c:if>
+
+    <c:if test="${not empty queryResults and empty unitQueryForm.unitAccNum and not empty unitQueryForm.unitName}">
+        <section class="result-card">
+            <div class="panel-heading">
+                <h2>模糊查询结果</h2>
+                <p class="page-desc">点击单位名称或查看详情进入单位账号精确查询。</p>
+            </div>
+            <div class="compact-result-list">
                 <c:forEach var="unit" items="${queryResults}">
-                    <tr>
-                        <td>
-                            <a href="${pageContext.request.contextPath}/units/query?unitAccNum=${unit.unitAccNum}"
-                               title="点击或双击显示单位情况"
-                               ondblclick="window.location.href=this.href; return false;">
+                    <div class="compact-result-row">
+                        <div class="compact-result-main">
+                            <a class="compact-result-title"
+                               href="${pageContext.request.contextPath}/units/query?unitAccNum=${unit.unitAccNum}"
+                               title="点击显示单位详情">
                                 <c:out value="${unit.unitName}"/>
                             </a>
-                        </td>
-                        <td><c:out value="${unit.unitAccNum}"/></td>
-                        <td><c:out value="${unit.unitAddr}"/></td>
-                        <td><c:out value="${unit.agentName}"/></td>
-                        <td><c:out value="${unit.phone}"/></td>
-                        <td class="num"><c:out value="${unit.balance}"/></td>
-                        <td class="num"><c:out value="${unit.unitRatio}"/></td>
-                        <td class="num"><c:out value="${unit.perRatio}"/></td>
-                        <td class="num"><c:out value="${unit.totalRatio}"/></td>
-                        <td><c:out value="${unit.lastPayMonth}"/></td>
-                        <td class="num"><c:out value="${unit.unitMonthPay}"/></td>
-                        <td class="num"><c:out value="${unit.perMonthPay}"/></td>
-                        <td class="num"><c:out value="${unit.totalMonthPay}"/></td>
-                        <td class="num"><c:out value="${unit.persNum}"/></td>
-                        <td><span class="status-label"><c:out value="${unit.accStateText}"/></span></td>
-                    </tr>
+                            <div class="compact-result-sub"><c:out value="${unit.unitAccNum}"/></div>
+                        </div>
+                        <div class="compact-result-field">
+                            <span>单位地址</span>
+                            <strong><c:out value="${unit.unitAddr}"/></strong>
+                        </div>
+                        <div class="compact-result-field">
+                            <span>经办人姓名</span>
+                            <strong><c:out value="${unit.agentName}"/></strong>
+                        </div>
+                        <div class="compact-result-field">
+                            <span>联系电话</span>
+                            <strong><c:out value="${unit.phone}"/></strong>
+                        </div>
+                        <div class="compact-result-field">
+                            <span>人数</span>
+                            <strong><c:out value="${unit.persNum}"/></strong>
+                        </div>
+                        <div class="compact-result-action">
+                            <a class="button small secondary"
+                               href="${pageContext.request.contextPath}/units/query?unitAccNum=${unit.unitAccNum}">
+                                查看详情
+                            </a>
+                        </div>
+                    </div>
                 </c:forEach>
-                </tbody>
-            </table>
+            </div>
         </section>
     </c:if>
 <jsp:include page="/WEB-INF/jsp/common/app-shell-end.jsp"/>

@@ -117,7 +117,23 @@ public class JspSyntaxTest {
                 StandardCharsets.UTF_8);
 
         assertTrue(content.contains("/units/query?unitAccNum="));
-        assertTrue(content.contains("点击或双击"));
+        assertTrue(content.contains("点击显示单位详情"));
+        assertTrue(content.contains("查看详情"));
+    }
+
+    @Test
+    public void unitQueryPageUsesDetailCardForExactQueryAndCompactListForNameQuery() throws IOException {
+        String content = Files.readString(Path.of("src", "main", "webapp", "WEB-INF", "jsp", "unit", "query.jsp"),
+                StandardCharsets.UTF_8);
+
+        assertTrue(content.contains("not empty unitQueryForm.unitAccNum"));
+        assertTrue(content.contains("class=\"result-card\""));
+        assertTrue(content.contains("class=\"detail-grid\""));
+        assertTrue(content.contains("缴存比例（合计）"));
+        assertTrue(content.contains("月汇缴金额（合计）"));
+        assertTrue(content.contains("empty unitQueryForm.unitAccNum and not empty unitQueryForm.unitName"));
+        assertTrue(content.contains("查看详情"));
+        assertTrue(!content.contains("<th class=\"num\">公积金余额</th>"));
     }
 
     private static void collectInvalidUsages(Path path, List<String> invalidUsages) {

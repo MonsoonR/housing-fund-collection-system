@@ -22,7 +22,7 @@
 | 14 | `person-force-conflict.png` | 第4章 系统测试 | 个人资料强制变更冲突确认页 | 证明冲突不强制时会回显占用账户 | 否 | 使用 demo 占用证件号触发冲突，截取确认页。 |
 | 15 | `person-force-receipt.png` | 第4章 系统测试 | 强制变更成功回单，显示新建错误账户账号 | 证明强制变更新建错误账户跑通 | 否 | 在冲突确认页点击确认强制变更，截取回单页。 |
 | 16 | `09-unit-query-form.png` | 第3章 系统实现 | 单位信息查询入口 | 证明支持账号和名称查询入口 | 是 | 已在 `docs/acceptance-screenshots/`。 |
-| 17 | `unit-query-result.png` | 第4章 系统测试 | 单位账号精确查询和名称模糊查询结果 | 证明单位查询输出字段符合要求 | 否 | 访问 `/units/query`，分别按账号和名称查询，截取结果页。 |
+| 17 | `unit-query-result.png` | 第4章 系统测试 | 单位账号精确查询和名称模糊查询结果 | 证明单位查询输出字段符合要求 | 否 | 访问 `/units/query`，分别按账号和名称查询，截取结果页。单位账号精确查询结果采用详情卡片展示；单位名称模糊查询采用简短列表，点击单位名称查看详情。 |
 | 18 | `10-person-query-form.png` | 第3章 系统实现 | 个人信息查询入口 | 证明支持个人账号和证件号码查询入口 | 是 | 已在 `docs/acceptance-screenshots/`。 |
 | 19 | `person-query-result.png` | 第4章 系统测试 | 个人账号或证件号码查询结果 | 证明个人查询输出核心字段 | 否 | 访问 `/persons/query`，按个人账号或证件号查询，截取结果页。 |
 | 20 | `maven-build-success.png` | 第4章 系统测试 | Maven 构建成功日志 | 证明编译、测试和打包通过 | 否 | 终端执行 `mvn clean package`，截取 `Tests run: 82...` 和 `BUILD SUCCESS`。 |

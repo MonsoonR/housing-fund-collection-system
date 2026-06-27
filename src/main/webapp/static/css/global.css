@@ -1060,6 +1060,18 @@ td.reason {
     margin-bottom: 6px;
 }
 
+.detail-section-title {
+    margin: 22px 0 10px;
+    padding-left: 12px;
+    border-left: 3px solid var(--brand);
+    color: var(--text-main);
+    font-size: 16px;
+}
+
+.panel-heading + .detail-section-title {
+    margin-top: 0;
+}
+
 .detail-value {
     display: flex;
     align-items: center;
@@ -1154,6 +1166,62 @@ td.reason {
     border-top: 0;
 }
 
+.compact-result-list {
+    display: grid;
+    gap: 10px;
+}
+
+.compact-result-row {
+    display: grid;
+    grid-template-columns: minmax(180px, 1.2fr) minmax(220px, 1.4fr) minmax(120px, 0.8fr) minmax(130px, 0.9fr) 74px auto;
+    gap: 14px;
+    align-items: center;
+    padding: 14px 16px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.compact-result-main,
+.compact-result-field {
+    min-width: 0;
+}
+
+.compact-result-title {
+    display: inline-block;
+    max-width: 100%;
+    color: var(--brand-hover);
+    font-weight: 800;
+    word-break: break-word;
+}
+
+.compact-result-sub {
+    margin-top: 4px;
+    color: var(--text-muted);
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+.compact-result-field span {
+    display: block;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.compact-result-field strong {
+    display: block;
+    margin-top: 3px;
+    color: var(--text-main);
+    font-size: 14px;
+    font-weight: 650;
+    word-break: break-word;
+}
+
+.compact-result-action {
+    justify-self: end;
+}
+
 @media (max-width: 980px) {
     .app-header,
     .app-topbar {
@@ -1228,6 +1296,14 @@ td.reason {
         padding-right: 20px;
         padding-left: 20px;
     }
+
+    .compact-result-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .compact-result-action {
+        justify-self: start;
+    }
 }
 
 @media (max-width: 640px) {
@@ -1257,6 +1333,14 @@ td.reason {
 
     .button,
     .btn {
+        width: 100%;
+    }
+
+    .compact-result-row {
+        grid-template-columns: 1fr;
+    }
+
+    .compact-result-action {
         width: 100%;
     }
 }
