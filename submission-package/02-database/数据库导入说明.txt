@@ -1,0 +1,10 @@
+数据库导入顺序：
+1. mysql -u root -p < schema.sql
+2. mysql -u root -p housingfund_collection < data.sql
+3. mysql -u root -p housingfund_collection < demo-data.sql
+
+说明：
+schema.sql 用于创建 housingfund_collection 数据库和 TB001、TB002、TB003 三张核心表；
+data.sql 用于初始化 TB001 中 UNITACCNUM 和 PERACCNUM 两个账号序号；
+demo-data.sql 用于导入演示和测试数据；
+导入前请确保本机已安装 MySQL，并且 mysql 命令可以正常使用。

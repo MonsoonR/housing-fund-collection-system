@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.housingfund.collection.mapper.ParamMapper">
+
+    <resultMap id="SystemParamResultMap" type="SystemParam">
+        <id column="SEQNAME" property="seqname"/>
+        <result column="SEQ" property="seq"/>
+        <result column="MAXSEQ" property="maxseq"/>
+        <result column="DESC" property="seqDesc"/>
+        <result column="FREEUSE1" property="freeuse1"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        `SEQNAME`, `SEQ`, `MAXSEQ`, `DESC`, `FREEUSE1`
+    </sql>
+
+    <select id="selectAll" resultMap="SystemParamResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB001
+        ORDER BY `SEQNAME`
+    </select>
+
+    <select id="selectBySeqnameLike" resultMap="SystemParamResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB001
+        WHERE `SEQNAME` LIKE CONCAT('%', #{seqname}, '%')
+        ORDER BY `SEQNAME`
+    </select>
+
+    <select id="selectBySeqname" resultMap="SystemParamResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB001
+        WHERE `SEQNAME` = #{seqname}
+    </select>
+
+    <select id="selectBySeqnameForUpdate" resultMap="SystemParamResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB001
+        WHERE `SEQNAME` = #{seqname}
+        FOR UPDATE
+    </select>
+
+    <insert id="insert" parameterType="SystemParam">
+        INSERT INTO TB001 (
+            `SEQNAME`, `SEQ`, `MAXSEQ`, `DESC`, `FREEUSE1`
+        ) VALUES (
+            #{seqname}, #{seq}, #{maxseq}, #{seqDesc}, #{freeuse1}
+        )
+    </insert>
+
+    <update id="update" parameterType="SystemParam">
+        UPDATE TB001
+        SET
+            `SEQ` = #{seq},
+            `MAXSEQ` = #{maxseq},
+            `DESC` = #{seqDesc},
+            `FREEUSE1` = #{freeuse1}
+        WHERE `SEQNAME` = #{seqname}
+    </update>
+
+    <update id="updateSeq">
+        UPDATE TB001
+        SET `SEQ` = #{seq}
+        WHERE `SEQNAME` = #{seqname}
+    </update>
+
+    <delete id="deleteBySeqname">
+        DELETE FROM TB001
+        WHERE `SEQNAME` = #{seqname}
+    </delete>
+</mapper>

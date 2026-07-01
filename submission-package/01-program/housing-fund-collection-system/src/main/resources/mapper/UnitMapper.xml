@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.housingfund.collection.mapper.UnitMapper">
+
+    <resultMap id="UnitBasicInfoResultMap" type="UnitBasicInfo">
+        <id column="UNITACCNUM" property="unitAccNum"/>
+        <result column="UNITACCNAME" property="unitName"/>
+        <result column="UNITADDR" property="unitAddr"/>
+        <result column="ORGCODE" property="orgCode"/>
+        <result column="UNITCHAR" property="unitKind"/>
+        <result column="UNITKIND" property="unitType"/>
+        <result column="SALARYDATE" property="salaryDate"/>
+        <result column="UNITPHONE" property="phone"/>
+        <result column="UNITLINKMAN" property="agentName"/>
+        <result column="UNITAGENTPAPNO" property="agentIdCard"/>
+        <result column="ACCSTATE" property="accState"/>
+        <result column="BALANCE" property="balance"/>
+        <result column="BASENUMBER" property="baseNumber"/>
+        <result column="UNITPROP" property="unitRatio"/>
+        <result column="PERPROP" property="perRatio"/>
+        <result column="UNITPAYSUM" property="unitPaySum"/>
+        <result column="PERPAYSUM" property="perPaySum"/>
+        <result column="PERSNUM" property="persNum"/>
+        <result column="LASTPAYDATE" property="lastPayDate"/>
+        <result column="INSTCODE" property="instCode"/>
+        <result column="OP" property="op"/>
+        <result column="CREATDATE" property="createDate"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        `UNITACCNUM`, `UNITACCNAME`, `UNITADDR`, `ORGCODE`, `UNITCHAR`, `UNITKIND`,
+        `SALARYDATE`, `UNITPHONE`, `UNITLINKMAN`, `UNITAGENTPAPNO`, `ACCSTATE`,
+        `BALANCE`, `BASENUMBER`, `UNITPROP`, `PERPROP`, `UNITPAYSUM`, `PERPAYSUM`,
+        `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`, `REMARK`
+    </sql>
+
+    <select id="selectByUnitAccNum" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB002
+        WHERE `UNITACCNUM` = #{unitAccNum}
+    </select>
+
+    <select id="selectNormalByUnitAccNum" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB002
+        WHERE `UNITACCNUM` = #{unitAccNum}
+          AND `ACCSTATE` = '0'
+        LIMIT 1
+    </select>
+
+    <select id="selectNormalByOrgCode" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB002
+        WHERE `ORGCODE` = #{orgCode}
+          AND `ACCSTATE` = '0'
+        LIMIT 1
+    </select>
+
+    <select id="selectDuplicateOrgCodeAndUnitName" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB002
+        WHERE `ORGCODE` = #{orgCode}
+          AND `UNITACCNAME` = #{unitName}
+          AND `UNITACCNUM` &lt;&gt; #{excludeUnitAccNum}
+        LIMIT 1
+    </select>
+
+    <select id="selectByUnitNameLike" resultMap="UnitBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB002
+        WHERE `UNITACCNAME` LIKE CONCAT('%', #{unitName}, '%')
+        ORDER BY `UNITACCNUM`
+    </select>
+
+    <insert id="insert" parameterType="UnitBasicInfo">
+        INSERT INTO TB002 (
+            `UNITACCNUM`, `UNITACCNAME`, `UNITADDR`, `ORGCODE`, `UNITCHAR`, `UNITKIND`,
+            `SALARYDATE`, `UNITPHONE`, `UNITLINKMAN`, `UNITAGENTPAPNO`, `ACCSTATE`,
+            `BALANCE`, `BASENUMBER`, `UNITPROP`, `PERPROP`, `UNITPAYSUM`, `PERPAYSUM`,
+            `PERSNUM`, `LASTPAYDATE`, `INSTCODE`, `OP`, `CREATDATE`, `REMARK`
+        ) VALUES (
+            #{unitAccNum}, #{unitName}, #{unitAddr}, #{orgCode}, #{unitKind}, #{unitType},
+            #{salaryDate}, #{phone}, #{agentName}, #{agentIdCard}, #{accState},
+            #{balance}, #{baseNumber}, #{unitRatio}, #{perRatio}, #{unitPaySum}, #{perPaySum},
+            #{persNum}, #{lastPayDate}, #{instCode}, #{op}, #{createDate}, #{remark}
+        )
+    </insert>
+
+    <update id="updateEditableFields" parameterType="UnitBasicInfo">
+        UPDATE TB002
+        SET `UNITACCNAME` = #{unitName},
+            `UNITADDR` = #{unitAddr},
+            `ORGCODE` = #{orgCode},
+            `UNITCHAR` = #{unitKind},
+            `UNITKIND` = #{unitType},
+            `SALARYDATE` = #{salaryDate},
+            `UNITPHONE` = #{phone},
+            `UNITLINKMAN` = #{agentName},
+            `UNITAGENTPAPNO` = #{agentIdCard},
+            `REMARK` = #{remark}
+        WHERE `UNITACCNUM` = #{unitAccNum}
+          AND `ACCSTATE` &lt;&gt; '9'
+    </update>
+
+    <update id="updatePaymentSummary">
+        UPDATE TB002
+        SET `BASENUMBER` = `BASENUMBER` + #{baseNum},
+            `UNITPAYSUM` = `UNITPAYSUM` + #{unitMonthPay},
+            `PERPAYSUM` = `PERPAYSUM` + #{perMonthPay},
+            `PERSNUM` = `PERSNUM` + 1
+        WHERE `UNITACCNUM` = #{unitAccNum}
+          AND `ACCSTATE` = '0'
+    </update>
+</mapper>

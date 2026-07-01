@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.housingfund.collection.mapper.PersonMapper">
+
+    <resultMap id="PersonBasicInfoResultMap" type="PersonBasicInfo">
+        <id column="ACCNUM" property="perAccNum"/>
+        <result column="UNITACCNUM" property="unitAccNum"/>
+        <result column="PERNAME" property="perName"/>
+        <result column="IDTYPE" property="idType"/>
+        <result column="IDCARD" property="idCard"/>
+        <result column="OPENDATE" property="createTime"/>
+        <result column="BALANCE" property="perBalance"/>
+        <result column="PERACCSTATE" property="status"/>
+        <result column="BASENUMBER" property="baseNum"/>
+        <result column="UNITPROP" property="unitRatio"/>
+        <result column="INDIPROP" property="perRatio"/>
+        <result column="LASTPAYDATE" property="lastPayDate"/>
+        <result column="UNITMONPAYSUM" property="unitMonthPay"/>
+        <result column="PERMONPAYSUM" property="perMonthPay"/>
+        <result column="YPAYAMT" property="ypayAmt"/>
+        <result column="YDRAWAMT" property="ydrawAmt"/>
+        <result column="YINTERESTBAL" property="yinterestBal"/>
+        <result column="INSTCODE" property="instCode"/>
+        <result column="OP" property="op"/>
+        <result column="REMARK" property="remark"/>
+    </resultMap>
+
+    <resultMap id="PersonQueryResultMap" type="com.housingfund.collection.vo.PersonQueryResult">
+        <result column="UNITACCNAME" property="unitName"/>
+        <result column="UNITACCNUM" property="unitAccNum"/>
+        <result column="PERNAME" property="perName"/>
+        <result column="ACCNUM" property="perAccNum"/>
+        <result column="IDCARD" property="idCard"/>
+        <result column="BALANCE" property="perBalance"/>
+        <result column="OPENDATE" property="createTime"/>
+        <result column="LASTPAYDATE" property="lastPayDate"/>
+        <result column="UNITPROP" property="unitRatio"/>
+        <result column="INDIPROP" property="perRatio"/>
+        <result column="UNITMONPAYSUM" property="unitMonthPay"/>
+        <result column="PERMONPAYSUM" property="perMonthPay"/>
+        <result column="PERACCSTATE" property="status"/>
+    </resultMap>
+
+    <resultMap id="PersonEditFormResultMap" type="com.housingfund.collection.vo.PersonEditForm">
+        <result column="UNITACCNAME" property="unitName"/>
+        <result column="UNITACCNUM" property="unitAccNum"/>
+        <result column="PERNAME" property="perName"/>
+        <result column="ACCNUM" property="perAccNum"/>
+        <result column="IDTYPE" property="idType"/>
+        <result column="IDCARD" property="idCard"/>
+        <result column="PERACCSTATE" property="status"/>
+    </resultMap>
+
+    <resultMap id="PersonIdConflictResultMap" type="com.housingfund.collection.vo.PersonIdConflictResult">
+        <result column="OCCUPIED_ACCNUM" property="occupiedPerAccNum"/>
+        <result column="OCCUPIED_IDCARD" property="occupiedIdCard"/>
+        <result column="OCCUPIED_PERNAME" property="occupiedPerName"/>
+        <result column="OCCUPIED_PERACCSTATE" property="occupiedStatus"/>
+        <result column="OCCUPIED_UNITACCNUM" property="occupiedUnitAccNum"/>
+        <result column="OCCUPIED_UNITACCNAME" property="occupiedUnitName"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        `ACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `OPENDATE`,
+        `BALANCE`, `PERACCSTATE`, `BASENUMBER`, `UNITPROP`, `INDIPROP`, `LASTPAYDATE`,
+        `UNITMONPAYSUM`, `PERMONPAYSUM`, `YPAYAMT`, `YDRAWAMT`, `YINTERESTBAL`,
+        `INSTCODE`, `OP`, `REMARK`
+    </sql>
+
+    <select id="selectByPerAccNum" resultMap="PersonBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB003
+        WHERE `ACCNUM` = #{perAccNum}
+    </select>
+
+    <select id="selectByIdCard" resultMap="PersonBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB003
+        WHERE `IDCARD` = #{idCard}
+        LIMIT 1
+    </select>
+
+    <select id="selectNormalByIdCard" resultMap="PersonBasicInfoResultMap">
+        SELECT
+        <include refid="BaseColumns"/>
+        FROM TB003
+        WHERE `IDCARD` = #{idCard}
+          AND `PERACCSTATE` = '0'
+        LIMIT 1
+    </select>
+
+    <select id="selectQueryByPerAccNum" resultMap="PersonQueryResultMap">
+        SELECT
+            p.`ACCNUM`,
+            p.`UNITACCNUM`,
+            p.`PERNAME`,
+            p.`IDCARD`,
+            p.`BALANCE`,
+            p.`OPENDATE`,
+            p.`UNITPROP`,
+            p.`INDIPROP`,
+            p.`UNITMONPAYSUM`,
+            p.`PERMONPAYSUM`,
+            p.`PERACCSTATE`,
+            u.`UNITACCNAME`,
+            p.`LASTPAYDATE`
+        FROM TB003 p
+        LEFT JOIN TB002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`ACCNUM` = #{perAccNum}
+        LIMIT 1
+    </select>
+
+    <select id="selectQueryByIdCard" resultMap="PersonQueryResultMap">
+        SELECT
+            p.`ACCNUM`,
+            p.`UNITACCNUM`,
+            p.`PERNAME`,
+            p.`IDCARD`,
+            p.`BALANCE`,
+            p.`OPENDATE`,
+            p.`UNITPROP`,
+            p.`INDIPROP`,
+            p.`UNITMONPAYSUM`,
+            p.`PERMONPAYSUM`,
+            p.`PERACCSTATE`,
+            u.`UNITACCNAME`,
+            p.`LASTPAYDATE`
+        FROM TB003 p
+        LEFT JOIN TB002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`IDCARD` = #{idCard}
+        LIMIT 1
+    </select>
+
+        <select id="selectEditableByPerAccNum" resultMap="PersonEditFormResultMap">
+        SELECT
+            p.`ACCNUM`,
+            p.`UNITACCNUM`,
+            p.`PERNAME`,
+            p.`IDTYPE`,
+            p.`IDCARD`,
+            p.`PERACCSTATE`,
+            u.`UNITACCNAME`
+        FROM TB003 p
+        LEFT JOIN TB002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`ACCNUM` = #{perAccNum}
+        LIMIT 1
+    </select>
+
+    <select id="selectIdCardConflict" resultMap="PersonIdConflictResultMap">
+        SELECT
+            p.`ACCNUM` AS OCCUPIED_ACCNUM,
+            p.`IDCARD` AS OCCUPIED_IDCARD,
+            p.`PERNAME` AS OCCUPIED_PERNAME,
+            p.`PERACCSTATE` AS OCCUPIED_PERACCSTATE,
+            p.`UNITACCNUM` AS OCCUPIED_UNITACCNUM,
+            u.`UNITACCNAME` AS OCCUPIED_UNITACCNAME
+        FROM TB003 p
+        LEFT JOIN TB002 u ON p.`UNITACCNUM` = u.`UNITACCNUM`
+        WHERE p.`IDCARD` = #{idCard}
+          AND p.`ACCNUM` &lt;&gt; #{excludePerAccNum}
+        LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="PersonBasicInfo">
+        INSERT INTO TB003 (
+            `ACCNUM`, `UNITACCNUM`, `PERNAME`, `IDTYPE`, `IDCARD`, `OPENDATE`,
+            `BALANCE`, `PERACCSTATE`, `BASENUMBER`, `UNITPROP`, `INDIPROP`, `LASTPAYDATE`,
+            `UNITMONPAYSUM`, `PERMONPAYSUM`, `YPAYAMT`, `YDRAWAMT`, `YINTERESTBAL`,
+            `INSTCODE`, `OP`, `REMARK`
+        ) VALUES (
+            #{perAccNum}, #{unitAccNum}, #{perName}, #{idType}, #{idCard}, #{createTime},
+            #{perBalance}, #{status}, #{baseNum}, #{unitRatio}, #{perRatio}, #{lastPayDate},
+            #{unitMonthPay}, #{perMonthPay}, #{ypayAmt}, #{ydrawAmt}, #{yinterestBal},
+            #{instCode}, #{op}, #{remark}
+        )
+    </insert>
+
+    <update id="reactivate" parameterType="PersonBasicInfo">
+        UPDATE TB003
+        SET `UNITACCNUM` = #{unitAccNum},
+            `PERNAME` = #{perName},
+            `IDTYPE` = #{idType},
+            `IDCARD` = #{idCard},
+            `OPENDATE` = #{createTime},
+            `BALANCE` = #{perBalance},
+            `PERACCSTATE` = #{status},
+            `BASENUMBER` = #{baseNum},
+            `UNITPROP` = #{unitRatio},
+            `INDIPROP` = #{perRatio},
+            `LASTPAYDATE` = #{lastPayDate},
+            `UNITMONPAYSUM` = #{unitMonthPay},
+            `PERMONPAYSUM` = #{perMonthPay},
+            `YPAYAMT` = #{ypayAmt},
+            `YDRAWAMT` = #{ydrawAmt},
+            `YINTERESTBAL` = #{yinterestBal},
+            `INSTCODE` = #{instCode},
+            `OP` = #{op},
+            `REMARK` = #{remark}
+        WHERE `ACCNUM` = #{perAccNum}
+          AND `PERACCSTATE` = '9'
+    </update>
+
+    <update id="updateEditableFields" parameterType="PersonBasicInfo">
+        UPDATE TB003
+        SET `PERNAME` = #{perName},
+            `IDTYPE` = #{idType},
+            `IDCARD` = #{idCard}
+        WHERE `ACCNUM` = #{perAccNum}
+          AND `PERACCSTATE` &lt;&gt; '9'
+    </update>
+
+    <update id="updateIdCard">
+        UPDATE TB003
+        SET `IDCARD` = #{idCard}
+        WHERE `ACCNUM` = #{perAccNum}
+    </update>
+</mapper>
